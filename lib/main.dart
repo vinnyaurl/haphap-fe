@@ -14,10 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'HapHap',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: AppColors.primary, 
-      ),
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: AppColors.primary),
       home: const SplashScreen(),
     );
   }
