@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 
 void main() {
@@ -117,6 +118,97 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+*/
+
+import 'package:flutter/material.dart';
+import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; // Sesuaikan kalau nama file-mu beda
+import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart'; // Pastikan path ini bener ya
+
+void main() {
+  runApp(const HapHapPlayground());
+}
+
+class HapHapPlayground extends StatelessWidget {
+  const HapHapPlayground({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'HapHap UI',
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Playground Tombol HapHap!'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.white,
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // --- SECTION 1: BUTTONS ---
+                // --- TINY ---
+                const Text('Tiny (96px)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                HapHapButton(text: 'Simpan', size: HapHapButtonSize.tiny, onPressed: () {}),
+                const SizedBox(height: 8),
+                HapHapButton(text: 'Batal', size: HapHapButtonSize.tiny, isOutline: true, onPressed: () {}),
+                const SizedBox(height: 24),
+
+                // --- SMALL ---
+                const Text('Small (169px)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                HapHapButton(text: 'Tambah Menu', size: HapHapButtonSize.small, onPressed: () {}),
+                const SizedBox(height: 8),
+                HapHapButton(text: 'Edit', size: HapHapButtonSize.small, isOutline: true, onPressed: () {}),
+                const SizedBox(height: 24),
+
+                // --- MEDIUM ---
+                const Text('Medium (322px)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                HapHapButton(text: 'Lihat Detail Pesanan', size: HapHapButtonSize.medium, onPressed: () {}),
+                const SizedBox(height: 8),
+                HapHapButton(text: 'Kembali', size: HapHapButtonSize.medium, isOutline: true, onPressed: () {}),
+                const SizedBox(height: 24),
+
+                // --- LARGE ---
+                const Text('Large (354px)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                HapHapButton(text: 'Masuk', size: HapHapButtonSize.large, onPressed: () {}),
+                const SizedBox(height: 8),
+                HapHapButton(text: 'Daftar Sekarang', size: HapHapButtonSize.large, isOutline: true, onPressed: () {}),
+                const SizedBox(height: 40), // Jarak agak jauh antar section
+
+                // --- SECTION 2: TEXT FIELDS (BARU) ---
+                // NAH, TEXT FIELD-NYA MASUK DI SINI BRO, MASIH DI DALAM KURUNG SIKU children: []
+                const Text('2. Text Fields', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+
+                HapHapTextField(
+                  labelText: 'Alamat Email', 
+                  hintText: 'PuyPuy@gmail.com',
+                  controller: TextEditingController(), 
+                ),
+
+                // Manggil Password (Wajib diisi, jadi nyalain isRequired)
+                HapHapTextField(
+                  labelText: 'Kata Sandi', // Tulis teks biasa aja
+                  hintText: 'PuyPuyTopuy',
+                  controller: TextEditingController(),
+                  isPassword: true, 
+                  isRequired: true, // BOOM! Bintang merahnya otomatis muncul di sebelahnya
+                ),
+              ], // Ini kurung siku penutup children
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
