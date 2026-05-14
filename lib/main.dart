@@ -1,4 +1,3 @@
-/*
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
@@ -15,12 +14,13 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'HapHap',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: AppColors.primary),
-      //home: const SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 }
-*/
 
+
+/*
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
@@ -272,3 +272,4 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
     );
   }
 }
+*/
