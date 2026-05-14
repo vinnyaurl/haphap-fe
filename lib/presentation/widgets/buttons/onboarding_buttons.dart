@@ -2,39 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart'; 
 
 // Onboarding Next Button
+// Onboarding Next Button
 class HapHapOnboardingNextButton extends StatelessWidget {
-  final double progress; 
+  final double? progress; // 1. Tambahkan tanda tanya (?) agar bisa menerima null
   final VoidCallback onPressed;
+  final double size; 
 
   const HapHapOnboardingNextButton({
     super.key,
     required this.progress,
     required this.onPressed,
+    this.size = 128.0, 
   });
 
   @override
   Widget build(BuildContext context) {
+    final double strokeThickness = size * 0.09; 
+    final double innerSize = size * 0.65; 
+    final double iconSize = size * 0.3; 
+
     return SizedBox(
-      width: 72, 
-      height: 72,
+      width: size, 
+      height: size,
       child: Stack(
         alignment: Alignment.center,
         children: [
           SizedBox(
-            width: 72,
-            height: 72,
+            width: size,
+            height: size,
             child: CircularProgressIndicator(
-              value: progress, 
-              strokeWidth: 4.0,
-              backgroundColor: AppColors.greyLight.withValues(alpha: 0.05),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              value: progress, // Jika null, ini akan otomatis berputar
+              strokeWidth: strokeThickness,
+              backgroundColor: Colors.grey.shade300, 
+              // 2. Logika warna: Kalau null (muter), warnanya abu-abu tua. Kalau tidak, oranye.
+              valueColor: AlwaysStoppedAnimation<Color>(
+                progress == null ? Colors.grey.shade500 : AppColors.primary,
+              ),
+              strokeCap: StrokeCap.round, 
             ),
           ),
           
-          
           SizedBox(
-            width: 56, 
-            height: 56,
+            width: innerSize, 
+            height: innerSize,
             child: ElevatedButton(
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
@@ -44,7 +54,7 @@ class HapHapOnboardingNextButton extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 elevation: 0, 
               ),
-              child: const Icon(Icons.arrow_forward, size: 28),
+              child: Icon(Icons.arrow_forward, size: iconSize),
             ),
           ),
         ],
@@ -53,7 +63,6 @@ class HapHapOnboardingNextButton extends StatelessWidget {
   }
 }
 
-//Onboarding Skip Button
 class HapHapSkipButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isWhiteVariant; 
@@ -76,10 +85,8 @@ class HapHapSkipButton extends StatelessWidget {
         padding: WidgetStateProperty.all(
           const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
         ),
-        
         textStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.pressed)) {
-
             return TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -87,7 +94,6 @@ class HapHapSkipButton extends StatelessWidget {
               decorationColor: color,
             );
           }
-
           return const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
