@@ -1,26 +1,26 @@
-import 'package:flutter/material.dart';
-import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
-void main() {
-  runApp(const MyApp());
-}
+// import 'package:flutter/material.dart';
+// import 'package:haphap_fe/core/theme/app_colors.dart';
+// import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
+// void main() {
+//   runApp(const MyApp());
+// }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'HapHap',
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: AppColors.primary),
-      home: const SplashScreen(),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       title: 'HapHap',
+//       theme: ThemeData(useMaterial3: true, colorSchemeSeed: AppColors.primary),
+//       home: const SplashScreen(),
+//     );
+//   }
+// }
 
 
-/*
+
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
@@ -34,6 +34,7 @@ import 'package:haphap_fe/presentation/widgets/inputs/checkbox.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart'; // Import class konstantamu
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart'; 
 import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
+import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
 
 void main() {
   runApp(const HapHapPlayground());
@@ -52,6 +53,7 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
   bool isRememberMeChecked = false;
   int _currentNavIndex = 0; // Menyimpan indeks tab yang sedang aktif
   bool _isMerchantMode = false; // Toggle untuk ngetes UI User / Merchant
+  int _currentTabIndex = 0; // Untuk menyimpan tab aktivitas mana yang aktif
 
   @override
   Widget build(BuildContext context) {
@@ -254,6 +256,21 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
                   },
                 ),
                 const SizedBox(height: 40),
+
+                // --- SECTION 9: TAB BAR AKTIVITAS ---
+                const Text('9. Tab Bar Aktivitas', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                // Memanggil komponen Tab Bar
+                HapHapTabBar(
+                  currentIndex: _currentTabIndex,
+                  onTap: (index) {
+                    setState(() {
+                      _currentTabIndex = index;
+                    });
+                  },
+                ),
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -272,4 +289,3 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
     );
   }
 }
-*/
