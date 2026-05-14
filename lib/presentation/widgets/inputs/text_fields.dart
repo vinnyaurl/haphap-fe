@@ -6,7 +6,7 @@ class HapHapTextField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
   final bool isPassword;
-  final bool isRequired; // 1. Tambahkan parameter baru di sini
+  final bool isRequired; 
 
   const HapHapTextField({
     super.key,
@@ -14,7 +14,7 @@ class HapHapTextField extends StatefulWidget {
     required this.hintText,
     required this.controller,
     this.isPassword = false,
-    this.isRequired = false, // 2. Default-nya false (nggak ada bintang)
+    this.isRequired = false, 
   });
 
   @override
@@ -29,23 +29,21 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 3. HEADER (Sekarang pakai RichText biar bisa beda warna)
         RichText(
           text: TextSpan(
-            text: widget.labelText, // Teks utamanya (misal: "Kata Sandi")
+            text: widget.labelText, 
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: AppColors.greyDark,
-              fontFamily: 'Roboto', // Ganti dengan font utamamu kalau ada
+              fontFamily: 'Roboto', 
             ),
             children: [
-              // Cek kondisi: Kalau isRequired = true, tambahin bintang merah!
               if (widget.isRequired)
                 const TextSpan(
                   text: ' *',
                   style: TextStyle(
-                    color: Colors.red, // Bintang warna merah
+                    color: Colors.red, 
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -53,7 +51,7 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
           ),
         ),
         
-        // --- KOTAK INPUT (Kodenya sama persis kayak yang sebelumnya) ---
+        
         TextField(
           controller: widget.controller,
           obscureText: widget.isPassword ? _isObscured : false,
