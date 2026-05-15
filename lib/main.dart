@@ -1,26 +1,28 @@
-// import 'package:flutter/material.dart';
-// import 'package:haphap_fe/core/theme/app_colors.dart';
-// import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
-// void main() {
-//   runApp(const MyApp());
-// }
+import 'package:flutter/material.dart';
+import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
+import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
+void main() {
+  runApp(const MyApp());
+}
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       title: 'HapHap',
-//       theme: ThemeData(useMaterial3: true, colorSchemeSeed: AppColors.primary),
-//       home: const SplashScreen(),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'HapHap',
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: AppColors.primary),
+      // home: const SplashScreen(),
+      home: const BerandaPage(),
+    );
+  }
+}
 
 
-
+/*
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
@@ -153,33 +155,31 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
                 const SizedBox(height: 40),
 
 
-                // --- SECTION 5: HOME CARDS (BARU) ---
+                // --- SECTION 5: HOME CARDS & PILLS ---
                 const Text('5. Home Cards & Pills', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
 
                 // Mengetes Stats Cards (Jejer ke samping)
                 Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  HapHapStatsCard(
-                    title: 'Berhasil Hemat',
-                    prefixText: 'Rp ',
-                    mainValue: '67.6rb',
-                    valueColor: Colors.green, 
-                    subtitle: 'Sejak 6 Juli 2026',
-                    // PANGGIL GAMBAR ASSET-NYA DI SINI:
-                    imageAssetPath: 'assets/images/statscard-money.svg', 
-                  ),
-                  const HapHapStatsCard(
-                    title: 'Berhasil Selamatin',
-                    mainValue: '67 Porsi',
-                    valueColor: AppColors.primary,
-                    subtitle: 'Sejak 6 Juli 2026',
-                    // PANGGIL GAMBAR ASSET-NYA DI SINI:
-                    imageAssetPath: 'assets/images/statscard-piggybank.svg', 
-                  ),
-                ],
-              ),
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    HapHapStatsCard(
+                      title: 'Berhasil Hemat',
+                      prefixText: 'Rp ',
+                      mainValue: '67.6rb',
+                      valueColor: Colors.green, 
+                      subtitle: 'Sejak 6 Juli 2026',
+                      // imageAssetPath dihapus dari sini
+                    ),
+                    const HapHapStatsCard(
+                      title: 'Berhasil Selamatin',
+                      mainValue: '67 Porsi',
+                      valueColor: AppColors.primary,
+                      subtitle: 'Sejak 6 Juli 2026',
+                      // imageAssetPath dihapus dari sini
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
 
                 // Mengetes Category Pills
@@ -289,3 +289,4 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
     );
   }
 }
+*/
