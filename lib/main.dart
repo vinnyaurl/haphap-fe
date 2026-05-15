@@ -30,8 +30,12 @@ import 'package:haphap_fe/presentation/widgets/buttons/beranda_category.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_detail_pesanan.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart';
+import 'package:haphap_fe/presentation/widgets/cards/menu_card.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/checkbox.dart'; 
-import 'package:haphap_fe/core/constants/app_icons.dart'; // Import class konstantamu
+import 'package:haphap_fe/core/constants/app_icons.dart'; 
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart'; 
 import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
@@ -54,7 +58,8 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
   int _currentNavIndex = 0; // Menyimpan indeks tab yang sedang aktif
   bool _isMerchantMode = false; // Toggle untuk ngetes UI User / Merchant
   int _currentTabIndex = 0; // Untuk menyimpan tab aktivitas mana yang aktif
-
+  int _szechuanCartCount = 0;
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -271,6 +276,134 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
                   },
                 ),
                 const SizedBox(height: 40),
+
+                // --- SECTION 8: AKTIVITAS CARDS ---
+                const Text('8. Aktivitas Cards', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                // 1. Varian Menunggu (Waiting)
+                const HapHapAktivitasCard(
+                  statusText: 'Makanan lagi dikonfirmasi nih!',
+                  mainText: 'Ditunggu...',
+                  restaurantName: 'Cal\'s Chicken Bowl',
+                  imagePath: 'assets/images/aktivitas_puy_waiting.png',
+                ),
+                const SizedBox(height: 16),
+
+                // 2. Varian Proses (Processing)
+                const HapHapAktivitasCard(
+                  statusText: 'Makanan lagi disiapin nih!',
+                  mainText: '67 menit lagi...',
+                  restaurantName: 'Cal\'s Chicken Bowl',
+                  imagePath: 'assets/images/aktivitas_puy_processing.png',
+                ),
+                const SizedBox(height: 16),
+
+                // 3. Varian Selesai (Done)
+                const HapHapAktivitasCard(
+                  statusText: 'Makanan sudah siap nih!',
+                  mainText: 'Yuk ambil!',
+                  restaurantName: 'Cal\'s Chicken Bowl',
+                  imagePath: 'assets/images/aktivitas_puy_done.png',
+                ),
+                const SizedBox(height: 40),
+
+                // --- SECTION 9: STATUS PESANAN CARDS ---
+                const Text('9. Status Pesanan Cards', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+
+                // 1. Pesanan Selesai
+                const HapHapStatusPesananCard(
+                  dateStatusText: 'Hari ini, 06.07 · Diterima',
+                  mainTitle: 'Pesanan Selesai',
+                  imagePath: 'assets/images/done.png',
+                ),
+                const SizedBox(height: 16),
+
+                // 2. Pesanan Diproses
+                const HapHapStatusPesananCard(
+                  dateStatusText: 'Hari ini, 06.07 · Disiapin',
+                  mainTitle: 'Pesanan Diproses',
+                  imagePath: 'assets/images/on_process.png',
+                ),
+                const SizedBox(height: 16),
+
+                // 3. Pesanan Gagal
+                const HapHapStatusPesananCard(
+                  dateStatusText: 'Hari ini, 06.07 · Dibatalkan',
+                  mainTitle: 'Pesanan Gagal',
+                  imagePath: 'assets/images/cancelled.png',
+                ),
+                const SizedBox(height: 40),
+
+                // --- SECTION 10: RIWAYAT CARDS ---
+                const Text('10. Riwayat Cards', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                // Variasi 1: Selesai & Beri Rating
+                HapHapRiwayatCard(
+                  imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                  dateStatusText: 'Hari ini, 06.07 · Diterima',
+                  restaurantName: 'Cal\'s Chicken Bowl',
+                  price: 'Rp 125.000',
+                  buttonText: 'Beri Rating',
+                  onButtonPressed: () {
+                    print("Buka modal rating!");
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Variasi 2: Riwayat Lama & Pesan Lagi
+                HapHapRiwayatCard(
+                  imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                  dateStatusText: 'Kemarin, 06.07 · Diterima',
+                  restaurantName: 'Cal\'s Chicken Bowl',
+                  price: 'Rp 25.000',
+                  buttonText: 'Pesan Lagi',
+                  onButtonPressed: () {
+                    print("Masuk ke halaman resto!");
+                  },
+                ),
+                const SizedBox(height: 40),
+
+                // --- SECTION 11: MENU CARDS (Jelajah) ---
+                const Text('11. Menu Cards (Jelajah)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                // Kartu Menu yang interaktif!
+                HapHapMenuCard(
+                  imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                  title: 'Szechuan Chicken Bowl',
+                  description: 'Nasi + Ayam Saus Szechuan',
+                  price: 'Rp 25.000',
+                  stockCount: 2, // Anggap sisa stok ada 2
+                  
+                  // 1. Masukkan variabel state ke cartCount
+                  cartCount: _szechuanCartCount, 
+                  
+                  // 2. Logika ketika tombol (+) ditekan
+                  onAdd: () {
+                    setState(() {
+                      // Kita cegah user nambah melebihi stok yang ada
+                      if (_szechuanCartCount < 2) {
+                        _szechuanCartCount++;
+                      } else {
+                        // (Opsional) Bisa kasih tau kalau stok habis
+                        print('Maksimal pesanan tercapai!'); 
+                      }
+                    });
+                  },
+                  
+                  // 3. Logika ketika tombol (-) ditekan
+                  onRemove: () {
+                    setState(() {
+                      // Cegah angka jadi minus
+                      if (_szechuanCartCount > 0) {
+                        _szechuanCartCount--;
+                      }
+                    });
+                  },
+                ),
               ],
             ),
           ),
