@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
 
@@ -7,7 +6,7 @@ import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart'; 
 import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart'; 
-import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart'; // Path disesuaikan
+import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 
 class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
@@ -24,7 +23,6 @@ class _BerandaPageState extends State<BerandaPage> {
     return Scaffold(
       backgroundColor: AppColors.white, 
       
-      // 1. KONTEN HALAMAN
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,48 +30,61 @@ class _BerandaPageState extends State<BerandaPage> {
             // --- HEADER OREN ---
             _buildHeader(context),
             
-            // --- KARTU STATISTIK (Ditarik ke atas menimpa header) ---
+            // --- KONTEN BAWAH (Di-grup dan ditarik 60px ke atas) ---
             Transform.translate(
               offset: const Offset(0, -60), 
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const HapHapStatsCard(
-                      title: 'Berhasil Hemat',
-                      prefixText: 'Rp ',
-                      mainValue: '67.6rb',
-                      valueColor: Colors.green, 
-                      subtitle: 'Sejak 6 Juli 2026',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  
+                  // 1. KARTU STATISTIK
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center, 
+                      children: [
+                        const HapHapStatsCard(
+                          title: 'Berhasil Hemat',
+                          prefixText: 'Rp ',
+                          mainValue: '67.6rb',
+                          valueColor: Colors.green, 
+                          subtitle: 'Sejak 6 Juli 2026',
+                        ),
+                        
+                        // Jarak antar Stats Card = 16
+                        const SizedBox(width: 16), 
+                        
+                        HapHapStatsCard(
+                          title: 'Berhasil Selamatin',
+                          mainValue: '67 Porsi',
+                          valueColor: AppColors.primary,
+                          subtitle: 'Sejak 6 Juli 2026',
+                        ),
+                      ],
                     ),
-                    HapHapStatsCard(
-                      title: 'Berhasil Selamatin',
-                      mainValue: '67 Porsi',
-                      valueColor: AppColors.primary,
-                      subtitle: 'Sejak 6 Juli 2026',
-                    ),
-                  ],
-                ),
+                  ),
+
+                  // Jarak dari Stats Card ke Kategori = 32
+                  const SizedBox(height: 32), 
+                  
+                  // 2. BAGIAN KATEGORI
+                  _buildKategoriSection(),
+                  
+                  // Jarak dari Kategori ke Sekitar Kamu = 32
+                  const SizedBox(height: 32),
+                  
+                  // 3. BAGIAN SEKITAR KAMU
+                  _buildSekitarKamuSection(),
+                  
+                  // Padding ekstra di bawah agar konten terakhir tidak tertutup Nav Bar
+                  const SizedBox(height: 80), 
+                ],
               ),
             ),
-
-            const SizedBox(height: 0), 
-            
-            // --- BAGIAN KATEGORI ---
-            _buildKategoriSection(),
-            
-            const SizedBox(height: 32),
-            
-            // --- BAGIAN SEKITAR KAMU ---
-            _buildSekitarKamuSection(),
-            
-            const SizedBox(height: 40), 
           ],
         ),
       ),
 
-      // 2. BOTTOM NAVIGATION BAR
       bottomNavigationBar: HapHapNavBar(
         currentIndex: _currentNavIndex,
         type: NavBarType.user,
@@ -109,14 +120,11 @@ class _BerandaPageState extends State<BerandaPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Search Bar
           HapHapSearchBar(
             hintText: 'Mau makan apa hari ini?',
             prefixIconPath: AppIcons.magnifying_glass,
           ),
           const SizedBox(height: 24),
-          
-          // 2. Teks Promo & Karakter (Puy)
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -150,12 +158,10 @@ class _BerandaPageState extends State<BerandaPage> {
                   ],
                 ),
               ),
-              // --- INI PEMANGGILAN IMAGE PUY BERANDA ---
-              // Catatan: Pastikan ukurannya pas. Kalau kekecilan/kebesaran, 
-              // atur angka width & height di bawah ini.
-              SvgPicture.asset(
-                'assets/images/puy_beranda.svg',
-                width: 120, // Disesuaikan agar proposional
+              // --- SUDAH DIGANTI MENJADI IMAGE.ASSET (PNG) ---
+              Image.asset(
+                'assets/images/puy_beranda.png',
+                width: 120, 
                 height: 120,
               ),
             ],
@@ -187,15 +193,15 @@ class _BerandaPageState extends State<BerandaPage> {
           child: Row(
             children: [
               HapHapCategoryButton(iconPath: AppIcons.bakery, label: 'Bakery', onTap: () {}),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
               HapHapCategoryButton(iconPath: AppIcons.restaurant, label: 'Restoran', onTap: () {}),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
               HapHapCategoryButton(iconPath: AppIcons.cafe, label: 'Kafe', onTap: () {}),
-              const SizedBox(width: 16),
-              HapHapCategoryButton(iconPath: AppIcons.bakery, label: 'Grocery', onTap: () {}),
-              const SizedBox(width: 16),
-              HapHapCategoryButton(iconPath: AppIcons.restaurant, label: 'Jajanan', onTap: () {}),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
+              HapHapCategoryButton(iconPath: AppIcons.grocery, label: 'Grocery', onTap: () {}),
+              const SizedBox(width: 20),
+              HapHapCategoryButton(iconPath: AppIcons.jajanan, label: 'Jajanan', onTap: () {}),
+              const SizedBox(width: 20),
               HapHapCategoryButton(iconPath: AppIcons.dessert, label: 'Dessert', onTap: () {}),
             ],
           ),
@@ -226,7 +232,6 @@ class _BerandaPageState extends State<BerandaPage> {
           child: Row(
             children: const [
               HapHapRestaurantCard(
-                // Gambar Chicken Bowl HD
                 imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400', 
                 distanceTime: '1.67 km · 67 menit',
                 restaurantName: 'Cal\'s Chicken Bowl',
@@ -234,7 +239,6 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
               SizedBox(width: 16),
               HapHapRestaurantCard(
-                // Gambar Croissant/Bakery Estetik
                 imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=400', 
                 distanceTime: '2.1 km · 15 menit',
                 restaurantName: 'Bakery Enak Jaya',
