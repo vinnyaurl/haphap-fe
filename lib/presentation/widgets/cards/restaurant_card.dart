@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
 class HapHapRestaurantCard extends StatelessWidget {
-  final String imageUrl; 
+  final String imageUrl; // Kembali pakai imageUrl
   final String distanceTime;
   final String restaurantName;
   final String ratingText;
 
   const HapHapRestaurantCard({
     super.key,
-    required this.imageUrl,
+    required this.imageUrl, 
     required this.distanceTime,
     required this.restaurantName,
     required this.ratingText,
@@ -42,6 +42,7 @@ class HapHapRestaurantCard extends StatelessWidget {
               topLeft: Radius.circular(15),
               bottomLeft: Radius.circular(15),
             ),
+            // Kembali pakai Image.network
             child: Image.network(
               imageUrl,
               width: 128,
