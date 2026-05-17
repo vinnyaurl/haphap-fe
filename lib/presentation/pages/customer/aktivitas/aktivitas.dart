@@ -5,8 +5,8 @@ import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_lainnya.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart'; 
-import 'package:haphap_fe/presentation/pages/customer/laporan_transaksi.dart';
-
+import 'package:haphap_fe/presentation/pages/customer/aktivitas/laporan_transaksi.dart';
+import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.dart';
 class AktivitasPage extends StatefulWidget {
   const AktivitasPage({super.key});
 
@@ -153,26 +153,54 @@ class _AktivitasPageState extends State<AktivitasPage> {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        children: const [
-          HapHapAktivitasCard(
-            statusText: 'Makanan lagi disiapin nih!',
-            mainText: '67 menit lagi...',
-            restaurantName: 'Cal\'s Chicken Bowl',
-            imagePath: 'assets/images/aktivitas_puy_waiting.png',
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: false)),
+              );
+            },
+            child: const HapHapAktivitasCard(
+              statusText: 'Makanan lagi disiapin nih!',
+              mainText: '67 menit lagi...',
+              restaurantName: 'Cal\'s Chicken Bowl',
+              imagePath: 'assets/images/aktivitas_puy_waiting.png',
+            ),
           ),
-          SizedBox(height: 16),
-          HapHapAktivitasCard(
-            statusText: 'Makanan lagi dikonfirmasi nih!',
-            mainText: 'Ditunggu...',
-            restaurantName: 'Cal\'s Chicken Bowl',
-            imagePath: 'assets/images/aktivitas_puy_processing.png',
+          
+          const SizedBox(height: 16),
+          
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: false)),
+              );
+            },
+            child: const HapHapAktivitasCard(
+              statusText: 'Makanan lagi dikonfirmasi nih!',
+              mainText: 'Ditunggu...',
+              restaurantName: 'Cal\'s Chicken Bowl',
+              imagePath: 'assets/images/aktivitas_puy_processing.png',
+            ),
           ),
-          SizedBox(height: 16),
-          HapHapAktivitasCard(
-            statusText: 'Makanan sudah siap nih!',
-            mainText: 'Yuk ambil!',
-            restaurantName: 'Cal\'s Chicken Bowl',
-            imagePath: 'assets/images/aktivitas_puy_done.png',
+          
+          const SizedBox(height: 16),
+          
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: false)),
+              );
+            },
+            child: const HapHapAktivitasCard(
+              statusText: 'Makanan sudah siap nih!',
+              mainText: 'Yuk ambil!',
+              restaurantName: 'Cal\'s Chicken Bowl',
+              imagePath: 'assets/images/aktivitas_puy_done.png',
+            ),
           ),
         ],
       ),
@@ -183,26 +211,44 @@ class _AktivitasPageState extends State<AktivitasPage> {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       children: [
-        HapHapRiwayatCard(
-          imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400', 
-          dateStatusText: 'Hari ini, 06.07 · Diterima',
-          restaurantName: 'Cal\'s Chicken Bowl',
-          price: 'Rp 125.000',
-          buttonText: 'Beri Rating',
-          onButtonPressed: () {
-            print("Buka modal rating dari halaman Aktivitas!");
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: true)),
+            );
           },
+          child: HapHapRiwayatCard(
+            imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400', 
+            dateStatusText: 'Hari ini, 06.07 · Diterima',
+            restaurantName: 'Cal\'s Chicken Bowl',
+            price: 'Rp 125.000',
+            buttonText: 'Beri Rating',
+            onButtonPressed: () {
+              print("Buka modal rating dari halaman Aktivitas!");
+            },
+          ),
         ),
+        
         const SizedBox(height: 16),
-        HapHapRiwayatCard(
-          imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-          dateStatusText: 'Kemarin, 06.07 · Diterima',
-          restaurantName: 'Cal\'s Chicken Bowl',
-          price: 'Rp 25.000',
-          buttonText: 'Pesan Lagi',
-          onButtonPressed: () {
-            print("Pesan lagi dari halaman Aktivitas!");
+        
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: true)),
+            );
           },
+          child: HapHapRiwayatCard(
+            imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+            dateStatusText: 'Kemarin, 06.07 · Diterima',
+            restaurantName: 'Cal\'s Chicken Bowl',
+            price: 'Rp 25.000',
+            buttonText: 'Pesan Lagi',
+            onButtonPressed: () {
+              print("Pesan lagi dari halaman Aktivitas!");
+            },
+          ),
         ),
       ],
     );
