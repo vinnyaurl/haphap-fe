@@ -31,14 +31,19 @@ import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart';
-import 'package:haphap_fe/presentation/widgets/cards/aktivitas_detail_pesanan.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_status_pesanan.dart';
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart';
 import 'package:haphap_fe/presentation/widgets/cards/menu_card.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_detail_pesanan.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_rincian_pembayaran.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_qr.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/checkbox.dart'; 
 import 'package:haphap_fe/core/constants/app_icons.dart'; 
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart'; 
 import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_lainnya.dart';
 
 void main() {
   runApp(const HapHapPlayground());
@@ -404,6 +409,84 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
                     });
                   },
                 ),
+
+                // --- SECTION 12: DETAIL PESANAN CARD ---
+                const Text('12. Detail Pesanan Card', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                HapHapDetailPesananCard(
+                  restaurantName: 'Cal\'s Chicken Bowl',
+                  restaurantLogoUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=100', // Pakai gambar ayam sementara
+                  items: const [
+                    HapHapOrderItem(
+                      name: 'Szechuan Chicken Bowl',
+                      description: 'Nasi + Ayam Saus Szechuan',
+                      price: 'Rp 25.000',
+                      quantity: 2,
+                    ),
+                    HapHapOrderItem(
+                      name: 'Blackpepper Chicken Bowl',
+                      description: 'Nasi + Ayam Saus Blackpepper',
+                      price: 'Rp 25.000',
+                      quantity: 2,
+                    ),
+                    HapHapOrderItem(
+                      name: 'Salted Egg Chicken Bowl',
+                      description: 'Nasi + Ayam Saus Salted Egg',
+                      price: 'Rp 25.000',
+                      quantity: 1,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 40),
+
+                // --- SECTION 13: RINCIAN PEMBAYARAN ---
+                const Text('13. Rincian Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                HapHapRincianPembayaran(
+                  paymentMethod: 'QRIS',
+                  totalPrice: 'Rp 125.000',
+                  orderNumber: 'S6I7X6S7E6V7E6N7',
+                  paymentTime: '6 Juli 2026, 06.07',
+                  completionTime: '7 Juli 2026, 06.07',
+                  onReceiptPressed: () {
+                    print("Buka modal/halaman E-Receipt");
+                  },
+                ),
+                const SizedBox(height: 40),
+
+                // --- SECTION 14: QR PEMBAYARAN ---
+                const Text('14. QR Code Card', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                const Center(
+                  child: HapHapQRCodeCard(
+                    orderId: 'S6I7X6S7E6V7E6N7',
+                    qrImagePath: 'assets/images/qr_code.png', // Ganti dengan path QR-mu
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                // --- SECTION 15: PAGE HEADER ---
+                const Text('15. Page Header', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                const HapHapPageHeader(
+                  title: 'Detail Pesanan',
+                ),
+                const SizedBox(height: 40),
+
+                // --- SECTION 16: AKTIVITAS LAINNYA CARD ---
+                const Text('16. Aktivitas Lainnya Card', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                
+                const HapHapAktivitasLainnyaCard(
+                  title: 'HapHap lagi ada promo spesial nih 😋',
+                  subtitle: 'Ayo buruan pesan sebelum kehabisan!',
+                  imagePath: 'assets/images/logo_haphap.png', // Sesuaikan dengan nama file gambarmu
+                ),
+                const SizedBox(height: 40),
               ],
             ),
           ),

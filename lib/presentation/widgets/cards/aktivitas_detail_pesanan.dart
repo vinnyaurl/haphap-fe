@@ -1,23 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
-class HapHapStatusPesananCard extends StatelessWidget {
-  final String dateStatusText; 
-  final String mainTitle;      
-  final String imagePath;      
+class HapHapOrderItem {
+  final String name;
+  final String description;
+  final String price;
+  final int quantity;
 
-  const HapHapStatusPesananCard({
+  const HapHapOrderItem({
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.quantity,
+  });
+}
+
+class HapHapDetailPesananCard extends StatelessWidget {
+  final String restaurantName;
+  final String restaurantLogoUrl;
+  final List<HapHapOrderItem> items;
+
+  const HapHapDetailPesananCard({
     super.key,
-    required this.dateStatusText,
-    required this.mainTitle,
-    required this.imagePath,
+    required this.restaurantName,
+    required this.restaurantLogoUrl,
+    required this.items,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 354,
-      height: 128,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -33,54 +47,94 @@ class HapHapStatusPesananCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ClipOval(
+                child: Image.network(
+                  restaurantLogoUrl,
+                  width: 32,
+                  height: 32,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                restaurantName,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.black,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16), 
+
+          ...List.generate(items.length, (index) {
+            final item = items[index];
+            
+            return Padding(
+              padding: EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 16),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center, 
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    dateStatusText,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.greyDark,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.name,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.description,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.greyDark,
+                          ),
+                        ),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   
-                  const SizedBox(height: 8), 
+                  const SizedBox(width: 16), 
                   
-                  Text(
-                    mainTitle,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.black,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        item.price,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'x${item.quantity}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.greyDark,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ),
-          ),
-
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(15),
-              bottomRight: Radius.circular(15),
-            ),
-            child: Image.asset(
-              imagePath,
-              width: 128, 
-              height: 128,
-              fit: BoxFit.cover, 
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
