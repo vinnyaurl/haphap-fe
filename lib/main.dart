@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
 import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:google_fonts/google_fonts.dart';
 void main() {
