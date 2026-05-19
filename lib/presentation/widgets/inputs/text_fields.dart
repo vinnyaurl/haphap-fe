@@ -36,7 +36,7 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: AppColors.greyDark,
-              fontFamily: 'Roboto', 
+              fontFamily: 'Plus Jakarta Sans', 
             ),
             children: [
               if (widget.isRequired)
@@ -86,7 +86,7 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Icon(
-                        _isObscured ? Icons.visibility : Icons.visibility_off,
+                        _isObscured ? Icons.visibility_off : Icons.visibility,
                         color: AppColors.greyDark,
                         size: 22,
                       ),
