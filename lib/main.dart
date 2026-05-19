@@ -31,45 +31,21 @@ class MyApp extends StatelessWidget {
 /*
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
-import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/onboarding_buttons.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/beranda_category.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart';
-import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
-import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
-import 'package:haphap_fe/presentation/widgets/inputs/checkbox.dart'; 
-import 'package:haphap_fe/core/constants/app_icons.dart'; // Import class konstantamu
-import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart'; 
-import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
-import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
-
+import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
 void main() {
-  runApp(const HapHapPlayground());
+  runApp(const MyApp());
 }
 
-// 1. Sekarang jadi StatefulWidget
-class HapHapPlayground extends StatefulWidget {
-  const HapHapPlayground({super.key});
-
-  @override
-  State<HapHapPlayground> createState() => _HapHapPlaygroundState();
-}
-
-class _HapHapPlaygroundState extends State<HapHapPlayground> {
-  // 2. Variabel untuk menyimpan status Checkbox (default: false / tidak dicentang)
-  bool isRememberMeChecked = false;
-  int _currentNavIndex = 0; // Menyimpan indeks tab yang sedang aktif
-  bool _isMerchantMode = false; // Toggle untuk ngetes UI User / Merchant
-  int _currentTabIndex = 0; // Untuk menyimpan tab aktivitas mana yang aktif
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+<<<<<<< HEAD
       title: 'HapHap UI',
       home: Scaffold(
-        appBar: AppBar(
           // Judul berubah otomatis tergantung mode
           title: Text(_isMerchantMode ? 'Playground (Merchant)' : 'Playground (User)'),
           backgroundColor: AppColors.primary,
@@ -292,7 +268,7 @@ class _HapHapPlaygroundState extends State<HapHapPlayground> {
           },
         ),
       ),
-    );
-  }
-}
+=======
+      title: 'HapHap',
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: AppColors.primary),
 */
