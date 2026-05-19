@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+// import 'package:haphap_fe/presentation/pages/auth/login_screen.dart';
+// import 'package:haphap_fe/presentation/pages/auth/register_screen.dart';
 import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }

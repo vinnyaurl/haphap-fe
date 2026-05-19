@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/pages/auth/login_screen.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/onboarding_buttons.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -79,8 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // TODO: navigate to auth screen
-    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AuthScreen()));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
   }
 
   void _onSkip() {
@@ -93,7 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     if (!_isLastPage) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 100),
         curve: Curves.easeInOut,
       );
     } else {
