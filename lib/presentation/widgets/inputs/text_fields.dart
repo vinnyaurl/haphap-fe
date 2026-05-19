@@ -7,6 +7,8 @@ class HapHapTextField extends StatefulWidget {
   final TextEditingController controller;
   final bool isPassword;
   final bool isRequired; 
+  final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
 
   const HapHapTextField({
     super.key,
@@ -15,6 +17,8 @@ class HapHapTextField extends StatefulWidget {
     required this.controller,
     this.isPassword = false,
     this.isRequired = false, 
+    this.validator,
+    this.keyboardType,
   });
 
   @override
@@ -51,10 +55,11 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
           ),
         ),
         
-        
-        TextField(
+        TextFormField(
           controller: widget.controller,
           obscureText: widget.isPassword ? _isObscured : false,
+          validator: widget.validator,
+          keyboardType: widget.keyboardType,
           style: const TextStyle(
             fontSize: 16, 
             fontWeight: FontWeight.w600, 
@@ -74,6 +79,12 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
             ),
             focusedBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: AppColors.greyDark, width: 1.5), 
+            ),
+            errorBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.red, width: 1),
+            ),
+            focusedErrorBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.red, width: 1.5),
             ),
             suffixIconConstraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             suffixIcon: widget.isPassword
