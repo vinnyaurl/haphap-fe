@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
+import 'package:haphap_fe/presentation/pages/customer/aktivitas/aktivitas.dart';
 
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
@@ -22,10 +23,10 @@ class _BerandaLayout {
   static const double heroOrangeBgBottomCut = 120;
 
   // Mascot
-  static const double mascotWidth = 152;
-  static const double mascotHeight = 158;
-  static const double mascotRight = -44; 
-  static const double mascotTop = -35;
+  static const double mascotWidth = 192;
+  static const double mascotHeight = 198;
+  static const double mascotRight = -30; 
+  static const double mascotTop = -55;
 
   // Stats cards
   static const double statCardSpacing = 16;
@@ -48,7 +49,7 @@ class _BerandaContent {
   static const String searchHint = 'Mau makan apa hari ini?';
   static const String tagline = 'Selalu hemat beli\nmakanan pakai HapHap.';
   static const String discountCta = 'Lihat diskon selengkapnya disini';
-  static const String mascotPath = 'assets/images/puy_beranda.png';
+  static const String mascotPath = 'assets/images/puy_beranda1.png';
 
   static const String statsSavingsTitle = 'Berhasil Hemat';
   static const String statsSavingsPrefix = 'Rp ';
@@ -90,20 +91,29 @@ class _BerandaPageState extends State<BerandaPage> {
           ],
         ),
       ),
-      bottomNavigationBar: HapHapNavBar(
+bottomNavigationBar: HapHapNavBar(
         currentIndex: _currentNavIndex,
         type: NavBarType.user,
         onTap: (index) {
+ 
+          if (_currentNavIndex == index) return;
+
           setState(() => _currentNavIndex = index);
+
           switch (index) {
             case 0:
-              // TODO: Navigate to Beranda screen
+              // TODO: Navigate to Beranda screen 
               break;
             case 1:
               // TODO: Navigate to Jelajah screen
               break;
             case 2:
-              // TODO: Navigate to Aktivitas screen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AktivitasPage(),
+                ),
+              );
               break;
             case 3:
               // TODO: Navigate to Akun screen
