@@ -7,6 +7,8 @@ class HapHapTextField extends StatefulWidget {
   final TextEditingController controller;
   final bool isPassword;
   final bool isRequired; 
+  final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
 
   const HapHapTextField({
     super.key,
@@ -15,6 +17,8 @@ class HapHapTextField extends StatefulWidget {
     required this.controller,
     this.isPassword = false,
     this.isRequired = false, 
+    this.validator,
+    this.keyboardType,
   });
 
   @override
@@ -36,7 +40,7 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: AppColors.greyDark,
-              fontFamily: 'Roboto', 
+              fontFamily: 'Plus Jakarta Sans', 
             ),
             children: [
               if (widget.isRequired)
@@ -51,10 +55,11 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
           ),
         ),
         
-        
-        TextField(
+        TextFormField(
           controller: widget.controller,
           obscureText: widget.isPassword ? _isObscured : false,
+          validator: widget.validator,
+          keyboardType: widget.keyboardType,
           style: const TextStyle(
             fontSize: 16, 
             fontWeight: FontWeight.w600, 
@@ -75,6 +80,12 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
             focusedBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: AppColors.greyDark, width: 1.5), 
             ),
+            errorBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.red, width: 1),
+            ),
+            focusedErrorBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.red, width: 1.5),
+            ),
             suffixIconConstraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             suffixIcon: widget.isPassword
                 ? InkWell(
@@ -86,7 +97,7 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Icon(
-                        _isObscured ? Icons.visibility : Icons.visibility_off,
+                        _isObscured ? Icons.visibility_off : Icons.visibility,
                         color: AppColors.greyDark,
                         size: 22,
                       ),
