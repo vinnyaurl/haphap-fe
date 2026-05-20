@@ -3,6 +3,7 @@ import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/auth_service.dart';
 import 'package:haphap_fe/presentation/pages/auth/register_screen.dart';
+import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -70,8 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // TODO: Save token from response.data?.token if needed
       // e.g. SharedPreferences.getInstance().then((prefs) => prefs.setString('token', response.data?.token ?? ''));
 
-      // TODO: Navigate to home screen after successful login
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const BerandaPage()));
       _showSuccessSnackbar('Login berhasil! Selamat datang.');
 
     } on ApiException catch (e) {
