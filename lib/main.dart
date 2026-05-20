@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/aktivitas.dart';
 void main() {
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       title: 'HapHap',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: AppColors.primary),
       // home: const SplashScreen(),
-      home: const AktivitasPage(),
+      home: const BerandaPage(),
     );
   }
 }
