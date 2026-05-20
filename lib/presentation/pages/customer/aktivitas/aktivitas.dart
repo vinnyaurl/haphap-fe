@@ -7,6 +7,7 @@ import 'package:haphap_fe/presentation/widgets/cards/aktivitas_lainnya.dart';
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart'; 
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/laporan_transaksi.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.dart';
+
 class AktivitasPage extends StatefulWidget {
   const AktivitasPage({super.key});
 
@@ -18,13 +19,14 @@ class _AktivitasPageState extends State<AktivitasPage> {
   int _currentNavIndex = 2;
   int _currentTabIndex = 0;
 
-  bool hasOrders = true; //kalo false dia ngeshow puypuylapernih
+  bool hasOrders = true; 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
+        top: false, 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -69,9 +71,10 @@ class _AktivitasPageState extends State<AktivitasPage> {
       ),
     );
   }
+
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 24.0, bottom: 16.0),
+      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 59.0, bottom: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -81,6 +84,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: AppColors.black,
+              fontFamily: 'Plus Jakarta Sans', 
             ),
           ),
           GestureDetector(
@@ -100,10 +104,10 @@ class _AktivitasPageState extends State<AktivitasPage> {
               ),
               child: Image.asset(
                 'assets/icons/circle_arrow_down.svg',
-                width: 20,
-                height: 20,
+                width: 16,
+                height: 16,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.arrow_downward, size: 20, color: AppColors.white);
+                  return const Icon(Icons.arrow_downward, size: 16, color: AppColors.white);
                 },
               ),
             ),
