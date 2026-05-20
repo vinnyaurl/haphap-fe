@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart'; 
@@ -61,12 +62,33 @@ class _AktivitasPageState extends State<AktivitasPage> {
         ),
       ),
       bottomNavigationBar: HapHapNavBar(
-        currentIndex: _currentNavIndex,
+        currentIndex: _currentNavIndex, 
         type: NavBarType.user,
         onTap: (index) {
+          if (_currentNavIndex == index) return;
+
           setState(() {
             _currentNavIndex = index;
           });
+
+          switch (index) {
+            case 0:
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BerandaPage(),
+                ),
+              );
+              break;
+            case 1:
+              // TODO: Navigate to Jelajah screen
+              break;
+            case 2:
+              break;
+            case 3:
+              // TODO: Navigate to Akun screen
+              break;
+          }
         },
       ),
     );
