@@ -23,10 +23,10 @@ class _BerandaLayout {
   static const double heroOrangeBgBottomCut = 120;
 
   // Mascot
-  static const double mascotWidth = 152;
-  static const double mascotHeight = 158;
-  static const double mascotRight = -44; 
-  static const double mascotTop = -35;
+  static const double mascotWidth = 192;
+  static const double mascotHeight = 198;
+  static const double mascotRight = -30; 
+  static const double mascotTop = -55;
 
   // Stats cards
   static const double statCardSpacing = 16;
@@ -49,7 +49,7 @@ class _BerandaContent {
   static const String searchHint = 'Mau makan apa hari ini?';
   static const String tagline = 'Selalu hemat beli\nmakanan pakai HapHap.';
   static const String discountCta = 'Lihat diskon selengkapnya disini';
-  static const String mascotPath = 'assets/images/puy_beranda.png';
+  static const String mascotPath = 'assets/images/puy_beranda1.png';
 
   static const String statsSavingsTitle = 'Berhasil Hemat';
   static const String statsSavingsPrefix = 'Rp ';

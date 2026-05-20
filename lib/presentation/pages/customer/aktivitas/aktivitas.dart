@@ -191,7 +191,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
               statusText: 'Makanan lagi disiapin nih!',
               mainText: '67 menit lagi...',
               restaurantName: 'Cal\'s Chicken Bowl',
-              imagePath: 'assets/images/aktivitas_puy_waiting.png',
+              imagePath: 'assets/images/aktivitas_puy_waiting1.png',
             ),
           ),
           
