@@ -19,10 +19,11 @@ class DetailPesananPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              padding: EdgeInsets.only(left: 24.0, right: 24.0, top: 59.0, bottom: 8.0),
               child: HapHapPageHeader(title: 'Detail Pesanan'),
             ),
 

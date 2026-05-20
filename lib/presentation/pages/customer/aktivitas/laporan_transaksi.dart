@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart'; 
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; //
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 class LaporanTransaksiPage extends StatefulWidget {
   const LaporanTransaksiPage({super.key});
@@ -27,8 +27,9 @@ class _LaporanTransaksiPageState extends State<LaporanTransaksiPage> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
+        top: false,
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 59.0, bottom: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
