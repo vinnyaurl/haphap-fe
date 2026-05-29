@@ -27,9 +27,8 @@ class _LaporanTransaksiPageState extends State<LaporanTransaksiPage> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        top: false,
         child: Padding(
-          padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 59.0, bottom: 24.0),
+          padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

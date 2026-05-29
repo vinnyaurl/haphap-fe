@@ -27,7 +27,6 @@ class _AktivitasPageState extends State<AktivitasPage> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        top: false, 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -96,7 +95,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 59.0, bottom: 16.0),
+      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
