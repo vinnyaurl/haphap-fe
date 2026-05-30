@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/auth_service.dart';
@@ -32,10 +33,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // ---------------------------------------------------------------------------
-  // Validation helpers
-  // ---------------------------------------------------------------------------
-
   String? _validateName(String? value) {
     if (value == null || value.trim().isEmpty) return 'Nama tidak boleh kosong.';
     return null;
@@ -67,10 +64,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
-  // ---------------------------------------------------------------------------
-  // Submit
-  // ---------------------------------------------------------------------------
-
   Future<void> _handleRegister() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
@@ -96,9 +89,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
-      // Navigate back to Login after successful registration
       _showSuccessSnackbar('Akun berhasil dibuat! Silakan masuk.');
-      Navigator.pop(context);
+      context.pop();
 
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -108,15 +100,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Snackbar helpers
-  // ---------------------------------------------------------------------------
+// TODO : add component
 
   void _showErrorSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -126,15 +116,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -149,9 +135,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // --- HEADER TEXT ---
                 Padding(
-                  padding: const EdgeInsets.only(top: 132, left: 24, right: 24),
+                  padding: const EdgeInsets.only(top: 70, left: 24, right: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -173,7 +158,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF70340C),
-                          height: 1.5,
                         ),
                       ),
                     ],
@@ -182,7 +166,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 59),
 
-                // --- FORM CARD ---
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -196,7 +179,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Field Nama
                           HapHapTextField(
                             labelText: 'Nama Lengkap',
                             hintText: 'John Doe',
@@ -208,7 +190,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Field Nomor HP
                           HapHapTextField(
                             labelText: 'Nomor HP',
                             hintText: '08123456789',
@@ -221,7 +202,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Field Email
                           HapHapTextField(
                             labelText: 'Alamat Email',
                             hintText: 'PuyPuy@gmail.com',
@@ -233,7 +213,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Field Kata Sandi
                           HapHapTextField(
                             labelText: 'Kata Sandi',
                             hintText: 'Min. 8 karakter',
@@ -245,7 +224,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Field Konfirmasi Kata Sandi
                           HapHapTextField(
                             labelText: 'Konfirmasi Kata Sandi',
                             hintText: 'Ulangi kata sandi',
@@ -257,7 +235,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Persetujuan Syarat & Ketentuan
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -287,7 +264,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         fontFamily: 'Plus Jakarta Sans',
                                         fontSize: 14,
                                         color: AppColors.black,
-                                        height: 1.4,
                                       ),
                                       children: [
                                         TextSpan(
@@ -307,7 +283,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Tombol Daftar
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -345,7 +320,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const Spacer(),
                           const SizedBox(height: 32),
 
-                          // Divider
                           Row(
                             children: [
                               Expanded(child: Divider(color: AppColors.greyLight)),
@@ -366,7 +340,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Tombol Google
                           Center(
                             child: Container(
                               width: 64,
@@ -384,7 +357,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               child: IconButton(
                                 onPressed: () {
-                                  // TODO: Handle Google Register (requires google_sign_in package)
+                                  // TODO: Handle Google Register
                                 },
                                 icon: Image.asset(
                                   'assets/images/google_logo.png',
@@ -397,10 +370,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Footer
                           Center(
                             child: GestureDetector(
-                              onTap: () => Navigator.pop(context),
+                              onTap: () => context.pop(),
                               child: RichText(
                                 text: const TextSpan(
                                   text: 'Sudah punya akun? ',
