@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_aktivitas.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_akun.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_beranda.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_add_menu.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu_list.dart';
 import 'package:haphap_fe/presentation/widgets/dialog/merchant_delete_menu_dialog.dart';
 import 'package:haphap_fe/presentation/widgets/dialog/merchant_edit_menu_dialog.dart';
-import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 
 // --- IMPORT HALAMAN TUJUAN NAVIGASI ---
@@ -21,7 +17,6 @@ class MenuMerchantPage extends StatefulWidget {
 }
 
 class _MenuMerchantPageState extends State<MenuMerchantPage> {
-  int _currentNavIndex = 1; // Index 1 untuk Tab Menu
 
   void _showAddMenuDialog() {
     showDialog(
@@ -123,42 +118,6 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
         shape: const CircleBorder(),
         elevation: 4,
         child: const Icon(Icons.add, color: AppColors.white, size: 32),
-      ),
-      
-      // 5. BOTTOM NAVIGATION BAR DENGAN ROUTING
-      bottomNavigationBar: HapHapNavBar(
-        currentIndex: _currentNavIndex,
-        type: NavBarType.merchant, 
-        onTap: (index) {
-          if (_currentNavIndex == index) return;
-          
-          setState(() => _currentNavIndex = index);
-
-          // --- LOGIKA PERPINDAHAN HALAMAN ---
-          switch (index) {
-            case 0: // Index 0 = Beranda
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const BerandaMerchantPage()),
-              );
-              break;
-            case 1: // Index 1 = Menu
-              // Sudah berada di halaman ini, jadi tidak melakukan apa-apa
-              break;
-            case 2: // Index 2 = Aktivitas
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const AktivitasMerchantPage()),
-              );
-              break;
-            case 3: // Index 3 = Akun
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const AkunMerchantPage()),
-              );
-              break;
-          }
-        },
       ),
     );
   }
