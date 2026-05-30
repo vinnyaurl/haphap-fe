@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_aktivitas.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_beranda.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_menu.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_notifikasi.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_statistik.dart';
-import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 
 class AkunMerchantPage extends StatefulWidget {
   const AkunMerchantPage({super.key});
@@ -15,7 +11,6 @@ class AkunMerchantPage extends StatefulWidget {
 }
 
 class _AkunMerchantPageState extends State<AkunMerchantPage> {
-  int _currentNavIndex = 3; // Index 3 untuk Tab Akun
 
   @override
   Widget build(BuildContext context) {
@@ -55,24 +50,14 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                   icon: Icons.info, 
                   title: 'Statistik',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const StatistikMerchantPage(),
-                      ),
-                    );
+                    context.push(AppRoutes.merchantStatistik);
                   },
                 ),
                 _MenuItemData(
                   icon: Icons.notifications,
                   title: 'Notifications',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const NotifikasiMerchantPage(),
-                      ),
-                    );
+                    context.push(AppRoutes.merchantNotifikasi);
                   },
                 ),
               ]),
@@ -113,45 +98,6 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
             ],
           ),
         ),
-      ),
-      
-      // 5. BOTTOM NAVIGATION BAR DENGAN ROUTING LENGKAP
-      bottomNavigationBar: HapHapNavBar(
-        currentIndex: _currentNavIndex,
-        type: NavBarType.merchant, 
-        onTap: (index) {
-          if (_currentNavIndex == index) return;
-          
-          setState(() => _currentNavIndex = index);
-
-          // --- LOGIKA PERPINDAHAN HALAMAN ---
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const BerandaMerchantPage()),
-              );
-              break;
-            case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const MenuMerchantPage()),
-              );
-              break;
-            case 2:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const AktivitasMerchantPage()),
-              );
-              break;
-            case 3:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const AkunMerchantPage()),
-              );
-              break;
-          }
-        },
       ),
     );
   }

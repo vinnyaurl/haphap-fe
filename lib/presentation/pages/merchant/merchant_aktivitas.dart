@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_akun.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_beranda.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_menu.dart';
-import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; 
 
 // --- IMPORT HALAMAN LAIN UNTUK NAVIGASI ---
 // Sesuaikan path ini dengan folder kamu yang sebenarnya
-import 'package:haphap_fe/presentation/pages/customer/aktivitas/laporan_transaksi.dart'; 
 
 class AktivitasMerchantPage extends StatefulWidget {
   const AktivitasMerchantPage({super.key});
@@ -19,7 +16,6 @@ class AktivitasMerchantPage extends StatefulWidget {
 }
 
 class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
-  int _currentNavIndex = 2; // Aktivitas = Index 2
   int _currentTabIndex = 0;
 
   // ===========================================================================
@@ -105,40 +101,6 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
           ],
         ),
       ),
-      bottomNavigationBar: HapHapNavBar(
-        currentIndex: _currentNavIndex,
-        type: NavBarType.merchant, 
-        onTap: (index) {
-          if (_currentNavIndex == index) return;
-
-          setState(() => _currentNavIndex = index);
-
-          // --- NAVIGASI NAVBAR ---
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const BerandaMerchantPage()),
-              );
-              break;
-            case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const MenuMerchantPage()),
-              );
-              break;
-            case 2:
-              // Sudah di halaman Aktivitas
-              break;
-            case 3:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const AkunMerchantPage()),
-              );
-              break;
-          }
-        },
-      ),
     );
   }
 
@@ -155,10 +117,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
           GestureDetector(
             // --- NAVIGASI KE LAPORAN TRANSAKSI ---
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LaporanTransaksiPage()),
-              );
+              context.push(AppRoutes.laporanTransaksi);
             },
             child: Container(
               padding: const EdgeInsets.all(8),
