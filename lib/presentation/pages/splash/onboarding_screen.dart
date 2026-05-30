@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/pages/auth/login_screen.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/onboarding_buttons.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -80,7 +81,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+    context.go(AppRoutes.login);
   }
 
   void _onSkip() {
@@ -119,7 +120,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Align(
               alignment: Alignment.topRight,
               child: Padding(
-                padding: const EdgeInsets.only(top: 83, right: 24),
+                padding: const EdgeInsets.only(top: 21, right: 24),
                 child: HapHapSkipButton(
                   onPressed: _onSkip,
                   isWhiteVariant: page.backgroundColor == AppColors.primary,
@@ -210,10 +211,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Data models
-// ---------------------------------------------------------------------------
 
 class OnboardingData {
   final String imagePath;
