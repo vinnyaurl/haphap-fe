@@ -69,19 +69,19 @@ class HapHapMenuCard extends StatelessWidget {
                   ],
                 ),
                 
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 
                 Text(
                   description,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     color: AppColors.greyDark,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 
-                const Spacer(),
+                const SizedBox(height: 12),
                 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
