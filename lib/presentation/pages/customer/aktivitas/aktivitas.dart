@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
-import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_lainnya.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart'; 
-import 'package:haphap_fe/presentation/pages/customer/aktivitas/laporan_transaksi.dart';
-import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.dart';
 
 class AktivitasPage extends StatefulWidget {
   const AktivitasPage({super.key});
@@ -19,7 +15,6 @@ class AktivitasPage extends StatefulWidget {
 }
 
 class _AktivitasPageState extends State<AktivitasPage> {
-  int _currentNavIndex = 2;
   int _currentTabIndex = 0;
 
   bool hasOrders = true; 

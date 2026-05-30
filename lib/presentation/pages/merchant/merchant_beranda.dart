@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_menu.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_statistik.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_add_stock.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu.dart';
@@ -218,7 +216,7 @@ class _FiturSection extends StatelessWidget {
                 iconPath: AppIcons.menu,
                 label: 'Menu',
                 onTap: () {
-                  context.push(AppRoutes.merchantMenu);
+                  context.go(AppRoutes.merchantMenu);
                 },
               ),
               const SizedBox(width: _BerandaMerchantLayout.categoryItemSpacing),
