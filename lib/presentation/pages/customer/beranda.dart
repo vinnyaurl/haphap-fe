@@ -1,69 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
-import 'package:haphap_fe/presentation/pages/customer/aktivitas/aktivitas.dart';
-
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
-import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 
-// ---------------------------------------------------------------------------
-// Layout constants
-// ---------------------------------------------------------------------------
-class _BerandaLayout {
-  // Hero section
-  static const double heroTopPadding = 83;
-  static const double heroHorizontalPadding = 24;
-  static const double heroSearchToTagline = 47;
-  static const double heroTaglineToDiskon = 16;
-  static const double heroDiskonToCards = 47;
-  static const double heroCardsToKategori = 32;
-  static const double heroOrangeBgBottomCut = 120;
-
-  // Mascot
-  static const double mascotWidth = 192;
-  static const double mascotHeight = 198;
-  static const double mascotRight = -30; 
-  static const double mascotTop = -55;
-
-  // Stats cards
-  static const double statCardSpacing = 16;
-
-  // Category & restaurant sections
-  static const double sectionHorizontalPadding = 24;
-  static const double categoryItemSpacing = 20;
-  static const double restaurantCardSpacing = 16;
-  static const double sectionTitleToContent = 16;
-  static const double kategoriToSekitar = 32;
-
-  // Bottom padding 
-  static const double bottomScrollPadding = 80;
-}
-
-// ---------------------------------------------------------------------------
-// Content constants
-// ---------------------------------------------------------------------------
-class _BerandaContent {
-  static const String searchHint = 'Mau makan apa hari ini?';
-  static const String tagline = 'Selalu hemat beli\nmakanan pakai HapHap.';
-  static const String discountCta = 'Lihat diskon selengkapnya disini';
-  static const String mascotPath = 'assets/images/puy_beranda1.png';
-
-  static const String statsSavingsTitle = 'Berhasil Hemat';
-  static const String statsSavingsPrefix = 'Rp ';
-  static const String statsSavingsValue = '67.6rb';
-  static const String statsSavingsSubtitle = 'Sejak 6 Juli 2026';
-
-  static const String statsSavedTitle = 'Berhasil Selamatin';
-  static const String statsSavedValue = '67 Porsi';
-  static const String statsSavedSubtitle = 'Sejak 6 Juli 2026';
-}
-
-// ---------------------------------------------------------------------------
-// Main page
-// ---------------------------------------------------------------------------
 class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
 
@@ -72,7 +14,6 @@ class BerandaPage extends StatefulWidget {
 }
 
 class _BerandaPageState extends State<BerandaPage> {
-  int _currentNavIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -91,45 +32,10 @@ class _BerandaPageState extends State<BerandaPage> {
           ],
         ),
       ),
-bottomNavigationBar: HapHapNavBar(
-        currentIndex: _currentNavIndex,
-        type: NavBarType.user,
-        onTap: (index) {
- 
-          if (_currentNavIndex == index) return;
-
-          setState(() => _currentNavIndex = index);
-
-          switch (index) {
-            case 0:
-              // TODO: Navigate to Beranda screen 
-              break;
-            case 1:
-              // TODO: Navigate to Jelajah screen
-              break;
-            case 2:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AktivitasPage(),
-                ),
-              );
-              break;
-            case 3:
-              // TODO: Navigate to Akun screen
-              break;
-            default:
-              break;
-          }
-        },
-      ),
     );
   }
 }
 
-// ---------------------------------------------------------------------------
-// Hero section
-// ---------------------------------------------------------------------------
 class _HeroSection extends StatelessWidget {
   const _HeroSection();
 
@@ -138,7 +44,6 @@ class _HeroSection extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Orange background 
         Positioned(
           top: 0,
           left: 0,
@@ -213,7 +118,6 @@ class _TaglineWithMascot extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Text column 
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -231,7 +135,7 @@ class _TaglineWithMascot extends StatelessWidget {
               children: const [
                 Text(
                   _BerandaContent.discountCta,
-                  style: TextStyle(fontSize: 12, color: AppColors.white),
+                  style: TextStyle(fontSize: 14, color: AppColors.white),
                 ),
                 SizedBox(width: 4),
                 Icon(Icons.chevron_right, color: AppColors.white, size: 16),
@@ -240,7 +144,6 @@ class _TaglineWithMascot extends StatelessWidget {
           ],
         ),
 
-        // Mascot
         Positioned(
           right: _BerandaLayout.mascotRight,
           top: _BerandaLayout.mascotTop,
@@ -286,9 +189,6 @@ class _StatsRow extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Kategori section
-// ---------------------------------------------------------------------------
 class _KategoriSection extends StatelessWidget {
   const _KategoriSection();
 
@@ -354,9 +254,6 @@ class _KategoriSection extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Sekitar Kamu section
-// ---------------------------------------------------------------------------
 class _SekitarKamuSection extends StatelessWidget {
   const _SekitarKamuSection();
 
@@ -402,9 +299,6 @@ class _SekitarKamuSection extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Shared small widgets
-// ---------------------------------------------------------------------------
 class _SectionTitle extends StatelessWidget {
   final String text;
   const _SectionTitle({required this.text});
@@ -420,4 +314,45 @@ class _SectionTitle extends StatelessWidget {
       ),
     );
   }
+}
+
+class _BerandaLayout {
+  static const double heroTopPadding = 21;
+  static const double heroHorizontalPadding = 24;
+  static const double heroSearchToTagline = 47;
+  static const double heroTaglineToDiskon = 16;
+  static const double heroDiskonToCards = 47;
+  static const double heroCardsToKategori = 32;
+  static const double heroOrangeBgBottomCut = 120;
+
+  static const double mascotWidth = 192;
+  static const double mascotHeight = 198;
+  static const double mascotRight = -30; 
+  static const double mascotTop = -55;
+
+  static const double statCardSpacing = 16;
+
+  static const double sectionHorizontalPadding = 24;
+  static const double categoryItemSpacing = 20;
+  static const double restaurantCardSpacing = 16;
+  static const double sectionTitleToContent = 16;
+  static const double kategoriToSekitar = 32;
+
+  static const double bottomScrollPadding = 80;
+}
+
+class _BerandaContent {
+  static const String searchHint = 'Mau makan apa hari ini?';
+  static const String tagline = 'Selalu hemat beli\nmakanan pakai HapHap.';
+  static const String discountCta = 'Lihat diskon selengkapnya disini';
+  static const String mascotPath = 'assets/images/puy_beranda1.png';
+
+  static const String statsSavingsTitle = 'Berhasil Hemat';
+  static const String statsSavingsPrefix = 'Rp ';
+  static const String statsSavingsValue = '67.6rb';
+  static const String statsSavingsSubtitle = 'Sejak 6 Juli 2026';
+
+  static const String statsSavedTitle = 'Berhasil Selamatin';
+  static const String statsSavedValue = '67 Porsi';
+  static const String statsSavedSubtitle = 'Sejak 6 Juli 2026';
 }
