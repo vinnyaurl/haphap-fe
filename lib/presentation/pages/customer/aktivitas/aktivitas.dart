@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
@@ -60,36 +62,6 @@ class _AktivitasPageState extends State<AktivitasPage> {
           ],
         ),
       ),
-      bottomNavigationBar: HapHapNavBar(
-        currentIndex: _currentNavIndex, 
-        type: NavBarType.user,
-        onTap: (index) {
-          if (_currentNavIndex == index) return;
-
-          setState(() {
-            _currentNavIndex = index;
-          });
-
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const BerandaPage(),
-                ),
-              );
-              break;
-            case 1:
-              // TODO: Navigate to Jelajah screen
-              break;
-            case 2:
-              break;
-            case 3:
-              // TODO: Navigate to Akun screen
-              break;
-          }
-        },
-      ),
     );
   }
 
@@ -110,12 +82,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
           ),
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LaporanTransaksiPage(),
-                ),
-              );
+              context.push(AppRoutes.laporanTransaksi);
             },
             child: Container(
               padding: const EdgeInsets.all(8),
@@ -181,10 +148,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: false)),
-              );
+              context.push(AppRoutes.detailPesanan);
             },
             child: const HapHapAktivitasCard(
               statusText: 'Makanan lagi disiapin nih!',
@@ -198,10 +162,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
           
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: false)),
-              );
+              context.push(AppRoutes.detailPesanan);
             },
             child: const HapHapAktivitasCard(
               statusText: 'Makanan lagi dikonfirmasi nih!',
@@ -215,10 +176,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
           
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: false)),
-              );
+              context.push(AppRoutes.detailPesanan);
             },
             child: const HapHapAktivitasCard(
               statusText: 'Makanan sudah siap nih!',
@@ -238,10 +196,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: true)),
-            );
+            context.push(AppRoutes.detailPesanan);
           },
           child: HapHapRiwayatCard(
             imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400', 
@@ -259,10 +214,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
         
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DetailPesananPage(isCompleted: true)),
-            );
+            context.push(AppRoutes.detailPesanan);
           },
           child: HapHapRiwayatCard(
             imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
