@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
@@ -12,7 +13,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: appRouter,
+      // routerConfig: appRouter,
+      routerConfig: _debugRouter,
       debugShowCheckedModeBanner: false,
       title: 'HapHap',
       theme: ThemeData(
@@ -22,3 +24,9 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+final _debugRouter = GoRouter(
+  initialLocation: AppRoutes.merchantBeranda,
+  routes: appRouter.configuration.routes,
+);
