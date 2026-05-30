@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/auth_service.dart';
-import 'package:haphap_fe/presentation/pages/auth/register_screen.dart';
-import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -28,10 +28,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ---------------------------------------------------------------------------
-  // Validation helpers
-  // ---------------------------------------------------------------------------
-
   String? _validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) return 'Email tidak boleh kosong.';
     final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,}$');
@@ -44,12 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  // ---------------------------------------------------------------------------
-  // Submit
-  // ---------------------------------------------------------------------------
-
   Future<void> _handleLogin() async {
-    // Validate all fields first
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isLoading = true);
@@ -62,16 +53,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
-      // BE returned success: false inside a 2xx (edge case guard)
       if (!response.success) {
         _showErrorSnackbar(response.message);
         return;
       }
 
-      // TODO: Save token from response.data?.token if needed
-      // e.g. SharedPreferences.getInstance().then((prefs) => prefs.setString('token', response.data?.token ?? ''));
+      // TODO: Save Token
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const BerandaPage()));
+      context.go(AppRoutes.beranda);
       _showSuccessSnackbar('Login berhasil! Selamat datang.');
 
     } on ApiException catch (e) {
@@ -82,15 +71,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Snackbar helpers
-  // ---------------------------------------------------------------------------
 
+// TODO : add component 
   void _showErrorSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -100,15 +87,11 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -123,9 +106,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // --- HEADER TEXT ---
                 Padding(
-                  padding: const EdgeInsets.only(top: 132, left: 24, right: 24),
+                  padding: const EdgeInsets.only(top: 70, left: 24, right: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -147,7 +129,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF70340C),
-                          height: 1.5,
                         ),
                       ),
                     ],
@@ -156,7 +137,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 59),
 
-                // --- FORM CARD ---
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -192,7 +172,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Ingat Saya & Lupa Password
                           Row(
                             children: [
                               SizedBox(
@@ -239,7 +218,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Tombol Masuk
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -315,7 +293,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               child: IconButton(
                                 onPressed: () {
-                                  // TODO: Handle Google Login (requires google_sign_in package)
+                                  // TODO: Google Login
                                 },
                                 icon: Image.asset(
                                   'assets/images/google_logo.png',
@@ -328,16 +306,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Footer
                           Center(
                             child: GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const RegisterScreen(),
-                                  ),
-                                );
+                                context.push(AppRoutes.register);
                               },
                               child: RichText(
                                 text: const TextSpan(
