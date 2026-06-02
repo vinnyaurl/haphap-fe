@@ -1,4 +1,6 @@
 import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/presentation/pages/customer/akun/edit_profil.dart';
+import 'package:haphap_fe/presentation/pages/customer/akun/statistik.dart';
 import 'package:haphap_fe/presentation/shell/merchant_shell.dart';
 import 'package:haphap_fe/presentation/shell/user_shell.dart';
 
@@ -12,7 +14,8 @@ import 'package:haphap_fe/presentation/pages/customer/jelajah.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/aktivitas.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/laporan_transaksi.dart';
-import 'package:haphap_fe/presentation/pages/customer/akun.dart';
+import 'package:haphap_fe/presentation/pages/customer/akun/akun.dart';
+
 
 // --- IMPORT DUA HALAMAN BARU KITA DI SINI ---
 import 'package:haphap_fe/presentation/pages/customer/detail_restaurant.dart';
@@ -39,6 +42,8 @@ class AppRoutes {
   static const String akun = '/akun';
   static const String detailPesanan = '/detail';
   static const String laporanTransaksi = '/laporan';
+  static const String editProfil = '/edit-profil';
+  static const String statistik = '/statistik';
   
   // --- KONSTAN RUTE BARU ---
   static const String detailRestoran = '/detail-restoran';
@@ -80,7 +85,6 @@ final appRouter = GoRouter(
       path: AppRoutes.laporanTransaksi,
       builder: (context, state) => const LaporanTransaksiPage(),
     ),
-    
     GoRoute(
       path: AppRoutes.detailRestoran,
       builder: (context, state) => const DetailRestoranPage(),
@@ -88,6 +92,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.checkout,
       builder: (context, state) => const CheckoutPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.editProfil,
+      builder: (context, state) => const EditProfilPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.statistik,
+      builder: (context, state) => const StatistikPage(),
     ),
 
     GoRoute(
