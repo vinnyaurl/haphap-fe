@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/widgets/dialog/menu_detail_bottom_sheet.dart'; 
 
 class HapHapMenuCard extends StatelessWidget {
   final String imageUrl;
@@ -38,12 +39,27 @@ class HapHapMenuCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: _buildImage(isOutOfStock),
+          // --- GAMBAR DIBUNGKUS GESTURE DETECTOR ---
+          GestureDetector(
+            onTap: () {
+              // Panggil Bottom Sheet saat gambar diklik!
+              showMenuDetailBottomSheet(
+                context,
+                imageUrl: imageUrl,
+                title: title,
+                description: description,
+                price: price,
+                onAddToCart: onAdd, // Lempar fungsi tambah ke keranjang
+              );
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: _buildImage(isOutOfStock),
+            ),
           ),
           
           const SizedBox(width: 16),
+// ... sisa kode Expanded ke bawah biarkan sama persis
           
           Expanded(
             child: Column(

@@ -24,8 +24,9 @@ class HapHapCategoryPill extends StatelessWidget {
           color: isSelected ? AppColors.primary : AppColors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.greyLight.withValues(alpha: 0.05),
-            width: 1,
+            // --- FULL PAKAI APP COLORS ---
+            color: isSelected ? AppColors.primary : AppColors.greyLight,
+            width: 0.25,
           ),
         ),
         child: Text(
@@ -33,7 +34,8 @@ class HapHapCategoryPill extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected ? AppColors.white : AppColors.greyLight,
+            // --- FULL PAKAI APP COLORS ---
+            color: isSelected ? AppColors.white : AppColors.greyDark,
           ),
         ),
       ),
