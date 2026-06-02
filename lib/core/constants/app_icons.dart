@@ -18,4 +18,6 @@ class AppIcons {
   static const String nav_aktivitas = 'assets/icons/nav_aktivitas.svg';
   static const String nav_akun = 'assets/icons/nav_akun.svg';
   static const String nav_menu = 'assets/icons/nav_menu.svg';
+
+  static const String QRIS = 'assets/icons/QRIS.svg';
 }

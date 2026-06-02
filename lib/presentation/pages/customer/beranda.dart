@@ -5,6 +5,8 @@ import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
+import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 
 class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
@@ -274,22 +276,39 @@ class _SekitarKamuSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: _BerandaLayout.sectionHorizontalPadding,
           ),
-          child: const Row(
+          // HILANGKAN 'const' pada Row karena ada context.push yang bersifat dinamis
+          child: Row(
             children: [
-              HapHapRestaurantCard(
-                imageUrl:
-                    'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                distanceTime: '1.67 km · 67 menit',
-                restaurantName: 'Cal\'s Chicken Bowl',
-                ratingText: '4.8 · 6,7 rb+ rating',
+              // --- KARTU 1 DIBUNGKUS GESTURE DETECTOR ---
+              GestureDetector(
+                onTap: () {
+                  // Lempar ke halaman detail restoran!
+                  context.push(AppRoutes.detailRestoran);
+                },
+                child: const HapHapRestaurantCard(
+                  imageUrl:
+                      'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                  distanceTime: '1.67 km · 67 menit',
+                  restaurantName: 'Cal\'s Chicken Bowl',
+                  ratingText: '4.8 · 6,7 rb+ rating',
+                ),
               ),
-              SizedBox(width: _BerandaLayout.restaurantCardSpacing),
-              HapHapRestaurantCard(
-                imageUrl:
-                    'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=400',
-                distanceTime: '2.1 km · 15 menit',
-                restaurantName: 'Bakery Enak Jaya',
-                ratingText: '4.9 · 1,2 rb+ rating',
+              
+              const SizedBox(width: _BerandaLayout.restaurantCardSpacing),
+              
+              // --- KARTU 2 DIBUNGKUS GESTURE DETECTOR ---
+              GestureDetector(
+                onTap: () {
+                  // Lempar ke halaman detail restoran juga
+                  context.push(AppRoutes.detailRestoran);
+                },
+                child: const HapHapRestaurantCard(
+                  imageUrl:
+                      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=400',
+                  distanceTime: '2.1 km · 15 menit',
+                  restaurantName: 'Bakery Enak Jaya',
+                  ratingText: '4.9 · 1,2 rb+ rating',
+                ),
               ),
             ],
           ),

@@ -14,6 +14,10 @@ import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.d
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/laporan_transaksi.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun.dart';
 
+// --- IMPORT DUA HALAMAN BARU KITA DI SINI ---
+import 'package:haphap_fe/presentation/pages/customer/detail_restaurant.dart';
+import 'package:haphap_fe/presentation/pages/customer/checkout.dart';
+
 import 'package:haphap_fe/presentation/pages/merchant/merchant_beranda.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_menu.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_aktivitas.dart';
@@ -35,6 +39,10 @@ class AppRoutes {
   static const String akun = '/akun';
   static const String detailPesanan = '/detail';
   static const String laporanTransaksi = '/laporan';
+  
+  // --- KONSTAN RUTE BARU ---
+  static const String detailRestoran = '/detail-restoran';
+  static const String checkout = '/checkout';
 
   static const String merchantBeranda = '/merchant/beranda';
   static const String merchantMenu = '/merchant/menu';
@@ -46,7 +54,7 @@ class AppRoutes {
 }
 
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.merchantBeranda,
+  initialLocation: AppRoutes.beranda,
   routes: [
     GoRoute(
       path: AppRoutes.splash,
@@ -72,7 +80,15 @@ final appRouter = GoRouter(
       path: AppRoutes.laporanTransaksi,
       builder: (context, state) => const LaporanTransaksiPage(),
     ),
-
+    
+    GoRoute(
+      path: AppRoutes.detailRestoran,
+      builder: (context, state) => const DetailRestoranPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.checkout,
+      builder: (context, state) => const CheckoutPage(),
+    ),
 
     GoRoute(
       path: AppRoutes.merchantStatistik,
@@ -82,8 +98,6 @@ final appRouter = GoRouter(
       path: AppRoutes.merchantNotifikasi,
       builder: (context, state) => const NotifikasiMerchantPage(),
     ),
-
-
 
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
@@ -98,7 +112,6 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -107,7 +120,6 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -117,7 +129,6 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -143,7 +154,6 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -152,7 +162,6 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -161,14 +170,12 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: AppRoutes.merchantAkun,
               builder: (context, state) => const AkunMerchantPage(),
-              routes: [
-              ],
+              routes: [],
             ),
           ],
         ),
@@ -176,4 +183,3 @@ final appRouter = GoRouter(
     ),
   ],
 );
-
