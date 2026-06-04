@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+
+// --- IMPORT KOMPONEN ---
 import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart'; 
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; 
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart'; // Tambahkan ini
 
 class AkunPage extends StatefulWidget {
   const AkunPage({super.key});
@@ -22,20 +25,19 @@ class _AkunPageState extends State<AkunPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Jarak konsisten 1
+            
+            // Menggunakan HapHapPageHeader agar konsisten dengan halaman lain
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                'Profil',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.white,
-                ),
+              child: HapHapPageHeader(
+                title: 'Profil',
+                showBackButton: false, // Matikan tombol back karena ini halaman tab utama
+                titleColor: AppColors.white, // Khusus di sini judulnya putih karena background oren
               ),
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Jarak konsisten 2
 
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -47,7 +49,7 @@ class _AkunPageState extends State<AkunPage> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Jarak konsisten 3
 
             Expanded(
               child: Container(
@@ -72,7 +74,7 @@ class _AkunPageState extends State<AkunPage> {
                             icon: Icons.edit,
                             title: 'Edit Profil',
                             onTap: () {
-                              context.push(AppRoutes.editProfil); // <-- INI NAVIGASINYA
+                              context.push(AppRoutes.editProfil); 
                             },
                           ),
                           _MenuItemData(
@@ -103,17 +105,23 @@ class _AkunPageState extends State<AkunPage> {
                           _MenuItemData(
                             icon: Icons.bookmark,
                             title: 'Alamat',
-                            onTap: () => print('Ke Pengaturan Alamat'),
+                            onTap: () {
+                              context.push(AppRoutes.alamat);
+                            }
                           ),
                           _MenuItemData(
                             icon: Icons.language, 
                             title: 'Bahasa',
-                            onTap: () => print('Ke Pengaturan Bahasa'),
+                            onTap: () {
+                              context.push(AppRoutes.bahasa);
+                            },
                           ),
                           _MenuItemData(
                             icon: Icons.notifications,
                             title: 'Notifications',
-                            onTap: () => print('Ke Notifikasi User'),
+                            onTap: () {
+                              context.push(AppRoutes.notifikasi);
+                            },
                           ),
                         ]),
 
@@ -124,7 +132,7 @@ class _AkunPageState extends State<AkunPage> {
                         _buildMenuCard([
                           _MenuItemData(
                             icon: Icons.store,
-                            title: 'Bergabung sebagai Merchant', // Teks diupdate sesuai desain baru
+                            title: 'Bergabung sebagai Merchant', 
                             onTap: () {
                               context.go(AppRoutes.merchantBeranda); 
                             },
@@ -154,15 +162,14 @@ class _AkunPageState extends State<AkunPage> {
                         Center(
                           child: HapHapButton(
                             text: 'Keluar',
-                            size: HapHapButtonSize.large, // Menggunakan ukuran large sesuai komponen
+                            size: HapHapButtonSize.large, 
                             onPressed: () {
-                              // Logika logout, misal lempar kembali ke halaman Login
                               context.go(AppRoutes.login);
                             },
                           ),
                         ),
 
-                        const SizedBox(height: 100), // Jarak napas bawah sebelum navbar
+                        const SizedBox(height: 100), 
                       ],
                     ),
                   ),
