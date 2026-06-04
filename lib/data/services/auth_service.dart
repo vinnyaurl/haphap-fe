@@ -42,7 +42,7 @@ class AuthService {
         final googleAuth = await googleUser.authentication;
         return googleAuth.idToken; 
       } catch (e) {
-        print('🔥 Google Sign-In Error: $e');
+        print('Google Sign-In Error: $e');
         return null; 
       }
     }
