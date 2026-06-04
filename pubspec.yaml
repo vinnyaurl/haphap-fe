@@ -40,6 +40,9 @@ dependencies:
   flutter_svg: ^2.2.3
   google_fonts: ^6.3.2
   fl_chart: ^0.68.0
+  flutter_secure_storage: ^8.0.0
+  flutter_dotenv: ^6.0.1
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +63,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - .env
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
