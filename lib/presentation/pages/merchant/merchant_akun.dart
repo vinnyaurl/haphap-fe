@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
+// --- IMPORT KOMPONEN HEADER KITA ---
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+
 class AkunMerchantPage extends StatefulWidget {
   const AkunMerchantPage({super.key});
 
@@ -17,26 +20,24 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9), // Background sedikit abu-abu agar card putihnya menonjol
       body: SafeArea(
+        bottom: false, // Disamakan agar konsisten
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
+              const SizedBox(height: 16), // Gap 16 atas
               
-              // 1. JUDUL HALAMAN
+              // 1. JUDUL HALAMAN MENGGUNAKAN KOMPONEN
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  'Akun',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black,
-                  ),
+                child: HapHapPageHeader(
+                  title: 'Akun',
+                  showBackButton: false, // Karena ini halaman utama tab, matikan tombol back
+                  fontSize: 24,          // Font dibesarkan sesuai desain aslimu
                 ),
               ),
               
-              const SizedBox(height: 32), // Gap besar setelah judul
+              const SizedBox(height: 16), // Gap 16 bawah (sebelumnya 32)
 
               // 2. SECTION: UMUM
               _buildSectionTitle('Umum'),
@@ -72,7 +73,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                   title: 'Kembali Sebagai Customer',
                   onTap: () {
                     print('Switch to Customer mode');
-                    // TODO: Arahkan ke Beranda Customer
+                    context.go(AppRoutes.beranda); // Kembali ke shell rute customer
                   },
                 ),
               ]),

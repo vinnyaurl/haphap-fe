@@ -6,8 +6,8 @@ import 'package:haphap_fe/presentation/widgets/dialog/merchant_delete_menu_dialo
 import 'package:haphap_fe/presentation/widgets/dialog/merchant_edit_menu_dialog.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 
-// --- IMPORT HALAMAN TUJUAN NAVIGASI ---
-// Sesuaikan path ini dengan folder kamu yang sebenarnya
+// --- IMPORT KOMPONEN HEADER KITA ---
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 
 class MenuMerchantPage extends StatefulWidget {
   const MenuMerchantPage({super.key});
@@ -30,25 +30,23 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Jarak 16px dari atas (status bar)
             
-            // 1. JUDUL HALAMAN
+            // 1. HEADER MENGGUNAKAN KOMPONEN
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.black,
-                ),
+              child: HapHapPageHeader(
+                title: 'Menu',
+                showBackButton: false, // Karena ini halaman utama tab, matikan tombol back
+                fontSize: 24,          // Font dibesarkan sesuai desain
               ),
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Jarak 16px dari header ke search bar
             
             // 2. SEARCH BAR 
             const Padding(
@@ -59,7 +57,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
               ),
             ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 20), // Jarak dari search bar ke list menu
             
             // 3. DAFTAR MENU
             Expanded(
