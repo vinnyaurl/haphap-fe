@@ -1,9 +1,11 @@
-import 'package:haphap_fe/core/network/api_client.dart';
-import 'package:haphap_fe/data/models/auth_response_model.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
+import 'package:haphap_fe/data/models/auth_response_model.dart';
 
 class AuthService {
+  AuthService._();
+
   static Future<AuthResponse> login({
     required String email,
     required String password,
@@ -30,20 +32,20 @@ class AuthService {
     return AuthResponse.fromJson(json);
   }
 
-  Future<String?> signInWithGoogle() async {
-      try {
-        final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID'];
-        final googleSignIn = GoogleSignIn(
-          serverClientId: webClientId,
-        );
-        await googleSignIn.signOut();
-        final googleUser = await googleSignIn.signIn();
-        if (googleUser == null) return null;
-        final googleAuth = await googleUser.authentication;
-        return googleAuth.idToken; 
-      } catch (e) {
-        print('Google Sign-In Error: $e');
-        return null; 
-      }
+  static Future<String?> signInWithGoogle() async {
+    try {
+      final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID'];
+      final googleSignIn = GoogleSignIn(serverClientId: webClientId);
+
+      await googleSignIn.signOut();
+
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) return null;
+
+      final googleAuth = await googleUser.authentication;
+      return googleAuth.idToken;
+    } catch (e) {
+      throw Exception('Google Sign-In gagal: $e');
     }
+  }
 }
