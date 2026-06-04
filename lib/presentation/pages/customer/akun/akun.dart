@@ -33,7 +33,8 @@ class _AkunPageState extends State<AkunPage> {
               child: HapHapPageHeader(
                 title: 'Profil',
                 showBackButton: false, // Matikan tombol back karena ini halaman tab utama
-                titleColor: AppColors.white, // Khusus di sini judulnya putih karena background oren
+                titleColor: AppColors.white, 
+                fontSize: 24,// Khusus di sini judulnya putih karena background oren
               ),
             ),
             

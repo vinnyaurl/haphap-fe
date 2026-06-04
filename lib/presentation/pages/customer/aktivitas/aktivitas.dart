@@ -7,6 +7,9 @@ import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart';
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_lainnya.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart'; 
 
+// --- IMPORT KOMPONEN HEADER ---
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+
 class AktivitasPage extends StatefulWidget {
   const AktivitasPage({super.key});
 
@@ -16,7 +19,6 @@ class AktivitasPage extends StatefulWidget {
 
 class _AktivitasPageState extends State<AktivitasPage> {
   int _currentTabIndex = 0;
-
   bool hasOrders = true; 
 
   @override
@@ -24,19 +26,19 @@ class _AktivitasPageState extends State<AktivitasPage> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
+        bottom: false, // Disamakan agar konsisten
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
+            const SizedBox(height: 16), // Jarak atas konsisten
 
-            const Divider(
-              color: Color(0xFFF1F1F1),
-              height: 1,
-              thickness: 1,
-            ),
-            
+            // 1. HEADER (Sudah pakai komponen)
+            _buildHeader(context),
+
+            // KUNCI: Jarak presisi 16px langsung ke Tab Bar (Divider & padding dobel dihapus)
             const SizedBox(height: 16),
 
+            // 2. TAB BAR
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapTabBar(
@@ -51,6 +53,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
 
             const SizedBox(height: 24),
 
+            // 3. KONTEN TAB
             Expanded(
               child: _buildTabContent(),
             ),
@@ -60,21 +63,25 @@ class _AktivitasPageState extends State<AktivitasPage> {
     );
   }
 
-  Widget _buildHeader() {
+  // ===========================================================================
+  // WIDGET HELPERS
+  // ===========================================================================
+
+  Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Aktivitas',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.black,
-              fontFamily: 'Plus Jakarta Sans', 
+          // HapHapPageHeader dibungkus Expanded agar mengambil sisa ruang di kiri
+          const Expanded(
+            child: HapHapPageHeader(
+              title: 'Aktivitas',
+              showBackButton: false, // Ini halaman utama navbar, jadi matikan back-nya
+              fontSize: 24,          // Font dibesarkan sesuai desain aslimu
             ),
           ),
+          
+          // Tombol Laporan Transaksi di kanan
           GestureDetector(
             onTap: () {
               context.push(AppRoutes.laporanTransaksi);
@@ -180,6 +187,8 @@ class _AktivitasPageState extends State<AktivitasPage> {
               imagePath: 'assets/images/aktivitas_puy_done.png',
             ),
           ),
+          
+          const SizedBox(height: 100), // Jarak aman bawah
         ],
       ),
     );
@@ -222,6 +231,8 @@ class _AktivitasPageState extends State<AktivitasPage> {
             },
           ),
         ),
+        
+        const SizedBox(height: 100), // Jarak aman bawah
       ],
     );
   }
@@ -234,8 +245,9 @@ class _AktivitasPageState extends State<AktivitasPage> {
           HapHapAktivitasLainnyaCard(
             title: 'HapHap lagi ada promo\nspesial nih 😋',
             subtitle: 'Ayo buruan pesan sebelum kehabisan!',
-            imagePath: 'assets/images/logo_haphap.png',
+            imagePath: 'assets/images/logo_haphap.png', // Pastikan assetnya ada
           ),
+          SizedBox(height: 100), // Jarak aman bawah
         ],
       ),
     );

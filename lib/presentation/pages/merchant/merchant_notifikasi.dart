@@ -35,7 +35,7 @@ class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
               ),
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // 2. CARD PENGATURAN NOTIFIKASI
             Padding(

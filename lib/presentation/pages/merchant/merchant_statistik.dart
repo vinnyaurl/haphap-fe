@@ -35,7 +35,7 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                 ),
               ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // 2. KARTU STATISTIK ATAS
               const Padding(
