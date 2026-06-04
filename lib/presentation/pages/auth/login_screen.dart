@@ -343,7 +343,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Tombol Google
                           Center(
                             child: Container(
                               width: 64,
