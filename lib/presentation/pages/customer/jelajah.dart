@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // Wajib import ini buat navigasi
 import 'package:haphap_fe/core/router/app_routes.dart'; // Wajib import ini buat AppRoutes
-import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
 
 // --- IMPORT KOMPONEN LEGO DARI PLAYGROUND KAMU ---

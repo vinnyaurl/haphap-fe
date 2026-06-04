@@ -5,8 +5,8 @@ import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; 
 
-// --- IMPORT HALAMAN LAIN UNTUK NAVIGASI ---
-// Sesuaikan path ini dengan folder kamu yang sebenarnya
+// --- IMPORT KOMPONEN HEADER KITA ---
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 
 class AktivitasMerchantPage extends StatefulWidget {
   const AktivitasMerchantPage({super.key});
@@ -72,14 +72,19 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
+            const SizedBox(height: 16), // Jarak 16px dari atas
+            
+            // 1. HEADER (Menggunakan komponen & struktur yang sama dengan Customer)
+            _buildHeader(context),
 
-            const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
+            // KUNCI: Jarak presisi 16px langsung ke Tab Bar (tanpa Divider)
             const SizedBox(height: 16),
 
+            // 2. TAB BAR
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: SingleChildScrollView(
@@ -96,7 +101,9 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Jarak 16px dari tab bar ke konten list
+
+            // 3. KONTEN TAB
             Expanded(child: _buildTabContent()),
           ],
         ),
@@ -104,16 +111,20 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Aktivitas',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.black),
+          // HapHapPageHeader dibungkus Expanded agar tombol di kanan nggak tergeser
+          const Expanded(
+            child: HapHapPageHeader(
+              title: 'Aktivitas',
+              showBackButton: false, // Halaman utama tab, matikan tombol back
+              fontSize: 24,          // Font besar sesuai desain
+            ),
           ),
+          
           GestureDetector(
             // --- NAVIGASI KE LAPORAN TRANSAKSI ---
             onTap: () {

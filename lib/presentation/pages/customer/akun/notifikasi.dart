@@ -5,23 +5,24 @@ import 'package:haphap_fe/core/theme/app_colors.dart';
 // --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart'; 
 
-class NotifikasiMerchantPage extends StatefulWidget {
-  const NotifikasiMerchantPage({super.key});
+class NotifikasiPage extends StatefulWidget {
+  const NotifikasiPage({super.key});
 
   @override
-  State<NotifikasiMerchantPage> createState() => _NotifikasiMerchantPageState();
+  State<NotifikasiPage> createState() => _NotifikasiPageState();
 }
 
-class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
+class _NotifikasiPageState extends State<NotifikasiPage> {
   // State untuk menyimpan nilai on/off dari masing-masing notifikasi
-  bool _isPesananOn = true;
-  bool _isBeritaOn = false;
+  bool _statusPesanan = true;
+  bool _promoDiskon = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9), // Background abu-abu muda biar card menonjol
       body: SafeArea(
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -35,6 +36,7 @@ class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
               ),
             ),
             
+            // Menyamakan jarak seperti di kode referensimu
             const SizedBox(height: 16),
 
             // 2. CARD PENGATURAN NOTIFIKASI
@@ -54,26 +56,26 @@ class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
                 ),
                 child: Column(
                   children: [
-                    // Baris 1: Pesanan
+                    // Baris 1: Status Pesanan
                     _buildNotificationTile(
                       icon: Icons.notifications,
-                      title: 'Pesanan',
-                      value: _isPesananOn,
+                      title: 'Status Pesanan',
+                      value: _statusPesanan,
                       onChanged: (newValue) {
                         setState(() {
-                          _isPesananOn = newValue;
+                          _statusPesanan = newValue;
                         });
                       },
                     ),
                     
-                    // Baris 2: Berita HapHap
+                    // Baris 2: Promo & Diskon
                     _buildNotificationTile(
-                      icon: Icons.campaign, // Icon toa/megaphone
-                      title: 'Berita HapHap',
-                      value: _isBeritaOn,
+                      icon: Icons.campaign, 
+                      title: 'Promo & Diskon',
+                      value: _promoDiskon,
                       onChanged: (newValue) {
                         setState(() {
-                          _isBeritaOn = newValue;
+                          _promoDiskon = newValue;
                         });
                       },
                     ),
