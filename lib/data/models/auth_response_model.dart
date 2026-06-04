@@ -29,20 +29,23 @@ class AuthData {
   final String? userId;
   final String? email;
   final String? name;
+  final String? role;
 
   const AuthData({
     this.token,
     this.userId,
     this.email,
     this.name,
+    this.role,
   });
 
   factory AuthData.fromJson(Map<String, dynamic> json) {
     return AuthData(
-      token: json['token'] as String?,
+      token: json['accessToken'] as String?,
       userId: json['userId'] as String?,
       email: json['email'] as String?,
       name: json['name'] as String?,
+      role: json['role'] as String?,
     );
   }
 }
