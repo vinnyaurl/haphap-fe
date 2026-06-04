@@ -27,6 +27,6 @@ class MyApp extends StatelessWidget {
 
 
 final _debugRouter = GoRouter(
-  initialLocation: AppRoutes.merchantBeranda,
+  initialLocation: AppRoutes.akun,
   routes: appRouter.configuration.routes,
 );
