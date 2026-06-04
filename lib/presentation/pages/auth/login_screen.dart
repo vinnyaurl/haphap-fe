@@ -5,6 +5,7 @@ import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/auth_service.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
+import 'package:haphap_fe/core/network/token_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,7 +30,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   String? _validateEmail(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Email tidak boleh kosong.';
+    if (value == null || value.trim().isEmpty)
+      return 'Email tidak boleh kosong.';
     final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,}$');
     if (!emailRegex.hasMatch(value.trim())) return 'Format email tidak valid.';
     return null;
@@ -58,21 +60,77 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // TODO: Save Token
+      final token = response.data?.token;
+
+      if (token != null && token.isNotEmpty) {
+        await TokenManager.saveToken(token);
+      } else {
+        _showErrorSnackbar('Token tidak ditemukan dari server.');
+        return;
+      }
 
       context.go(AppRoutes.beranda);
       _showSuccessSnackbar('Login berhasil! Selamat datang.');
-
     } on ApiException catch (e) {
       if (!mounted) return;
       _showErrorSnackbar(e.message);
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorSnackbar('Terjadi kesalahan saat menghubungi server.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
 
-// TODO : add component 
+    try {
+      final authService = AuthService();
+      final idToken = await authService.signInWithGoogle();
+
+      if (!mounted) return;
+
+      if (idToken == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // TODO: add google in backend
+      final response = await ApiClient.post('/auth/google', {
+        'idToken': idToken,
+      });
+
+      if (!mounted) return;
+
+      final data = response['data'];
+      final message = response['message'];
+
+      if (data != null && data['token'] != null) {
+        final token = data['token'] as String;
+
+        await TokenManager.saveToken(token);
+
+        _showSuccessSnackbar('Login Google berhasil! Selamat datang.');
+
+        if (!mounted)
+          return;
+        context.go(AppRoutes.beranda);
+      } else {
+        _showErrorSnackbar(message ?? 'Token tidak ditemukan dari server.');
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showErrorSnackbar(e.message);
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorSnackbar('Terjadi kesalahan saat menghubungi server.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // TODO : add component
   void _showErrorSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -142,7 +200,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(32),
+                      ),
                     ),
                     padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
                     child: Form(
@@ -180,7 +240,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Checkbox(
                                   value: _rememberMe,
                                   onChanged: (value) {
-                                    setState(() => _rememberMe = value ?? false);
+                                    setState(
+                                      () => _rememberMe = value ?? false,
+                                    );
                                   },
                                   activeColor: AppColors.primary,
                                   shape: RoundedRectangleBorder(
@@ -226,7 +288,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: AppColors.white,
-                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                disabledBackgroundColor: AppColors.primary
+                                    .withOpacity(0.6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(26),
                                 ),
@@ -254,12 +317,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Divider
                           Row(
                             children: [
-                              Expanded(child: Divider(color: AppColors.greyLight)),
+                              Expanded(
+                                child: Divider(color: AppColors.greyLight),
+                              ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Text(
                                   'Atau Lanjut Dengan',
                                   style: TextStyle(
@@ -269,7 +335,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                               ),
-                              Expanded(child: Divider(color: AppColors.greyLight)),
+                              Expanded(
+                                child: Divider(color: AppColors.greyLight),
+                              ),
                             ],
                           ),
 
@@ -292,9 +360,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                               child: IconButton(
-                                onPressed: () {
-                                  // TODO: Google Login
-                                },
+                                onPressed: _isLoading
+                                    ? null
+                                    : _handleGoogleLogin,
                                 icon: Image.asset(
                                   'assets/images/google_logo.png',
                                   width: 40,
