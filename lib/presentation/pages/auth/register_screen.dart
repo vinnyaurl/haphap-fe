@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
+import 'package:haphap_fe/core/network/token_manager.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/auth_service.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -68,7 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     if (!_isAgreed) {
-      _showErrorSnackbar('Kamu harus menyetujui Syarat & Ketentuan terlebih dahulu.');
+      AppSnackbar.showError(context, 'Kamu harus menyetujui Syarat & Ketentuan terlebih dahulu.');
       return;
     }
 
@@ -85,41 +88,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       if (!response.success) {
-        _showErrorSnackbar(response.message);
+        AppSnackbar.showError(context, response.message);
         return;
       }
 
-      _showSuccessSnackbar('Akun berhasil dibuat! Silakan masuk.');
+      AppSnackbar.showSuccess(context, 'Akun berhasil dibuat! Silakan masuk.');
       context.pop();
 
     } on ApiException catch (e) {
       if (!mounted) return;
-      _showErrorSnackbar(e.message);
+      AppSnackbar.showError(context, e.message);
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(context, 'Terjadi kesalahan saat menghubungi server.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-// TODO : add component
+  Future<void> _handleGoogleRegister() async {
+    setState(() => _isLoading = true);
 
-  void _showErrorSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+    try {
+      final idToken = await AuthService.signInWithGoogle();
 
-  void _showSuccessSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      if (!mounted) return;
+
+      if (idToken == null) return;
+
+      final response = await ApiClient.post('/auth/google', {
+        'idToken': idToken,
+      });
+
+      if (!mounted) return;
+
+      final accessToken = response['data']?['accessToken'] as String?;
+
+      if (accessToken == null || accessToken.isEmpty) {
+        AppSnackbar.showError(
+          context,
+          response['message'] as String? ?? 'Token tidak ditemukan dari server.',
+        );
+        return;
+      }
+
+      await TokenManager.saveToken(accessToken);
+
+      if (!mounted) return;
+
+      AppSnackbar.showSuccess(context, 'Akun Google berhasil terhubung! Selamat datang.');
+      context.go(AppRoutes.beranda);
+
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(context, e.message);
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(context, 'Terjadi kesalahan saat login dengan Google.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -356,9 +384,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ],
                               ),
                               child: IconButton(
-                                onPressed: () {
-                                  // TODO: Handle Google Register
-                                },
+                                onPressed: _isLoading ? null : _handleGoogleRegister,
                                 icon: Image.asset(
                                   'assets/images/google_logo.png',
                                   width: 40,
