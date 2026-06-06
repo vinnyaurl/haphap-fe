@@ -3,10 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
+// --- IMPORT SERVICE & MODEL ---
+import 'package:haphap_fe/data/services/user_service.dart';
+import 'package:haphap_fe/data/models/user_profile_model.dart';
+
 // --- IMPORT KOMPONEN ---
 import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart'; 
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
-import 'package:haphap_fe/presentation/widgets/headers/page_header.dart'; // Tambahkan ini
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 
 class AkunPage extends StatefulWidget {
   const AkunPage({super.key});
@@ -16,170 +20,218 @@ class AkunPage extends StatefulWidget {
 }
 
 class _AkunPageState extends State<AkunPage> {
+  UserProfileModel? _profile;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile(); // Panggil API saat halaman diload
+  }
+
+  Future<void> _fetchProfile() async {
+    try {
+      final profileData = await UserService.getMe();
+      setState(() {
+        _profile = profileData;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Helper untuk format "Hemat 67rb"
+  String _formatHemat(int totalSaved) {
+    if (totalSaved == 0) return 'Belum ada';
+    if (totalSaved >= 1000) {
+      return 'Hemat ${(totalSaved / 1000).toInt()}rb';
+    }
+    return 'Hemat $totalSaved';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primary, 
       body: SafeArea(
         bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16), // Jarak konsisten 1
-            
-            // Menggunakan HapHapPageHeader agar konsisten dengan halaman lain
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: HapHapPageHeader(
-                title: 'Profil',
-                showBackButton: false, // Matikan tombol back karena ini halaman tab utama
-                titleColor: AppColors.white, 
-                fontSize: 24,// Khusus di sini judulnya putih karena background oren
+        child: _isLoading 
+            ? const Center(child: CircularProgressIndicator(color: AppColors.white))
+            : _errorMessage != null
+                ? Center(
+                    child: Text(
+                      'Error: $_errorMessage', 
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  )
+                : _buildContent(context),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.0),
+          child: HapHapPageHeader(
+            title: 'Profil',
+            showBackButton: false, 
+            titleColor: AppColors.white, 
+            fontSize: 24,
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+
+        // 1. DATA DINAMIS KE KARTU PROFIL
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: HapHapProfileCard(
+            name: _profile?.name ?? 'User',
+            email: _profile?.email ?? '-',
+            phoneNumber: _profile?.phone ?? '-',
+            imageUrl: _profile?.avatar, 
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF9F9F9), 
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(32), 
+                topRight: Radius.circular(32), 
               ),
             ),
-            
-            const SizedBox(height: 16), // Jarak konsisten 2
-
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: HapHapProfileCard(
-                name: 'PUYPUY',
-                email: 'puypuy@haphap.com',
-                phoneNumber: '+6286767676767',
-                imagePath: 'assets/images/profile_image.png', 
-              ),
-            ),
-
-            const SizedBox(height: 16), // Jarak konsisten 3
-
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF9F9F9), 
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(32), 
-                    topRight: Radius.circular(32), 
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 24.0), 
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // --- SECTION 1: AKUN ---
-                        _buildSectionTitle('Akun'),
-                        _buildMenuCard([
-                          _MenuItemData(
-                            icon: Icons.edit,
-                            title: 'Edit Profil',
-                            onTap: () {
-                              context.push(AppRoutes.editProfil); 
-                            },
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 24.0), 
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- SECTION 1: AKUN ---
+                    _buildSectionTitle('Akun'),
+                    _buildMenuCard([
+                      _MenuItemData(
+                        icon: Icons.edit,
+                        title: 'Edit Profil',
+                        onTap: () {
+                          context.push(AppRoutes.editProfil); 
+                        },
+                      ),
+                      _MenuItemData(
+                        icon: Icons.info, 
+                        title: 'Statistik',
+                        // 2. DATA DINAMIS STATISTIK
+                        badge: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          _MenuItemData(
-                            icon: Icons.info, 
-                            title: 'Statistik',
-                            badge: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const Text(
-                                'Hemat 67rb',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.white),
-                              ),
-                            ),
-                            onTap: () {
-                              context.push(AppRoutes.statistik);
-                            },
-                          ),
-                        ]),
-
-                        const SizedBox(height: 32),
-
-                        // --- SECTION 2: PREFERENSI ---
-                        _buildSectionTitle('Preferensi'),
-                        _buildMenuCard([
-                          _MenuItemData(
-                            icon: Icons.bookmark,
-                            title: 'Alamat',
-                            onTap: () {
-                              context.push(AppRoutes.alamat);
-                            }
-                          ),
-                          _MenuItemData(
-                            icon: Icons.language, 
-                            title: 'Bahasa',
-                            onTap: () {
-                              context.push(AppRoutes.bahasa);
-                            },
-                          ),
-                          _MenuItemData(
-                            icon: Icons.notifications,
-                            title: 'Notifications',
-                            onTap: () {
-                              context.push(AppRoutes.notifikasi);
-                            },
-                          ),
-                        ]),
-
-                        const SizedBox(height: 32),
-
-                        // --- SECTION 3: SELEBIHNYA DARI HAPHAP ---
-                        _buildSectionTitle('Selebihnya dari HapHap'),
-                        _buildMenuCard([
-                          _MenuItemData(
-                            icon: Icons.store,
-                            title: 'Bergabung sebagai Merchant', 
-                            onTap: () {
-                              context.go(AppRoutes.merchantBeranda); 
-                            },
-                          ),
-                        ]),
-
-                        const SizedBox(height: 32),
-
-                        // --- SECTION 4: LAINNYA ---
-                        _buildSectionTitle('Lainnya'),
-                        _buildMenuCard([
-                          _MenuItemData(
-                            icon: Icons.help,
-                            title: 'Bantuan & Dukungan',
-                            onTap: () => print('Ke Bantuan'),
-                          ),
-                          _MenuItemData(
-                            icon: Icons.description, 
-                            title: 'Syarat & Ketentuan',
-                            onTap: () => print('Ke S&K'),
-                          ),
-                        ]),
-
-                        const SizedBox(height: 32),
-
-                        // --- TOMBOL KELUAR ---
-                        Center(
-                          child: HapHapButton(
-                            text: 'Keluar',
-                            size: HapHapButtonSize.large, 
-                            onPressed: () {
-                              context.go(AppRoutes.login);
-                            },
+                          child: Text(
+                            _formatHemat(_profile?.totalSaved ?? 0),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.white),
                           ),
                         ),
+                        onTap: () {
+                          context.push(AppRoutes.statistik);
+                        },
+                      ),
+                    ]),
 
-                        const SizedBox(height: 100), 
-                      ],
+                    const SizedBox(height: 32),
+
+                    // --- SECTION 2: PREFERENSI ---
+                    _buildSectionTitle('Preferensi'),
+                    _buildMenuCard([
+                      _MenuItemData(
+                        icon: Icons.bookmark,
+                        title: 'Alamat',
+                        onTap: () {
+                          context.push(AppRoutes.alamat);
+                        }
+                      ),
+                      _MenuItemData(
+                        icon: Icons.language, 
+                        title: 'Bahasa',
+                        onTap: () {
+                          context.push(AppRoutes.bahasa);
+                        },
+                      ),
+                      _MenuItemData(
+                        icon: Icons.notifications,
+                        title: 'Notifications',
+                        onTap: () {
+                          context.push(AppRoutes.notifikasi);
+                        },
+                      ),
+                    ]),
+
+                    const SizedBox(height: 32),
+
+                    // --- SECTION 3: SELEBIHNYA DARI HAPHAP ---
+                    _buildSectionTitle('Selebihnya dari HapHap'),
+                    _buildMenuCard([
+                      _MenuItemData(
+                        icon: Icons.store,
+                        title: 'Bergabung sebagai Merchant', 
+                        onTap: () {
+                          context.go(AppRoutes.merchantBeranda); 
+                        },
+                      ),
+                    ]),
+
+                    const SizedBox(height: 32),
+
+                    // --- SECTION 4: LAINNYA ---
+                    _buildSectionTitle('Lainnya'),
+                    _buildMenuCard([
+                      _MenuItemData(
+                        icon: Icons.help,
+                        title: 'Bantuan & Dukungan',
+                        onTap: () => print('Ke Bantuan'),
+                      ),
+                      _MenuItemData(
+                        icon: Icons.description, 
+                        title: 'Syarat & Ketentuan',
+                        onTap: () => print('Ke S&K'),
+                      ),
+                    ]),
+
+                    const SizedBox(height: 32),
+
+                    // --- TOMBOL KELUAR ---
+                    Center(
+                      child: HapHapButton(
+                        text: 'Keluar',
+                        size: HapHapButtonSize.large, 
+                        onPressed: () {
+                          context.go(AppRoutes.login);
+                        },
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(height: 100), 
+                  ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 

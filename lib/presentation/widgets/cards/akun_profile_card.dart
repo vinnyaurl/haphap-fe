@@ -5,18 +5,23 @@ class HapHapProfileCard extends StatelessWidget {
   final String name;
   final String email;
   final String phoneNumber;
-  final String imagePath;
+  final String? imageUrl; // Ubah jadi nullable String untuk URL
 
   const HapHapProfileCard({
     super.key,
     required this.name,
     required this.email,
     required this.phoneNumber,
-    required this.imagePath,
+    this.imageUrl, // Optional
   });
 
   @override
   Widget build(BuildContext context) {
+    // Tentukan image provider, dari network jika ada url, atau asset default
+    final imageProvider = (imageUrl != null && imageUrl!.isNotEmpty)
+        ? NetworkImage(imageUrl!) as ImageProvider
+        : const AssetImage('assets/images/profile_image.png');
+
     return Container(
       width: 354,
       height: 128,
@@ -46,7 +51,7 @@ class HapHapProfileCard extends StatelessWidget {
               shape: BoxShape.circle,
               color: const Color(0xFFF8F8F8), 
               image: DecorationImage(
-                image: AssetImage(imagePath),
+                image: imageProvider, // Gunakan provider yang sudah ditentukan
                 fit: BoxFit.cover,
               ),
             ),

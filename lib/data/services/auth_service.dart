@@ -36,7 +36,6 @@ class AuthService {
     try {
       final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID'];
       final googleSignIn = GoogleSignIn(serverClientId: webClientId);
-
       await googleSignIn.signOut();
 
       final googleUser = await googleSignIn.signIn();
