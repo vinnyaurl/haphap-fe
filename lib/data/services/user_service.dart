@@ -1,6 +1,5 @@
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/data/models/user_profile_model.dart';
-import 'package:http/http.dart';
 
 class UserService {
   UserService._();
