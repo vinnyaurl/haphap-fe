@@ -7,6 +7,9 @@ import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 // --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/data/services/order_service.dart';
+import 'package:haphap_fe/data/models/order_model.dart';
+import 'package:haphap_fe/presentation/widgets/dialog/merchant_scan_qr_dialog.dart';
 
 class AktivitasMerchantPage extends StatefulWidget {
   const AktivitasMerchantPage({super.key});
@@ -17,54 +20,38 @@ class AktivitasMerchantPage extends StatefulWidget {
 
 class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
   int _currentTabIndex = 0;
+  List<OrderModel> _orders = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  // ===========================================================================
-  // DUMMY STATE: Simulasi Database Lokal
-  // Nanti saat integrasi BE, list ini diganti dengan data dari API
-  // ===========================================================================
-  List<Map<String, dynamic>> pesananBaru = [
-    {
-      'id': 'S6I7X6S7E6V7E6N7',
-      'name': 'Anderies Nomanto',
-      'items': ['Szechuan Chicken Bowl', 'Szechuan Chicken Bowl'],
-      'price': 'Rp 25.000'
-    },
-    {
-      'id': 'S6I7X6S7E6V7E6N8',
-      'name': 'Vinny',
-      'items': ['Blackpepper Chicken Bowl'],
-      'price': 'Rp 25.000'
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrders();
+  }
+
+  Future<void> _fetchOrders() async {
+    try {
+      final orders = await OrderService.fetchOrderMerchant();
+      if (!mounted) return;
+      setState(() {
+        _orders = orders;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
     }
-  ];
-  
-  List<Map<String, dynamic>> pesananDisiapkan = [];
-  List<Map<String, dynamic>> pesananMenunggu = [];
-  List<Map<String, dynamic>> pesananSelesai = [];
-
-  // ===========================================================================
-  // FUNGSI SIMULASI PINDAH TAB
-  // ===========================================================================
-  void terimaPesanan(Map<String, dynamic> pesanan) {
-    setState(() {
-      pesananBaru.remove(pesanan);
-      pesananDisiapkan.add(pesanan);
-      _currentTabIndex = 1; // Otomatis pindah ke tab "Disiapkan"
-    });
   }
 
-  void tolakPesanan(Map<String, dynamic> pesanan) {
-    setState(() {
-      pesananBaru.remove(pesanan);
-      // Logika tolak pesanan (bisa dihapus atau masuk riwayat tersendiri)
-    });
-  }
-
-  void pesananSiapAmbil(Map<String, dynamic> pesanan) {
-    setState(() {
-      pesananDisiapkan.remove(pesanan);
-      pesananMenunggu.add(pesanan);
-      _currentTabIndex = 2; // Otomatis pindah ke tab "Menunggu"
-    });
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
   }
 
   @override
@@ -91,7 +78,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
                 scrollDirection: Axis.horizontal,
                 child: HapHapTabBar(
                   currentIndex: _currentTabIndex,
-                  tabs: const ['Baru', 'Disiapkan', 'Menunggu', 'Selesai'],
+                  tabs: const ['Menunggu Bayar', 'Siap Diambil', 'Selesai', 'Dibatalkan'],
                   onTap: (index) {
                     setState(() {
                       _currentTabIndex = index;
@@ -142,19 +129,42 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
   }
 
   Widget _buildTabContent() {
-    switch (_currentTabIndex) {
-      case 0: return _buildListPesanan(pesananBaru, MerchantOrderStatus.baru);
-      case 1: return _buildListPesanan(pesananDisiapkan, MerchantOrderStatus.disiapkan);
-      case 2: return _buildListPesanan(pesananMenunggu, MerchantOrderStatus.menunggu);
-      case 3: return _buildListPesanan(pesananSelesai, MerchantOrderStatus.selesai);
-      default: return const SizedBox();
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
+    if (_errorMessage != null) {
+      return Center(child: Text('Error: $_errorMessage'));
+    }
+
+    List<OrderModel> filteredOrders;
+    MerchantOrderStatus currentStatus;
+
+    switch (_currentTabIndex) {
+      case 0:
+        filteredOrders = _orders.where((o) => o.status == 'PENDING').toList();
+        currentStatus = MerchantOrderStatus.baru;
+        break;
+      case 1:
+        filteredOrders = _orders.where((o) => o.status == 'PAID').toList();
+        currentStatus = MerchantOrderStatus.menunggu; // Siap Diambil
+        break;
+      case 2:
+        filteredOrders = _orders.where((o) => o.status == 'COMPLETED').toList();
+        currentStatus = MerchantOrderStatus.selesai;
+        break;
+      case 3:
+      default:
+        filteredOrders = _orders.where((o) => o.status == 'CANCELLED').toList();
+        currentStatus = MerchantOrderStatus.dibatalkan;
+        break;
+    }
+
+    return _buildListPesanan(filteredOrders, currentStatus);
   }
 
-  // Fungsi dinamis untuk me-render list sesuai tab yang aktif
-  Widget _buildListPesanan(List<Map<String, dynamic>> pesananList, MerchantOrderStatus status) {
+  Widget _buildListPesanan(List<OrderModel> pesananList, MerchantOrderStatus status) {
     if (pesananList.isEmpty) {
-      return Center(
+      return const Center(
         child: Text(
           'Belum ada pesanan.',
           style: TextStyle(color: AppColors.greyDark, fontSize: 14),
@@ -166,18 +176,29 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       itemCount: pesananList.length,
       itemBuilder: (context, index) {
-        final pesanan = pesananList[index];
+        final order = pesananList[index];
+        final itemsList = order.orderItems.map((i) => '${i.quantity}x ${i.name}').toList();
+        
         return Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
           child: HapHapMerchantOrderCard(
             status: status,
-            customerName: pesanan['name'],
-            orderId: pesanan['id'],
-            items: List<String>.from(pesanan['items']),
-            totalPrice: pesanan['price'],
-            onAccept: () => terimaPesanan(pesanan),
-            onReject: () => tolakPesanan(pesanan),
-            onReady: () => pesananSiapAmbil(pesanan),
+            customerName: 'Customer', // User name is not included in backend OrderMerchantInfo sadly
+            orderId: order.orderId,
+            items: itemsList,
+            totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
+            onAccept: () {
+              if (status == MerchantOrderStatus.menunggu) {
+                showDialog(
+                  context: context,
+                  builder: (context) => HapHapScanQRDialog(orderId: order.orderId),
+                ).then((success) {
+                  if (success == true) {
+                    _fetchOrders(); // Refresh setelah berhasil scan
+                  }
+                });
+              }
+            },
           ),
         );
       },
@@ -188,7 +209,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
 // ============================================================================
 // KOMPONEN: KARTU ORDER MERCHANT
 // ============================================================================
-enum MerchantOrderStatus { baru, disiapkan, menunggu, selesai }
+enum MerchantOrderStatus { baru, menunggu, selesai, dibatalkan }
 
 class HapHapMerchantOrderCard extends StatelessWidget {
   final MerchantOrderStatus status;
@@ -220,24 +241,24 @@ class HapHapMerchantOrderCard extends StatelessWidget {
 
     switch (status) {
       case MerchantOrderStatus.baru:
-        badgeText = 'BARU';
-        badgeColor = Colors.red;
-        badgeBgColor = const Color(0xFFFFEBEB);
-        break;
-      case MerchantOrderStatus.disiapkan:
-        badgeText = 'SEDANG DISIAPKAN';
-        badgeColor = const Color(0xFFF2994A); 
+        badgeText = 'MENUNGGU BAYAR';
+        badgeColor = const Color(0xFFF2994A);
         badgeBgColor = const Color(0xFFFFF6ED);
         break;
       case MerchantOrderStatus.menunggu:
-        badgeText = 'MENUNGGU PENGAMBILAN';
-        badgeColor = Colors.red;
-        badgeBgColor = const Color(0xFFFFEBEB);
+        badgeText = 'SIAP DIAMBIL';
+        badgeColor = const Color(0xFFF2994A); 
+        badgeBgColor = const Color(0xFFFFF6ED);
         break;
       case MerchantOrderStatus.selesai:
         badgeText = 'SELESAI';
         badgeColor = Colors.green;
         badgeBgColor = const Color(0xFFE8F5E9);
+        break;
+      case MerchantOrderStatus.dibatalkan:
+        badgeText = 'DIBATALKAN';
+        badgeColor = Colors.red;
+        badgeBgColor = const Color(0xFFFFEBEB);
         break;
     }
 
@@ -328,7 +349,7 @@ class HapHapMerchantOrderCard extends StatelessWidget {
               ],
             ),
           ),
-          if (status == MerchantOrderStatus.baru) ...[
+          if (status == MerchantOrderStatus.menunggu) ...[
             const SizedBox(height: 16),
             const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
             const SizedBox(height: 16),
@@ -346,28 +367,11 @@ class HapHapMerchantOrderCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: HapHapButton(
-                      text: 'Terima',
+                      text: 'Scan QR Pengambil',
                       onPressed: onAccept ?? () {},
                     ),
                   ),
                 ],
-              ),
-            ),
-          ] else if (status == MerchantOrderStatus.disiapkan) ...[
-            const SizedBox(height: 16),
-            const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                  width: 140,
-                  child: HapHapButton(
-                    text: 'Siap Ambil',
-                    onPressed: onReady ?? () {},
-                  ),
-                ),
               ),
             ),
           ]

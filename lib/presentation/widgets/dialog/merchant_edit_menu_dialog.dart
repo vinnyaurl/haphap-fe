@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/data/services/surplus_service.dart';
 
 class HapHapEditMenuDialog extends StatefulWidget {
+  final String surplusItemId;
   final String initialName;
   final String initialPrice;
   final String initialDesc;
 
   const HapHapEditMenuDialog({
     super.key,
+    required this.surplusItemId,
     required this.initialName,
     required this.initialPrice,
     required this.initialDesc,
@@ -23,6 +26,7 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
   late TextEditingController _priceController;
   late TextEditingController _descController;
   final TextEditingController _imageController = TextEditingController();
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -116,9 +120,26 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
                 child: HapHapButton(
                   text: 'Simpan Perubahan',
                   size: HapHapButtonSize.large,
-                  onPressed: () {
-                    print('Update menu menjadi: ${_nameController.text}');
-                    Navigator.pop(context);
+                  isLoading: _isSaving,
+                  onPressed: () async {
+                    setState(() => _isSaving = true);
+                    try {
+                      await SurplusService.update(widget.surplusItemId, {
+                        'name': _nameController.text,
+                        'description': _descController.text,
+                        'discountPrice': int.tryParse(_priceController.text) ?? 0,
+                        if (_imageController.text.isNotEmpty) 'image': _imageController.text,
+                      });
+                      if (!mounted) return;
+                      setState(() => _isSaving = false);
+                      Navigator.pop(context, true);
+                    } catch (e) {
+                      if (!mounted) return;
+                      setState(() => _isSaving = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Gagal edit menu: $e')),
+                      );
+                    }
                   },
                 ),
               ),

@@ -107,7 +107,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         return;
       }
 
-      final payment = await PaymentService.createPayment(order.orderId);
+      final payment = await PaymentService.createPayment(order['orderId']);
 
       if (!mounted) return;
 

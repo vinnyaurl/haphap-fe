@@ -104,7 +104,7 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
     context.push(
       AppRoutes.checkout,
       extra: CheckoutArgs(
-        merchantId: _merchant!.merchantId,
+        merchantId: widget.merchantId,
         merchantName: _merchant!.merchantName,
         cart: Map<String, int>.from(_cart),
         items: _merchant!.surplusItems,
