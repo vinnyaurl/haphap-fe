@@ -8,13 +8,15 @@ class HapHapButton extends StatelessWidget {
   final VoidCallback onPressed;
   final HapHapButtonSize size;
   final bool isOutline; 
-
+  final bool isLoading;
+  
   const HapHapButton({
     super.key,
     required this.text,
     required this.onPressed,
     this.size = HapHapButtonSize.tiny, 
-    this.isOutline = false,             
+    this.isOutline = false,       
+    this.isLoading = false,      
   });
 
   

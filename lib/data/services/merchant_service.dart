@@ -16,4 +16,14 @@ class MerchantService {
     final json = await ApiClient.get('/merchants/$merchantId');
     return MerchantDetailModel.fromJson(json['data'] as Map<String, dynamic>);
   }
+
+  static Future<MerchantDetailModel> getMe() async {
+    final json = await ApiClient.get('/merchants/me');
+    return MerchantDetailModel.fromJson(json['data'] as Map<String, dynamic>);
+  }
+
+  static Future<MerchantDetailModel> updateMe(Map<String, dynamic> data) async {
+    final json = await ApiClient.patch('/merchants/me', data);
+    return MerchantDetailModel.fromJson(json['data'] as Map<String, dynamic>);
+  }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:haphap_fe/core/network/token_manager.dart';
@@ -122,6 +123,7 @@ class ApiClient {
   // ---------------------------------------------------------------------------
 
   static Map<String, dynamic> _handleResponse(http.Response response) {
+    debugPrint('RAW RESPONSE: ${response.body}');
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -137,7 +139,6 @@ class ApiClient {
   }
 }
 
-/// Thrown when the API returns a non-2xx response or a network error occurs.
 class ApiException implements Exception {
   final String message;
   final int statusCode;

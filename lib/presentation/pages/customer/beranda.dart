@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
+import 'package:haphap_fe/core/network/token_manager.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
+import 'package:haphap_fe/data/models/user_profile_model.dart';
 import 'package:haphap_fe/data/services/merchant_service.dart';
+import 'package:haphap_fe/data/services/user_service.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
@@ -27,12 +30,12 @@ class _BerandaPageState extends State<BerandaPage> {
         padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            _HeroSection(),
-            _KategoriSection(),
-            SizedBox(height: _BerandaLayout.kategoriToSekitar),
-            _SekitarKamuSection(),
-            SizedBox(height: _BerandaLayout.bottomScrollPadding),
+          children: [
+            const _HeroSection(),
+            const _KategoriSection(),
+            const SizedBox(height: _BerandaLayout.kategoriToSekitar),
+            const _SekitarKamuSection(),
+            const SizedBox(height: _BerandaLayout.bottomScrollPadding),
           ],
         ),
       ),
@@ -59,13 +62,20 @@ class _HeroSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: _BerandaLayout.heroTopPadding),
-            const Padding(
-              padding: EdgeInsets.symmetric(
+            Padding(
+              padding: const EdgeInsets.symmetric(
                 horizontal: _BerandaLayout.heroHorizontalPadding,
               ),
-              child: HapHapSearchBar(
-                hintText: _BerandaContent.searchHint,
-                prefixIconPath: AppIcons.magnifying_glass,
+              child: GestureDetector(
+                onTap: () {
+                  context.go(AppRoutes.jelajah);
+                },
+                child: const AbsorbPointer(
+                  child: HapHapSearchBar(
+                    hintText: _BerandaContent.searchHint,
+                    prefixIconPath: AppIcons.magnifying_glass,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: _BerandaLayout.heroSearchToTagline),
@@ -76,11 +86,11 @@ class _HeroSection extends StatelessWidget {
               child: _TaglineWithMascot(),
             ),
             const SizedBox(height: _BerandaLayout.heroDiskonToCards),
-            const Padding(
-              padding: EdgeInsets.symmetric(
+            Padding(
+              padding: const EdgeInsets.symmetric(
                 horizontal: _BerandaLayout.heroHorizontalPadding,
               ),
-              child: _StatsRow(),
+              child: const _StatsRow(),
             ),
             const SizedBox(height: _BerandaLayout.heroCardsToKategori),
           ],
@@ -155,27 +165,107 @@ class _TaglineWithMascot extends StatelessWidget {
   }
 }
 
-class _StatsRow extends StatelessWidget {
+class _StatsRow extends StatefulWidget {
   const _StatsRow();
 
   @override
+  State<_StatsRow> createState() => _StatsRowState();
+}
+
+class _StatsRowState extends State<_StatsRow> {
+  UserProfileModel? _user;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      // Hanya fetch jika user sudah login
+      final hasToken = await TokenManager.hasToken();
+      if (!hasToken) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final user = await UserService.getMe();
+      if (!mounted) return;
+      setState(() {
+        _user = user;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// Format angka uang ke bentuk ringkas (misal: 67600 → '67.6rb')
+  String _formatCurrency(int amount) {
+    if (amount >= 1000000) {
+      final value = amount / 1000000;
+      return '${value % 1 == 0 ? value.toInt() : value.toStringAsFixed(1)}jt';
+    } else if (amount >= 1000) {
+      final value = amount / 1000;
+      return '${value % 1 == 0 ? value.toInt() : value.toStringAsFixed(1)}rb';
+    }
+    return amount.toString();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Row(
+    if (_isLoading) {
+      return const Row(
+        children: [
+          Expanded(
+            child: HapHapStatsCard(
+              title: _BerandaContent.statsSavingsTitle,
+              prefixText: _BerandaContent.statsSavingsPrefix,
+              mainValue: '...',
+              valueColor: Colors.green,
+              subtitle: '',
+            ),
+          ),
+          SizedBox(width: _BerandaLayout.statCardSpacing),
+          Expanded(
+            child: HapHapStatsCard(
+              title: _BerandaContent.statsSavedTitle,
+              mainValue: '...',
+              valueColor: AppColors.primary,
+              subtitle: '',
+            ),
+          ),
+        ],
+      );
+    }
+
+    final savingsValue = _user != null
+        ? _formatCurrency(_user!.totalSaved)
+        : '0';
+    final portionValue = _user != null
+        ? '${_user!.totalPortion} Porsi'
+        : '0 Porsi';
+
+    return Row(
       children: [
         Expanded(
           child: HapHapStatsCard(
             title: _BerandaContent.statsSavingsTitle,
             prefixText: _BerandaContent.statsSavingsPrefix,
-            mainValue: _BerandaContent.statsSavingsValue,
+            mainValue: savingsValue,
             valueColor: Colors.green,
             subtitle: _BerandaContent.statsSavingsSubtitle,
           ),
         ),
-        SizedBox(width: _BerandaLayout.statCardSpacing),
+        const SizedBox(width: _BerandaLayout.statCardSpacing),
         Expanded(
           child: HapHapStatsCard(
             title: _BerandaContent.statsSavedTitle,
-            mainValue: _BerandaContent.statsSavedValue,
+            mainValue: portionValue,
             valueColor: AppColors.primary,
             subtitle: _BerandaContent.statsSavedSubtitle,
           ),
@@ -187,6 +277,10 @@ class _StatsRow extends StatelessWidget {
 
 class _KategoriSection extends StatelessWidget {
   const _KategoriSection();
+
+  void _navigateToJelajah(BuildContext context, String category) {
+    context.go('${AppRoutes.jelajah}?category=$category');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -207,17 +301,17 @@ class _KategoriSection extends StatelessWidget {
           ),
           child: Row(
             children: [
-              HapHapCategoryButton(iconPath: AppIcons.bakery, label: 'Bakery', onTap: () {}),
+              HapHapCategoryButton(iconPath: AppIcons.bakery, label: 'Bakery', onTap: () => _navigateToJelajah(context, 'ROTI')),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(iconPath: AppIcons.restaurant, label: 'Restoran', onTap: () {}),
+              HapHapCategoryButton(iconPath: AppIcons.restaurant, label: 'Restoran', onTap: () => _navigateToJelajah(context, 'RESTORAN')),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(iconPath: AppIcons.cafe, label: 'Kafe', onTap: () {}),
+              HapHapCategoryButton(iconPath: AppIcons.cafe, label: 'Kafe', onTap: () => _navigateToJelajah(context, 'KAFE')),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(iconPath: AppIcons.grocery, label: 'Grocery', onTap: () {}),
+              HapHapCategoryButton(iconPath: AppIcons.grocery, label: 'Grocery', onTap: () => _navigateToJelajah(context, 'KEBUTUHAN')),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(iconPath: AppIcons.jajanan, label: 'Jajanan', onTap: () {}),
+              HapHapCategoryButton(iconPath: AppIcons.jajanan, label: 'Jajanan', onTap: () => _navigateToJelajah(context, 'JAJANAN')),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(iconPath: AppIcons.dessert, label: 'Dessert', onTap: () {}),
+              HapHapCategoryButton(iconPath: AppIcons.dessert, label: 'Dessert', onTap: () => _navigateToJelajah(context, 'PENUTUP')),
             ],
           ),
         ),
@@ -376,7 +470,7 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _BerandaLayout {
-  static const double heroTopPadding = 21;
+  static const double heroTopPadding = 72;
   static const double heroHorizontalPadding = 24;
   static const double heroSearchToTagline = 47;
   static const double heroTaglineToDiskon = 16;
@@ -406,10 +500,8 @@ class _BerandaContent {
 
   static const String statsSavingsTitle = 'Berhasil Hemat';
   static const String statsSavingsPrefix = 'Rp ';
-  static const String statsSavingsValue = '67.6rb';
-  static const String statsSavingsSubtitle = 'Sejak 6 Juli 2026';
+  static const String statsSavingsSubtitle = 'Total penghematan kamu';
 
   static const String statsSavedTitle = 'Berhasil Selamatin';
-  static const String statsSavedValue = '67 Porsi';
-  static const String statsSavedSubtitle = 'Sejak 6 Juli 2026';
+  static const String statsSavedSubtitle = 'Total porsi diselamatkan';
 }

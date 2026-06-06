@@ -8,6 +8,8 @@ import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 
 // --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/data/services/surplus_service.dart';
+import 'package:haphap_fe/data/models/merchant_model.dart';
 
 class MenuMerchantPage extends StatefulWidget {
   const MenuMerchantPage({super.key});
@@ -17,12 +19,45 @@ class MenuMerchantPage extends StatefulWidget {
 }
 
 class _MenuMerchantPageState extends State<MenuMerchantPage> {
+  List<SurplusItemModel> _items = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchItems();
+  }
+
+  Future<void> _fetchItems() async {
+    try {
+      final items = await SurplusService.getMySurplus();
+      if (!mounted) return;
+      setState(() {
+        _items = items;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   void _showAddMenuDialog() {
     showDialog(
       context: context,
       builder: (context) => const HapHapAddMenuDialog(),
-    );
+    ).then((_) => _fetchItems()); // Refresh list after adding
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
   }
 
   @override
@@ -61,49 +96,59 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
             
             // 3. DAFTAR MENU
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.only(left: 24, right: 24, bottom: 100), 
-                itemCount: 4, 
-                
-                separatorBuilder: (context, index) => const Divider(
-                  height: 32, 
-                  thickness: 1,
-                  color: Color(0xFFF1F1F1),
-                ),
-                
-                itemBuilder: (context, index) {
-                  String menuTitle = 'Szechuan Chicken Bowl';
-                  String menuDesc = 'Nasi + Ayam Saus Szechuan';
-                  String menuPrice = 'Rp 25.000';
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  : _errorMessage != null
+                      ? Center(child: Text('Error: $_errorMessage'))
+                      : _items.isEmpty
+                          ? const Center(child: Text('Belum ada menu, tambahkan sekarang!'))
+                          : ListView.separated(
+                              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 100), 
+                              itemCount: _items.length, 
+                              
+                              separatorBuilder: (context, index) => const Divider(
+                                height: 32, 
+                                thickness: 1,
+                                color: Color(0xFFF1F1F1),
+                              ),
+                              
+                              itemBuilder: (context, index) {
+                                final item = _items[index];
+                                final menuTitle = item.name;
+                                final menuDesc = item.description ?? '';
+                                final menuPrice = 'Rp ${_formatPrice(item.discountPrice)}';
 
-                  return HapHapMerchantMenuItemCard(
-                    title: menuTitle,
-                    description: menuDesc,
-                    price: menuPrice,
-                    imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                    
-                    onEdit: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => HapHapEditMenuDialog(
-                          initialName: menuTitle,
-                          initialPrice: menuPrice,
-                          initialDesc: menuDesc,
-                        ),
-                      );
-                    },
-                    
-                    onDelete: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => HapHapDeleteMenuDialog(
-                          menuName: menuTitle,
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                                return HapHapMerchantMenuItemCard(
+                                  title: menuTitle,
+                                  description: menuDesc,
+                                  price: menuPrice,
+                                  imageUrl: (item.image != null && item.image!.isNotEmpty)
+                                      ? item.image!
+                                      : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                                  
+                                  onEdit: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => HapHapEditMenuDialog(
+                                        surplusItemId: item.surplusItemId,
+                                        initialName: menuTitle,
+                                        initialPrice: menuPrice,
+                                        initialDesc: menuDesc,
+                                      ),
+                                    ).then((_) => _fetchItems()); // Refresh list after edit
+                                  },
+                                  
+                                  onDelete: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => HapHapDeleteMenuDialog(
+                                        menuName: menuTitle,
+                                      ),
+                                    ).then((_) => _fetchItems()); // Refresh list after delete
+                                  },
+                                );
+                              },
+                            ),
             ),
           ],
         ),
