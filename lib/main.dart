@@ -30,6 +30,6 @@ class MyApp extends StatelessWidget {
 
 
 final _debugRouter = GoRouter(
-  initialLocation: AppRoutes.login,
+  initialLocation: AppRoutes.beranda,
   routes: appRouter.configuration.routes,
 );

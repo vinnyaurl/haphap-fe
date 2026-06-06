@@ -49,7 +49,7 @@ class AppRoutes {
   static const String alamat = '/alamat';
   static const String bahasa = '/bahasa';
   static const String notifikasi = '/notifikasi';
-  
+
   static const String detailRestoran = '/detail-restoran';
   static const String checkout = '/checkout';
 
@@ -57,7 +57,6 @@ class AppRoutes {
   static const String merchantMenu = '/merchant/menu';
   static const String merchantAktivitas = '/merchant/aktivitas';
   static const String merchantAkun = '/merchant/akun';
-
   static const String merchantStatistik = '/merchant/statistik';
   static const String merchantNotifikasi = '/merchant/notifikasi';
 }
@@ -89,14 +88,23 @@ final appRouter = GoRouter(
       path: AppRoutes.laporanTransaksi,
       builder: (context, state) => const LaporanTransaksiPage(),
     ),
+
     GoRoute(
-      path: AppRoutes.detailRestoran,
-      builder: (context, state) => const DetailRestoranPage(),
+      path: '${AppRoutes.detailRestoran}/:merchantId',
+      builder: (context, state) {
+        final merchantId = state.pathParameters['merchantId']!;
+        return DetailRestoranPage(merchantId: merchantId);
+      },
     ),
+
     GoRoute(
       path: AppRoutes.checkout,
-      builder: (context, state) => const CheckoutPage(),
+      builder: (context, state) {
+        final args = state.extra as CheckoutArgs;
+        return CheckoutPage(args: args);
+      },
     ),
+
     GoRoute(
       path: AppRoutes.editProfil,
       builder: (context, state) => const EditProfilPage(),
@@ -152,7 +160,6 @@ final appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.aktivitas,
               builder: (context, state) => const AktivitasPage(),
-              routes: [],
             ),
           ],
         ),
@@ -177,7 +184,6 @@ final appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.merchantBeranda,
               builder: (context, state) => const BerandaMerchantPage(),
-              routes: [],
             ),
           ],
         ),
@@ -202,7 +208,6 @@ final appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.merchantAkun,
               builder: (context, state) => const AkunMerchantPage(),
-              routes: [],
             ),
           ],
         ),

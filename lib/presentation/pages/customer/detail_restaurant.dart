@@ -1,40 +1,121 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-
-// --- IMPORT KOMPONEN LEGO KITA ---
+import 'package:haphap_fe/data/models/merchant_model.dart';
+import 'package:haphap_fe/data/services/merchant_service.dart';
+import 'package:haphap_fe/presentation/pages/customer/checkout.dart';
+import 'package:haphap_fe/presentation/widgets/cards/menu_card.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
-import 'package:haphap_fe/presentation/widgets/cards/menu_card.dart'; // Sesuaikan path jika beda
 
 class DetailRestoranPage extends StatefulWidget {
-  const DetailRestoranPage({super.key});
+  final String merchantId;
+
+  const DetailRestoranPage({super.key, required this.merchantId});
 
   @override
   State<DetailRestoranPage> createState() => _DetailRestoranPageState();
 }
 
 class _DetailRestoranPageState extends State<DetailRestoranPage> {
-  // Dummy State untuk Keranjang
-  int _cartTotalItems = 1;
-  int _cartTotalPrice = 25000;
+  MerchantDetailModel? _merchant;
+  bool _isLoading = true;
+  String? _error;
 
-  // Dummy State untuk Menu
-  int _szechuanCartCount = 1;
-  int _blackpepperCartCount = 0;
+  final Map<String, int> _cart = {};
 
-  void _updateCart() {
-    setState(() {
-      _cartTotalItems = _szechuanCartCount + _blackpepperCartCount;
-      _cartTotalPrice = (_szechuanCartCount * 25000) + (_blackpepperCartCount * 25000);
+  @override
+  void initState() {
+    super.initState();
+    _fetchMerchant();
+  }
+
+  Future<void> _fetchMerchant() async {
+    try {
+      final merchant = await MerchantService.fetchOne(widget.merchantId);
+      if (!mounted) return;
+      setState(() {
+        _merchant = merchant;
+        _isLoading = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Gagal memuat detail merchant.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  int get _cartTotalItems =>
+      _cart.values.fold(0, (sum, qty) => sum + qty);
+
+  int get _cartTotalPrice {
+    if (_merchant == null) return 0;
+    return _cart.entries.fold(0, (sum, entry) {
+      final item = _merchant!.surplusItems.firstWhere(
+        (i) => i.surplusItemId == entry.key,
+        orElse: () => const SurplusItemModel(
+          surplusItemId: '',
+          name: '',
+          discountPrice: 0,
+          originalPrice: 0,
+          stock: 0,
+        ),
+      );
+      return sum + (item.discountPrice * entry.value);
     });
+  }
+
+  void _addToCart(SurplusItemModel item) {
+    final current = _cart[item.surplusItemId] ?? 0;
+    if (current < item.stock) {
+      setState(() => _cart[item.surplusItemId] = current + 1);
+    }
+  }
+
+  void _removeFromCart(SurplusItemModel item) {
+    final current = _cart[item.surplusItemId] ?? 0;
+    if (current > 0) {
+      setState(() {
+        if (current == 1) {
+          _cart.remove(item.surplusItemId);
+        } else {
+          _cart[item.surplusItemId] = current - 1;
+        }
+      });
+    }
+  }
+
+  bool _isValidUrl(String? url) =>
+      url != null &&
+      (url.startsWith('http://') || url.startsWith('https://'));
+
+  void _goToCheckout() {
+    if (_merchant == null) return;
+
+    context.push(
+      AppRoutes.checkout,
+      extra: CheckoutArgs(
+        merchantName: _merchant!.merchantName,
+        cart: Map<String, int>.from(_cart),
+        items: _merchant!.surplusItems,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
-      extendBodyBehindAppBar: true, 
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -43,166 +124,158 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. HERO SECTION (Banner Merchant + Overlap Card)
-            _buildHeroSection(),
-            
-            // JARAK 24px DARI HERO KE TITLE MENU
-            const SizedBox(height: 24),
-            
-            // 2. DAFTAR MENU (Pesanan terakhir dihilangkan sementara)
-            _buildDaftarMenuSection(),
-            
-            // Jarak ekstra di bawah biar menu paling bawah gak ketutupan dialog keranjang
-            const SizedBox(height: 120), 
-          ],
-        ),
-      ),
-      
-      // 3. FLOATING CART BOTTOM DIALOG (Muncul kalau ada barang)
-      bottomNavigationBar: _cartTotalItems > 0 ? _buildFloatingCart() : const SizedBox.shrink(),
+      body: _buildBody(),
+      bottomNavigationBar:
+          _cartTotalItems > 0 ? _buildFloatingCart() : const SizedBox.shrink(),
     );
   }
 
-  // ===========================================================================
-  // WIDGET HELPERS
-  // ===========================================================================
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
 
-  Widget _buildHeroSection() {
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            _error!,
+            style: const TextStyle(color: Colors.red, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    final merchant = _merchant!;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeroSection(merchant),
+          const SizedBox(height: 24),
+          _buildDaftarMenuSection(merchant),
+          const SizedBox(height: 120),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroSection(MerchantDetailModel merchant) {
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.topCenter,
       children: [
-        // 1. BANNER TOKO
         SizedBox(
           width: double.infinity,
           height: 220,
-          child: Image.network(
-            'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1000', 
-            fit: BoxFit.cover,
-          ),
+          child: _isValidUrl(merchant.avatar)
+              ? Image.network(
+                  merchant.avatar!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      Container(color: AppColors.primary),
+                )
+              : Container(color: AppColors.primary),
         ),
-        
-        // 2. OVERLAP RESTAURANT CARD 
-        const Padding(
-          padding: EdgeInsets.only(top: 160, left: 24, right: 24), 
+        Padding(
+          padding: const EdgeInsets.only(top: 160, left: 24, right: 24),
           child: HapHapRestaurantCard(
-            imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-            distanceTime: '1.67 km - 67 menit',
-            restaurantName: "Cal's Chicken Bowl",
-            ratingText: '4.8 - 6,7 rb+ rating',
+            imageUrl: merchant.avatar ?? '',
+            distanceTime: merchant.address ?? '',
+            restaurantName: merchant.merchantName,
+            ratingText: merchant.rating != null
+                ? '${merchant.rating!.toStringAsFixed(1)} rating'
+                : 'Belum ada rating',
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDaftarMenuSection() {
+  Widget _buildDaftarMenuSection(MerchantDetailModel merchant) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.0),
-          child: Text(
-            "Cal's Chicken Bowl",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black),
-          ),
-        ),
-        
-        // JARAK 16px DARI TITLE KE KARTU MENU PERTAMA
-        const SizedBox(height: 16),
-        
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            children: [
-              HapHapMenuCard( 
-                imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                title: 'Szechuan Chicken Bowl',
-                description: 'Nasi + Ayam Saus Szechuan',
-                price: 'Rp 25.000',
-                stockCount: 2,
-                cartCount: _szechuanCartCount,
-                onAdd: () {
-                  if (_szechuanCartCount < 2) {
-                    setState(() => _szechuanCartCount++);
-                    _updateCart();
-                  }
-                },
-                onRemove: () {
-                  if (_szechuanCartCount > 0) {
-                    setState(() => _szechuanCartCount--);
-                    _updateCart();
-                  }
-                },
-              ),
-              const SizedBox(height: 16), // Jarak antar kartu menu
-              HapHapMenuCard(
-                imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                title: 'Blackpepper Chicken Bowl',
-                description: 'Nasi + Ayam Saus Blackpepper',
-                price: 'Rp 25.000',
-                stockCount: 2,
-                cartCount: _blackpepperCartCount,
-                onAdd: () {
-                  if (_blackpepperCartCount < 2) {
-                    setState(() => _blackpepperCartCount++);
-                    _updateCart();
-                  }
-                },
-                onRemove: () {
-                  if (_blackpepperCartCount > 0) {
-                    setState(() => _blackpepperCartCount--);
-                    _updateCart();
-                  }
-                },
-              ),
-            ],
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            merchant.merchantName,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.black,
+            ),
           ),
         ),
+        const SizedBox(height: 16),
+        if (merchant.surplusItems.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Belum ada surplus item tersedia.',
+              style: TextStyle(color: AppColors.greyDark, fontSize: 14),
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: merchant.surplusItems.map((item) {
+                final cartCount = _cart[item.surplusItemId] ?? 0;
+                return Column(
+                  children: [
+                    HapHapMenuCard(
+                      imageUrl: item.image ?? '',
+                      title: item.name,
+                      description: item.description ?? '',
+                      price: 'Rp ${item.discountPrice}',
+                      stockCount: item.stock,
+                      cartCount: cartCount,
+                      onAdd: () => _addToCart(item),
+                      onRemove: () => _removeFromCart(item),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
       ],
     );
   }
 
   Widget _buildFloatingCart() {
-    // Mengambil ukuran safe area bawah (buat iPhone berponi/bergaris bawah)
     final bottomSafeArea = MediaQuery.paddingOf(context).bottom;
 
     return Container(
-      // Tinggi 81px + safe area bawah agar tidak nabrak garis iPhone
-      height: 81 + bottomSafeArea, 
-      padding: EdgeInsets.only(
-        left: 20, // Padding kiri tombol 20px
-        right: 20, // Padding kanan tombol 20px
-        bottom: bottomSafeArea, 
-      ),
+      height: 81 + bottomSafeArea,
+      padding: EdgeInsets.only(left: 20, right: 20, bottom: bottomSafeArea),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)), // Radius atas
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08), // Efek shadow lembut
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
-            offset: const Offset(0, -4), // Arah shadow ke atas
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      // Center akan menengahkan tombol secara vertikal di dalam area 81px
-      child: Center( 
+      child: Center(
         child: InkWell(
-          onTap: () {
-            context.push(AppRoutes.checkout);
-          },
+          onTap: _goToCheckout,
           borderRadius: BorderRadius.circular(24),
           child: Container(
-            height: 48, // Standar tinggi tombol
+            height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
-              color: AppColors.primary, 
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
@@ -211,17 +284,17 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
                 Text(
                   'Keranjang - $_cartTotalItems Hidangan',
                   style: const TextStyle(
-                    fontSize: 16, // Font size 16px
-                    fontWeight: FontWeight.bold, 
-                    color: AppColors.white
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
                   ),
                 ),
                 Text(
-                  'Rp ${_cartTotalPrice.toStringAsFixed(0)}', 
+                  'Rp $_cartTotalPrice',
                   style: const TextStyle(
-                    fontSize: 16, // Font size 16px
-                    fontWeight: FontWeight.bold, 
-                    color: AppColors.white
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
                   ),
                 ),
               ],

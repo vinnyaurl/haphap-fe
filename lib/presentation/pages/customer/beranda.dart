@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/core/constants/app_icons.dart';
-import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
-import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart';
-import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
 import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/constants/app_icons.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
+import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/data/models/merchant_model.dart';
+import 'package:haphap_fe/data/services/merchant_service.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category.dart';
+import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
+import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
+import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 
 class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
@@ -16,7 +19,6 @@ class BerandaPage extends StatefulWidget {
 }
 
 class _BerandaPageState extends State<BerandaPage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,12 +55,10 @@ class _HeroSection extends StatelessWidget {
           bottom: _BerandaLayout.heroOrangeBgBottomCut,
           child: const _OrangeBackground(),
         ),
-
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: _BerandaLayout.heroTopPadding),
-
             const Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: _BerandaLayout.heroHorizontalPadding,
@@ -68,25 +68,20 @@ class _HeroSection extends StatelessWidget {
                 prefixIconPath: AppIcons.magnifying_glass,
               ),
             ),
-
             const SizedBox(height: _BerandaLayout.heroSearchToTagline),
-
             const Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: _BerandaLayout.heroHorizontalPadding,
               ),
               child: _TaglineWithMascot(),
             ),
-
             const SizedBox(height: _BerandaLayout.heroDiskonToCards),
-
             const Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: _BerandaLayout.heroHorizontalPadding,
               ),
               child: _StatsRow(),
             ),
-
             const SizedBox(height: _BerandaLayout.heroCardsToKategori),
           ],
         ),
@@ -145,7 +140,6 @@ class _TaglineWithMascot extends StatelessWidget {
             ),
           ],
         ),
-
         Positioned(
           right: _BerandaLayout.mascotRight,
           top: _BerandaLayout.mascotTop,
@@ -213,41 +207,17 @@ class _KategoriSection extends StatelessWidget {
           ),
           child: Row(
             children: [
-              HapHapCategoryButton(
-                iconPath: AppIcons.bakery,
-                label: 'Bakery',
-                onTap: () {},
-              ),
+              HapHapCategoryButton(iconPath: AppIcons.bakery, label: 'Bakery', onTap: () {}),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(
-                iconPath: AppIcons.restaurant,
-                label: 'Restoran',
-                onTap: () {},
-              ),
+              HapHapCategoryButton(iconPath: AppIcons.restaurant, label: 'Restoran', onTap: () {}),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(
-                iconPath: AppIcons.cafe,
-                label: 'Kafe',
-                onTap: () {},
-              ),
+              HapHapCategoryButton(iconPath: AppIcons.cafe, label: 'Kafe', onTap: () {}),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(
-                iconPath: AppIcons.grocery,
-                label: 'Grocery',
-                onTap: () {},
-              ),
+              HapHapCategoryButton(iconPath: AppIcons.grocery, label: 'Grocery', onTap: () {}),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(
-                iconPath: AppIcons.jajanan,
-                label: 'Jajanan',
-                onTap: () {},
-              ),
+              HapHapCategoryButton(iconPath: AppIcons.jajanan, label: 'Jajanan', onTap: () {}),
               const SizedBox(width: _BerandaLayout.categoryItemSpacing),
-              HapHapCategoryButton(
-                iconPath: AppIcons.dessert,
-                label: 'Dessert',
-                onTap: () {},
-              ),
+              HapHapCategoryButton(iconPath: AppIcons.dessert, label: 'Dessert', onTap: () {}),
             ],
           ),
         ),
@@ -256,8 +226,46 @@ class _KategoriSection extends StatelessWidget {
   }
 }
 
-class _SekitarKamuSection extends StatelessWidget {
+class _SekitarKamuSection extends StatefulWidget {
   const _SekitarKamuSection();
+
+  @override
+  State<_SekitarKamuSection> createState() => _SekitarKamuSectionState();
+}
+
+class _SekitarKamuSectionState extends State<_SekitarKamuSection> {
+  List<MerchantModel> _merchants = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMerchants();
+  }
+
+  Future<void> _fetchMerchants() async {
+    try {
+      final merchants = await MerchantService.fetchAll();
+      if (!mounted) return;
+      setState(() {
+        _merchants = merchants;
+        _isLoading = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Gagal memuat merchant.';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -271,49 +279,81 @@ class _SekitarKamuSection extends StatelessWidget {
           child: _SectionTitle(text: 'Sekitar Kamu'),
         ),
         const SizedBox(height: _BerandaLayout.sectionTitleToContent),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(
-            horizontal: _BerandaLayout.sectionHorizontalPadding,
-          ),
-          // HILANGKAN 'const' pada Row karena ada context.push yang bersifat dinamis
-          child: Row(
-            children: [
-              // --- KARTU 1 DIBUNGKUS GESTURE DETECTOR ---
-              GestureDetector(
-                onTap: () {
-                  // Lempar ke halaman detail restoran!
-                  context.push(AppRoutes.detailRestoran);
-                },
-                child: const HapHapRestaurantCard(
-                  imageUrl:
-                      'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                  distanceTime: '1.67 km · 67 menit',
-                  restaurantName: 'Cal\'s Chicken Bowl',
-                  ratingText: '4.8 · 6,7 rb+ rating',
-                ),
-              ),
-              
-              const SizedBox(width: _BerandaLayout.restaurantCardSpacing),
-              
-              // --- KARTU 2 DIBUNGKUS GESTURE DETECTOR ---
-              GestureDetector(
-                onTap: () {
-                  // Lempar ke halaman detail restoran juga
-                  context.push(AppRoutes.detailRestoran);
-                },
-                child: const HapHapRestaurantCard(
-                  imageUrl:
-                      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=400',
-                  distanceTime: '2.1 km · 15 menit',
-                  restaurantName: 'Bakery Enak Jaya',
-                  ratingText: '4.9 · 1,2 rb+ rating',
-                ),
-              ),
-            ],
-          ),
-        ),
+        _buildContent(context),
       ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    if (_isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: _BerandaLayout.sectionHorizontalPadding,
+          vertical: 16,
+        ),
+        child: Text(
+          _error!,
+          style: const TextStyle(color: Colors.red, fontSize: 14),
+        ),
+      );
+    }
+
+    if (_merchants.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: _BerandaLayout.sectionHorizontalPadding,
+          vertical: 16,
+        ),
+        child: Text(
+          'Belum ada merchant di sekitar kamu.',
+          style: TextStyle(color: AppColors.greyDark, fontSize: 14),
+        ),
+      );
+    }
+
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(
+        horizontal: _BerandaLayout.sectionHorizontalPadding,
+      ),
+      child: Row(
+        children: _merchants.asMap().entries.map((entry) {
+          final index = entry.key;
+          final merchant = entry.value;
+
+          return Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  context.push(
+                    '${AppRoutes.detailRestoran}/${merchant.merchantId}',
+                  );
+                },
+                child: HapHapRestaurantCard(
+                  imageUrl: merchant.avatar ?? '',
+                  distanceTime: merchant.address ?? '',
+                  restaurantName: merchant.merchantName,
+                  ratingText: merchant.rating != null
+                      ? '${merchant.rating!.toStringAsFixed(1)} rating'
+                      : 'Belum ada rating',
+                ),
+              ),
+              if (index < _merchants.length - 1)
+                const SizedBox(width: _BerandaLayout.restaurantCardSpacing),
+            ],
+          );
+        }).toList(),
+      ),
     );
   }
 }
@@ -346,17 +386,15 @@ class _BerandaLayout {
 
   static const double mascotWidth = 192;
   static const double mascotHeight = 198;
-  static const double mascotRight = -30; 
+  static const double mascotRight = -30;
   static const double mascotTop = -55;
 
   static const double statCardSpacing = 16;
-
   static const double sectionHorizontalPadding = 24;
   static const double categoryItemSpacing = 20;
   static const double restaurantCardSpacing = 16;
   static const double sectionTitleToContent = 16;
   static const double kategoriToSekitar = 32;
-
   static const double bottomScrollPadding = 80;
 }
 
