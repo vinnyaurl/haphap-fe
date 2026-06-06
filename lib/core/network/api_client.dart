@@ -1,19 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Central HTTP client for HapHap API.
 /// Base URL targets localhost:3000 works for Chrome web debug.
 /// For Android emulator, change to: http://10.0.2.2:3000/api
 /// For physical device, change to your machine's local IP.
 class ApiClient {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static String get baseUrl => dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:3000';
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       };
 
-  /// Throws [ApiException] on non-2xx responses.
   static Future<Map<String, dynamic>> post(
     String path,
     Map<String, dynamic> body,
@@ -39,7 +39,6 @@ class ApiClient {
     } on ApiException {
       rethrow;
     } catch (e) {
-      // Network error (no connection, CORS, etc.)
       throw ApiException(
         message: 'Tidak dapat terhubung ke server. Periksa koneksi internet kamu.',
         statusCode: 0,
@@ -48,7 +47,6 @@ class ApiClient {
   }
 }
 
-/// Thrown when the API returns a non-2xx response or a network error occurs.
 class ApiException implements Exception {
   final String message;
   final int statusCode;

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
+import 'package:haphap_fe/core/network/token_manager.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/auth_service.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -54,43 +56,77 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (!response.success) {
-        _showErrorSnackbar(response.message);
+        AppSnackbar.showError(context, response.message);
         return;
       }
 
-      // TODO: Save Token
+      final token = response.data?.token;
 
+      if (token == null || token.isEmpty) {
+        AppSnackbar.showError(context, 'Token tidak ditemukan dari server.');
+        return;
+      }
+
+      await TokenManager.saveToken(token);
+
+      if (!mounted) return;
+
+      AppSnackbar.showSuccess(context, 'Login berhasil! Selamat datang.');
       context.go(AppRoutes.beranda);
-      _showSuccessSnackbar('Login berhasil! Selamat datang.');
 
     } on ApiException catch (e) {
       if (!mounted) return;
-      _showErrorSnackbar(e.message);
+      AppSnackbar.showError(context, e.message);
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(context, 'Terjadi kesalahan saat menghubungi server.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
 
-// TODO : add component 
-  void _showErrorSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+    try {
+      final idToken = await AuthService.signInWithGoogle();
 
-  void _showSuccessSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      if (!mounted) return;
+
+      if (idToken == null) return;
+
+      final response = await ApiClient.post('/auth/google', {
+        'idToken': idToken,
+      });
+
+      if (!mounted) return;
+
+      final accessToken = response['data']?['accessToken'] as String?;
+
+      if (accessToken == null || accessToken.isEmpty) {
+        AppSnackbar.showError(
+          context,
+          response['message'] as String? ?? 'Token tidak ditemukan dari server.',
+        );
+        return;
+      }
+
+      await TokenManager.saveToken(accessToken);
+
+      if (!mounted) return;
+
+      AppSnackbar.showSuccess(context, 'Login Google berhasil! Selamat datang.');
+      context.go(AppRoutes.beranda);
+
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(context, e.message);
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(context, 'Terjadi kesalahan saat login dengan Google.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -142,7 +178,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(32),
+                      ),
                     ),
                     padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
                     child: Form(
@@ -226,7 +264,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: AppColors.white,
-                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                disabledBackgroundColor:
+                                    AppColors.primary.withOpacity(0.6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(26),
                                 ),
@@ -254,7 +293,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Divider
                           Row(
                             children: [
                               Expanded(child: Divider(color: AppColors.greyLight)),
@@ -275,7 +313,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Tombol Google
                           Center(
                             child: Container(
                               width: 64,
@@ -292,9 +329,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                               child: IconButton(
-                                onPressed: () {
-                                  // TODO: Google Login
-                                },
+                                onPressed: _isLoading ? null : _handleGoogleLogin,
                                 icon: Image.asset(
                                   'assets/images/google_logo.png',
                                   width: 40,
@@ -308,9 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           Center(
                             child: GestureDetector(
-                              onTap: () {
-                                context.push(AppRoutes.register);
-                              },
+                              onTap: () => context.push(AppRoutes.register),
                               child: RichText(
                                 text: const TextSpan(
                                   text: 'Baru di HapHap? ',
