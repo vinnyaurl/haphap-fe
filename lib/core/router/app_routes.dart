@@ -28,6 +28,7 @@ import 'package:haphap_fe/presentation/pages/merchant/merchant_aktivitas.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_akun.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_statistik.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_notifikasi.dart';
+import 'package:haphap_fe/presentation/pages/merchant/merchant_edit_profil.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -59,6 +60,7 @@ class AppRoutes {
   static const String merchantAkun = '/merchant/akun';
   static const String merchantStatistik = '/merchant/statistik';
   static const String merchantNotifikasi = '/merchant/notifikasi';
+  static const String merchantEditProfil = '/merchant/edit-profil';
 }
 
 final appRouter = GoRouter(
@@ -81,8 +83,11 @@ final appRouter = GoRouter(
       builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
-      path: AppRoutes.detailPesanan,
-      builder: (context, state) => const DetailPesananPage(),
+      path: '${AppRoutes.detailPesanan}/:orderId',
+      builder: (context, state) {
+        final orderId = state.pathParameters['orderId']!;
+        return DetailPesananPage(orderId: orderId);
+      },
     ),
     GoRoute(
       path: AppRoutes.laporanTransaksi,
@@ -133,6 +138,10 @@ final appRouter = GoRouter(
       path: AppRoutes.merchantNotifikasi,
       builder: (context, state) => const NotifikasiMerchantPage(),
     ),
+    GoRoute(
+      path: AppRoutes.merchantEditProfil,
+      builder: (context, state) => const EditProfilMerchantPage(),
+    ),
 
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
@@ -151,7 +160,10 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.jelajah,
-              builder: (context, state) => const JelajahPage(),
+              builder: (context, state) {
+                final category = state.uri.queryParameters['category'];
+                return JelajahPage(initialCategory: category);
+              },
             ),
           ],
         ),

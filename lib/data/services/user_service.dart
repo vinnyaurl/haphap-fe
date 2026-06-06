@@ -1,6 +1,5 @@
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/data/models/user_profile_model.dart';
-import 'package:http/http.dart';
 
 class UserService {
   UserService._();
@@ -14,4 +13,21 @@ class UserService {
       throw Exception('Gagal mengambil data profil: $e');
     }
   }
-}
+
+  /// Update profil user yang sedang login.
+  /// Endpoint: PATCH /users/me
+  /// Body: { name?, email?, phone? } — semua optional.
+  static Future<Map<String, dynamic>> updateMe({
+    String? name,
+    String? email,
+    String? phone,
+  }) async {
+    final body = <String, dynamic>{
+      if (name != null) 'name': name,
+      if (email != null) 'email': email,
+      if (phone != null) 'phone': phone,
+    };
+    final json = await ApiClient.patch('/users/me', body);
+    return json['data'] as Map<String, dynamic>? ?? {};
+  }
+}

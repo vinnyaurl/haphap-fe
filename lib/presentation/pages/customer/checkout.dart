@@ -3,10 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/data/services/order_service.dart';
 
 class CheckoutArgs {
+  final String merchantId;
   final String merchantName;
 
   final Map<String, int> cart;
@@ -14,6 +17,7 @@ class CheckoutArgs {
   final List<SurplusItemModel> items;
 
   const CheckoutArgs({
+    required this.merchantId,
     required this.merchantName,
     required this.cart,
     required this.items,
@@ -31,6 +35,7 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   String _selectedPaymentMethod = 'QRIS';
+  bool _isSubmitting = false;
 
   late Map<String, int> _cart;
 
@@ -406,11 +411,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: _activeItems.isEmpty
+              onPressed: _activeItems.isEmpty || _isSubmitting
                   ? null
-                  : () {
-                      debugPrint(
-                          'Pesanan dibuat via $_selectedPaymentMethod | Total: Rp ${_formatPrice(_totalPrice)}');
+                  : () async {
+                      setState(() => _isSubmitting = true);
+                      try {
+                        final orderItems = _activeItems.map((i) => {
+                          'surplusItemId': i.surplusItemId,
+                          'quantity': _cart[i.surplusItemId]!,
+                        }).toList();
+                        
+                        final res = await OrderService.createOrder(
+                          merchantId: widget.args.merchantId,
+                          orderItems: orderItems,
+                          notes: '', // Tambahkan notes jika ada input form
+                        );
+                        
+                        if (!mounted) return;
+                        
+                        // Gunakan pushReplacement agar checkout tidak tertinggal di stack history
+                        context.pushReplacement('${AppRoutes.detailPesanan}/${res['orderId']}');
+                      } catch (e) {
+                        if (!mounted) return;
+                        setState(() => _isSubmitting = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Gagal membuat pesanan: $e')),
+                        );
+                      }
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -420,14 +447,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Buat Pesanan',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.white,
-                ),
-              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: AppColors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Buat Pesanan',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.white,
+                      ),
+                    ),
             ),
           ),
         ],

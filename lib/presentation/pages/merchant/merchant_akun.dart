@@ -5,6 +5,9 @@ import 'package:haphap_fe/core/theme/app_colors.dart';
 
 // --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/data/services/merchant_service.dart';
+import 'package:haphap_fe/data/models/merchant_model.dart';
+import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart';
 
 class AkunMerchantPage extends StatefulWidget {
   const AkunMerchantPage({super.key});
@@ -14,39 +17,110 @@ class AkunMerchantPage extends StatefulWidget {
 }
 
 class _AkunMerchantPageState extends State<AkunMerchantPage> {
+  MerchantDetailModel? _merchant;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9), // Background sedikit abu-abu agar card putihnya menonjol
-      body: SafeArea(
-        bottom: false, // Disamakan agar konsisten
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16), // Gap 16 atas
-              
-              // 1. JUDUL HALAMAN MENGGUNAKAN KOMPONEN
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: HapHapPageHeader(
-                  title: 'Akun',
-                  showBackButton: false, // Karena ini halaman utama tab, matikan tombol back
-                  fontSize: 24,          // Font dibesarkan sesuai desain aslimu
-                ),
-              ),
-              
-              const SizedBox(height: 16), // Gap 16 bawah (sebelumnya 32)
+  void initState() {
+    super.initState();
+    _fetchProfile();
+  }
 
-              // 2. SECTION: UMUM
-              _buildSectionTitle('Umum'),
-              _buildMenuCard([
-                _MenuItemData(
-                  icon: Icons.edit,
-                  title: 'Edit Detail',
-                  onTap: () => print('Ke Edit Detail'),
-                ),
+  Future<void> _fetchProfile() async {
+    try {
+      final merchantData = await MerchantService.getMe();
+      if (!mounted) return;
+      setState(() {
+        _merchant = merchantData;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+    return Scaffold(
+      backgroundColor: AppColors.primary, 
+      body: SafeArea(
+        bottom: false,
+        child: _isLoading 
+            ? const Center(child: CircularProgressIndicator(color: AppColors.white))
+            : _errorMessage != null
+                ? Center(
+                    child: Text(
+                      'Error: $_errorMessage', 
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  )
+                : _buildContent(context),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.0),
+          child: HapHapPageHeader(
+            title: 'Akun Toko',
+            showBackButton: false, 
+            titleColor: AppColors.white, 
+            fontSize: 24,
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: HapHapProfileCard(
+            name: _merchant?.merchantName ?? 'Toko',
+            email: _merchant?.description ?? '-',
+            phoneNumber: _merchant?.phone ?? '-',
+            imageUrl: _merchant?.avatar, 
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF9F9F9), 
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(32), 
+                topRight: Radius.circular(32), 
+              ),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 24.0), 
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionTitle('Umum'),
+                    _buildMenuCard([
+                      _MenuItemData(
+                        icon: Icons.edit,
+                        title: 'Edit Detail',
+                        onTap: () {
+                          context.push(AppRoutes.merchantEditProfil).then((_) {
+                            setState(() => _isLoading = true);
+                            _fetchProfile(); // Refresh profile after returning
+                          });
+                        },
+                      ),
                 _MenuItemData(
                   icon: Icons.info, 
                   title: 'Statistik',
@@ -95,11 +169,14 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                 ),
               ]),
 
-              const SizedBox(height: 40), // Jarak napas bawah sebelum navbar
-            ],
+                    const SizedBox(height: 100), // Jarak napas bawah sebelum navbar
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 

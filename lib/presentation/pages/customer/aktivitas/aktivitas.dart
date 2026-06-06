@@ -7,8 +7,9 @@ import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart';
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_lainnya.dart'; 
 import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart'; 
 
-// --- IMPORT KOMPONEN HEADER ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/data/models/order_model.dart';
+import 'package:haphap_fe/data/services/order_service.dart';
 
 class AktivitasPage extends StatefulWidget {
   const AktivitasPage({super.key});
@@ -19,7 +20,53 @@ class AktivitasPage extends StatefulWidget {
 
 class _AktivitasPageState extends State<AktivitasPage> {
   int _currentTabIndex = 0;
-  bool hasOrders = true; 
+  
+  List<OrderModel> _orders = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrders();
+  }
+
+  Future<void> _fetchOrders() async {
+    try {
+      final orders = await OrderService.fetchMyOrders();
+      if (!mounted) return;
+      setState(() {
+        _orders = orders;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+    final isYesterday = date.year == now.year && date.month == now.month && date.day == now.day - 1;
+    
+    final timeStr = '${date.hour.toString().padLeft(2, '0')}.${date.minute.toString().padLeft(2, '0')}';
+    
+    if (isToday) return 'Hari ini, $timeStr';
+    if (isYesterday) return 'Kemarin, $timeStr';
+    
+    return '${date.day}/${date.month}/${date.year}, $timeStr';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +102,11 @@ class _AktivitasPageState extends State<AktivitasPage> {
 
             // 3. KONTEN TAB
             Expanded(
-              child: _buildTabContent(),
+              child: _isLoading 
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  : _error != null
+                      ? Center(child: Text('Error: $_error'))
+                      : _buildTabContent(),
             ),
           ],
         ),
@@ -121,7 +172,9 @@ class _AktivitasPageState extends State<AktivitasPage> {
   }
 
   Widget _buildProsesTab() {
-    if (!hasOrders) {
+    final activeOrders = _orders.where((o) => o.isInProgress).toList();
+
+    if (activeOrders.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -144,96 +197,72 @@ class _AktivitasPageState extends State<AktivitasPage> {
       );
     }
 
-    return SingleChildScrollView(
+    return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: () {
-              context.push(AppRoutes.detailPesanan);
-            },
-            child: const HapHapAktivitasCard(
-              statusText: 'Makanan lagi disiapin nih!',
-              mainText: '67 menit lagi...',
-              restaurantName: 'Cal\'s Chicken Bowl',
-              imagePath: 'assets/images/aktivitas_puy_waiting1.png',
-            ),
+      itemCount: activeOrders.length + 1,
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        if (index == activeOrders.length) return const SizedBox(height: 100);
+        
+        final order = activeOrders[index];
+        final statusText = order.status == 'PENDING' ? 'Menunggu Pembayaran' : 'Pesanan Diproses';
+        final mainText = order.status == 'PENDING' ? 'Bayar Sekarang!' : 'Ditunggu...';
+        final imagePath = order.status == 'PENDING' ? 'assets/images/aktivitas_puy_waiting1.png' : 'assets/images/aktivitas_puy_processing.png';
+
+        return GestureDetector(
+          onTap: () {
+            context.push('${AppRoutes.detailPesanan}/${order.orderId}');
+          },
+          child: HapHapAktivitasCard(
+            statusText: statusText,
+            mainText: mainText,
+            restaurantName: order.merchant.merchantName,
+            imagePath: imagePath,
           ),
-          
-          const SizedBox(height: 16),
-          
-          GestureDetector(
-            onTap: () {
-              context.push(AppRoutes.detailPesanan);
-            },
-            child: const HapHapAktivitasCard(
-              statusText: 'Makanan lagi dikonfirmasi nih!',
-              mainText: 'Ditunggu...',
-              restaurantName: 'Cal\'s Chicken Bowl',
-              imagePath: 'assets/images/aktivitas_puy_processing.png',
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          GestureDetector(
-            onTap: () {
-              context.push(AppRoutes.detailPesanan);
-            },
-            child: const HapHapAktivitasCard(
-              statusText: 'Makanan sudah siap nih!',
-              mainText: 'Yuk ambil!',
-              restaurantName: 'Cal\'s Chicken Bowl',
-              imagePath: 'assets/images/aktivitas_puy_done.png',
-            ),
-          ),
-          
-          const SizedBox(height: 100), // Jarak aman bawah
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildRiwayatTab() {
-    return ListView(
+    final historyOrders = _orders.where((o) => o.isCompleted || o.isCancelled).toList();
+
+    if (historyOrders.isEmpty) {
+      return const Center(child: Text('Belum ada riwayat pesanan.'));
+    }
+
+    return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      children: [
-        GestureDetector(
+      itemCount: historyOrders.length + 1,
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        if (index == historyOrders.length) return const SizedBox(height: 100);
+        
+        final order = historyOrders[index];
+        final statusString = order.status == 'COMPLETED' ? 'Selesai' : 'Dibatalkan';
+        final dateStatus = '${_formatDate(order.createdAt)} · $statusString';
+        
+        // Use placeholder if avatar is null
+        final avatar = (order.merchant.avatar != null && order.merchant.avatar!.isNotEmpty) 
+            ? order.merchant.avatar! 
+            : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400';
+
+        return GestureDetector(
           onTap: () {
-            context.push(AppRoutes.detailPesanan);
+            context.push('${AppRoutes.detailPesanan}/${order.orderId}');
           },
           child: HapHapRiwayatCard(
-            imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400', 
-            dateStatusText: 'Hari ini, 06.07 · Diterima',
-            restaurantName: 'Cal\'s Chicken Bowl',
-            price: 'Rp 125.000',
-            buttonText: 'Beri Rating',
+            imageUrl: avatar, 
+            dateStatusText: dateStatus,
+            restaurantName: order.merchant.merchantName,
+            price: 'Rp ${_formatPrice(order.totalAmount)}',
+            buttonText: order.status == 'COMPLETED' ? 'Beri Rating' : 'Pesan Lagi',
             onButtonPressed: () {
-              print("Buka modal rating dari halaman Aktivitas!");
+              print("Action for order ${order.orderId}");
             },
           ),
-        ),
-        
-        const SizedBox(height: 16),
-        
-        GestureDetector(
-          onTap: () {
-            context.push(AppRoutes.detailPesanan);
-          },
-          child: HapHapRiwayatCard(
-            imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-            dateStatusText: 'Kemarin, 06.07 · Diterima',
-            restaurantName: 'Cal\'s Chicken Bowl',
-            price: 'Rp 25.000',
-            buttonText: 'Pesan Lagi',
-            onButtonPressed: () {
-              print("Pesan lagi dari halaman Aktivitas!");
-            },
-          ),
-        ),
-        
-        const SizedBox(height: 100), // Jarak aman bawah
-      ],
+        );
+      },
     );
   }
 
