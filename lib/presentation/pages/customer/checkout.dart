@@ -3,45 +3,90 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
+import 'package:haphap_fe/data/models/merchant_model.dart';
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 
-import 'package:haphap_fe/presentation/widgets/headers/page_header.dart'; 
+class CheckoutArgs {
+  final String merchantName;
+
+  final Map<String, int> cart;
+
+  final List<SurplusItemModel> items;
+
+  const CheckoutArgs({
+    required this.merchantName,
+    required this.cart,
+    required this.items,
+  });
+}
 
 class CheckoutPage extends StatefulWidget {
-  const CheckoutPage({super.key});
+  final CheckoutArgs args;
+
+  const CheckoutPage({super.key, required this.args});
 
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  String _selectedPaymentMethod = 'QRIS'; 
+  String _selectedPaymentMethod = 'QRIS';
 
-  int _szechuanCount = 2;
-  int _blackpepperCount = 2;
-  int _saltedEggCount = 1;
+  late Map<String, int> _cart;
 
-  int get _totalPrice {
-    return (_szechuanCount * 25000) + (_blackpepperCount * 25000) + (_saltedEggCount * 25000);
+  @override
+  void initState() {
+    super.initState();
+    _cart = Map<String, int>.from(widget.args.cart);
   }
+
+  List<SurplusItemModel> get _activeItems => widget.args.items
+      .where((item) => (_cart[item.surplusItemId] ?? 0) > 0)
+      .toList();
+
+  int get _totalPrice => widget.args.items.fold(0, (sum, item) {
+        final qty = _cart[item.surplusItemId] ?? 0;
+        return sum + (item.discountPrice * qty);
+      });
+
+  void _add(SurplusItemModel item) {
+    final current = _cart[item.surplusItemId] ?? 0;
+    if (current < item.stock) {
+      setState(() => _cart[item.surplusItemId] = current + 1);
+    }
+  }
+
+  void _remove(SurplusItemModel item) {
+    final current = _cart[item.surplusItemId] ?? 0;
+    if (current > 1) {
+      setState(() => _cart[item.surplusItemId] = current - 1);
+    } else if (current == 1) {
+      setState(() => _cart.remove(item.surplusItemId));
+    }
+  }
+
+  bool _isValidUrl(String? url) =>
+      url != null &&
+      (url.startsWith('http://') || url.startsWith('https://'));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9), 
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: HapHapPageHeader(
-                  title: "Cal's Chicken Bowl",
+                  title: widget.args.merchantName,
                 ),
               ),
-              
+
               const SizedBox(height: 32),
 
               Padding(
@@ -58,9 +103,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        context.pop(); 
-                      },
+                      onTap: () => context.pop(),
                       child: const Text(
                         'Tambah Pesanan',
                         style: TextStyle(
@@ -75,7 +118,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 16),
 
               Padding(
@@ -95,44 +138,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (_szechuanCount > 0) ...[
-                        _buildCartItem(
-                          imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                          title: 'Szechuan Chicken Bowl',
-                          description: 'Nasi + Ayam Saus Szechuan',
-                          price: 'Rp 25.000',
-                          count: _szechuanCount,
-                          onAdd: () => setState(() => _szechuanCount++),
-                          onRemove: () => setState(() => _szechuanCount--),
-                        ),
-                        const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
-                      ],
-                      
-                      if (_blackpepperCount > 0) ...[
-                        _buildCartItem(
-                          imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                          title: 'Blackpepper Chicken Bowl',
-                          description: 'Nasi + Ayam Saus Blackpepper',
-                          price: 'Rp 25.000',
-                          count: _blackpepperCount,
-                          onAdd: () => setState(() => _blackpepperCount++),
-                          onRemove: () => setState(() => _blackpepperCount--),
-                        ),
-                        const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
-                      ],
 
-                      if (_saltedEggCount > 0) ...[
-                        _buildCartItem(
-                          imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                          title: 'Salted Egg Chicken Bowl',
-                          description: 'Nasi + Ayam Saus Salted Egg',
-                          price: 'Rp 25.000',
-                          count: _saltedEggCount,
-                          onAdd: () => setState(() => _saltedEggCount++),
-                          onRemove: () => setState(() => _saltedEggCount--),
-                        ),
-                        const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
-                      ],
+                      if (_activeItems.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            'Keranjang kosong.',
+                            style: TextStyle(
+                              color: AppColors.greyDark,
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      else
+                        ..._activeItems.map((item) => Column(
+                              children: [
+                                _buildCartItem(item),
+                                const Divider(
+                                  color: Color(0xFFF1F1F1),
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                              ],
+                            )),
+
 
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -153,10 +182,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               children: [
                                 const Text(
                                   'Total',
-                                  style: TextStyle(fontSize: 14, color: AppColors.greyDark),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.greyDark,
+                                  ),
                                 ),
                                 Text(
-                                  'Rp ${_totalPrice.toStringAsFixed(0)}', 
+                                  'Rp ${_formatPrice(_totalPrice)}',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
@@ -172,26 +204,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   ),
                 ),
               ),
-              
-              const SizedBox(height: 140), 
+
+              const SizedBox(height: 140),
             ],
           ),
         ),
       ),
-      
       bottomNavigationBar: _buildCheckoutBottomBar(),
     );
   }
 
-  Widget _buildCartItem({
-    required String imageUrl,
-    required String title,
-    required String description,
-    required String price,
-    required int count,
-    required VoidCallback onAdd,
-    required VoidCallback onRemove,
-  }) {
+  Widget _buildCartItem(SurplusItemModel item) {
+    final qty = _cart[item.surplusItemId] ?? 0;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -199,9 +224,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(imageUrl, width: 80, height: 80, fit: BoxFit.cover),
+            child: _isValidUrl(item.image)
+                ? Image.network(
+                    item.image!,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _placeholderBox(),
+                  )
+                : _placeholderBox(),
           ),
+
           const SizedBox(width: 16),
+
           Expanded(
             child: SizedBox(
               height: 80,
@@ -213,46 +248,74 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black),
+                        item.name,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.black,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        description,
-                        style: const TextStyle(fontSize: 12, color: AppColors.greyDark),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      if (item.description != null &&
+                          item.description!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          item.description!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.greyDark,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ],
                   ),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        price,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black),
+                        'Rp ${_formatPrice(item.discountPrice)}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           GestureDetector(
-                            onTap: onRemove,
+                            onTap: () => _remove(item),
                             behavior: HitTestBehavior.opaque,
-                            child: const Icon(Icons.remove_circle, color: AppColors.primary, size: 24),
+                            child: const Icon(
+                              Icons.remove_circle,
+                              color: AppColors.primary,
+                              size: 24,
+                            ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 12.0),
                             child: Text(
-                              '$count',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black),
+                              '$qty',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.black,
+                              ),
                             ),
                           ),
                           GestureDetector(
-                            onTap: onAdd,
+                            onTap: () => _add(item),
                             behavior: HitTestBehavior.opaque,
-                            child: const Icon(Icons.add_circle, color: AppColors.primary, size: 24),
+                            child: const Icon(
+                              Icons.add_circle,
+                              color: AppColors.primary,
+                              size: 24,
+                            ),
                           ),
                         ],
                       ),
@@ -267,14 +330,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  Widget _placeholderBox() => Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+      );
+
   Widget _buildCheckoutBottomBar() {
     final bottomSafeArea = MediaQuery.paddingOf(context).bottom;
 
     return Container(
       padding: EdgeInsets.only(
-        left: 24, 
-        right: 24, 
-        top: 20, 
+        left: 24,
+        right: 24,
+        top: 20,
         bottom: bottomSafeArea > 0 ? bottomSafeArea : 24,
       ),
       decoration: BoxDecoration(
@@ -291,7 +363,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // BARIS 1: Metode Pembayaran
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -299,16 +370,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
               Row(
                 children: [
                   _selectedPaymentMethod == 'QRIS'
-                      ? SvgPicture.asset(AppIcons.QRIS, height: 24) // Tinggi disamakan dengan icon 24px
-                      : const Icon(Icons.payments, color: Colors.green, size: 24),
-                  
-                  // Gap 12px antara icon dan teks
-                  const SizedBox(width: 12), 
-                  
-                  // Teks Metode Pembayaran
+                      ? SvgPicture.asset(AppIcons.QRIS, height: 24)
+                      : const Icon(Icons.payments,
+                          color: Colors.green, size: 24),
+                  const SizedBox(width: 12),
                   Text(
                     _selectedPaymentMethod,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.black,
+                    ),
                   ),
                 ],
               ),
@@ -327,19 +399,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
-          // BARIS 2: Tombol Buat Pesanan
+
           SizedBox(
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {
-                print("Pesanan Dibuat pakai $_selectedPaymentMethod!");
-              },
+              onPressed: _activeItems.isEmpty
+                  ? null
+                  : () {
+                      debugPrint(
+                          'Pesanan dibuat via $_selectedPaymentMethod | Total: Rp ${_formatPrice(_totalPrice)}');
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
+                disabledBackgroundColor: AppColors.greyLight,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -366,13 +441,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
-          padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 34),
+          padding:
+              const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 34),
           decoration: const BoxDecoration(
             color: AppColors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min, 
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
@@ -384,18 +460,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              
               _buildPaymentOption(
                 title: 'Cash',
                 icon: const Icon(Icons.payments, color: Colors.green, size: 24),
                 value: 'Cash',
               ),
-              
               const SizedBox(height: 24),
-              
               _buildPaymentOption(
-                title: 'QRIS', 
-                icon: SvgPicture.asset(AppIcons.QRIS, height: 24), // Tinggi disamakan dengan Cash
+                title: 'QRIS',
+                icon: SvgPicture.asset(AppIcons.QRIS, height: 24),
                 value: 'QRIS',
               ),
             ],
@@ -410,28 +483,26 @@ class _CheckoutPageState extends State<CheckoutPage> {
     required Widget icon,
     required String value,
   }) {
-    bool isSelected = _selectedPaymentMethod == value;
-    
+    final isSelected = _selectedPaymentMethod == value;
+
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedPaymentMethod = value;
-        });
-        Navigator.pop(context); 
+        setState(() => _selectedPaymentMethod = value);
+        Navigator.pop(context);
       },
       child: Container(
-        color: Colors.transparent, 
+        color: Colors.transparent,
         child: Row(
           children: [
             icon,
-            
-            // Gap 12px
-            const SizedBox(width: 12), 
-            
-            // Teks selalu ditampilkan
+            const SizedBox(width: 12),
             Text(
               title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.black,
+              ),
             ),
             const Spacer(),
             Container(
@@ -441,7 +512,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected ? AppColors.primary : AppColors.greyLight,
-                  width: isSelected ? 6 : 1, 
+                  width: isSelected ? 6 : 1,
                 ),
               ),
             ),
@@ -449,5 +520,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
       ),
     );
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
   }
 }

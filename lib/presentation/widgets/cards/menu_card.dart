@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/widgets/dialog/menu_detail_bottom_sheet.dart'; 
+import 'package:haphap_fe/presentation/widgets/dialog/menu_detail_bottom_sheet.dart';
 
 class HapHapMenuCard extends StatelessWidget {
   final String imageUrl;
@@ -8,7 +8,7 @@ class HapHapMenuCard extends StatelessWidget {
   final String description;
   final String price;
   final int stockCount;
-  final int cartCount; 
+  final int cartCount;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
 
@@ -28,107 +28,110 @@ class HapHapMenuCard extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isOutOfStock = stockCount == 0;
 
-    return Container(
-      width: 402, 
-      height: 144,
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFF1F1F1), width: 1)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // --- GAMBAR DIBUNGKUS GESTURE DETECTOR ---
-          GestureDetector(
-            onTap: () {
-              // Panggil Bottom Sheet saat gambar diklik!
-              showMenuDetailBottomSheet(
-                context,
-                imageUrl: imageUrl,
-                title: title,
-                description: description,
-                price: price,
-                onAddToCart: onAdd, // Lempar fungsi tambah ke keranjang
-              );
-            },
-            child: ClipRRect(
+    return GestureDetector(
+      onTap: () {
+        showMenuDetailBottomSheet(
+          context,
+          imageUrl: imageUrl,
+          title: title,
+          description: description,
+          price: price,
+          onAddToCart: onAdd,
+        );
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 402,
+        height: 144,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF1F1F1), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: _buildImage(isOutOfStock),
             ),
-          ),
-          
-          const SizedBox(width: 16),
-// ... sisa kode Expanded ke bawah biarkan sama persis
-          
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.black,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildStockIndicator(isOutOfStock),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: const TextStyle(fontSize: 14, color: AppColors.greyDark),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        price,
                         style: const TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: AppColors.black,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    _buildStockIndicator(isOutOfStock),
-                  ],
-                ),
-                
-                const SizedBox(height: 8),
-                
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.greyDark,
+                      _buildActionButtons(isOutOfStock),
+                    ],
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const SizedBox(height: 12),
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      price,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.black,
-                      ),
-                    ),
-                    _buildActionButtons(isOutOfStock),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildImage(bool isOutOfStock) {
-    Widget imageWidget = Image.network(
-      imageUrl,
-      width: 112,
-      height: 112,
-      fit: BoxFit.cover,
-    );
+    final isValidUrl = imageUrl.isNotEmpty &&
+        (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'));
+
+    Widget imageWidget = isValidUrl
+        ? Image.network(
+            imageUrl,
+            width: 112,
+            height: 112,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _imagePlaceholder(),
+          )
+        : _imagePlaceholder();
 
     if (isOutOfStock) {
       return ColorFiltered(
@@ -144,6 +147,15 @@ class HapHapMenuCard extends StatelessWidget {
     return imageWidget;
   }
 
+  Widget _imagePlaceholder() {
+    return Container(
+      width: 112,
+      height: 112,
+      color: const Color(0xFFF1F1F1),
+      child: const Icon(Icons.fastfood, color: AppColors.greyDark, size: 32),
+    );
+  }
+
   Widget _buildStockIndicator(bool isOutOfStock) {
     if (isOutOfStock) {
       return const Text(
@@ -152,13 +164,13 @@ class HapHapMenuCard extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.red,
+          color: AppColors.error,
           decoration: TextDecoration.underline,
-          decorationColor: Colors.red,
+          decorationColor: AppColors.error,
           height: 1.2,
         ),
       );
-    } else if (stockCount <= 5) { 
+    } else if (stockCount <= 5) {
       return Text(
         '$stockCount left',
         style: const TextStyle(
@@ -170,11 +182,20 @@ class HapHapMenuCard extends StatelessWidget {
         ),
       );
     }
-    return const SizedBox(); 
+    return Text(
+      '$stockCount left',
+      style: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        color: AppColors.greyDark,
+        decoration: TextDecoration.underline,
+        decorationColor: AppColors.greyDark,
+      ),
+    );
   }
 
   Widget _buildActionButtons(bool isOutOfStock) {
-    if (isOutOfStock) return const SizedBox(height: 24); 
+    if (isOutOfStock) return const SizedBox(height: 24);
 
     Widget circleButton(IconData icon, VoidCallback onTap) {
       return GestureDetector(

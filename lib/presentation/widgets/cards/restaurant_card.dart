@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
 class HapHapRestaurantCard extends StatelessWidget {
-  final String imageUrl; // Kembali pakai imageUrl
+  final String imageUrl;
   final String distanceTime;
   final String restaurantName;
   final String ratingText;
 
   const HapHapRestaurantCard({
     super.key,
-    required this.imageUrl, 
+    required this.imageUrl,
     required this.distanceTime,
     required this.restaurantName,
     required this.ratingText,
@@ -19,14 +19,11 @@ class HapHapRestaurantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 354,
-      height: 128, 
+      height: 132,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFF1F1F1), 
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFFF1F1F1), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -42,18 +39,11 @@ class HapHapRestaurantCard extends StatelessWidget {
               topLeft: Radius.circular(15),
               bottomLeft: Radius.circular(15),
             ),
-            // Kembali pakai Image.network
-            child: Image.network(
-              imageUrl,
-              width: 128,
-              height: 128,
-              fit: BoxFit.cover,
-            ),
+            child: _buildImage(),
           ),
-          
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -71,7 +61,7 @@ class HapHapRestaurantCard extends StatelessWidget {
                       color: AppColors.black,
                     ),
                     maxLines: 1,
-                    overflow: TextOverflow.ellipsis, 
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -90,6 +80,31 @@ class HapHapRestaurantCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildImage() {
+    final isValidUrl = imageUrl.isNotEmpty &&
+        (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'));
+
+    if (isValidUrl) {
+      return Image.network(
+        imageUrl,
+        width: 128,
+        height: 132,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _placeholder(),
+      );
+    }
+    return _placeholder();
+  }
+
+  Widget _placeholder() {
+    return Container(
+      width: 128,
+      height: 132,
+      color: const Color(0xFFF1F1F1),
+      child: const Icon(Icons.storefront, color: AppColors.greyDark, size: 40),
     );
   }
 }
