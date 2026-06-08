@@ -8,10 +8,10 @@ import 'package:haphap_fe/presentation/widgets/cards/merchant_add_stock.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
-import 'package:haphap_fe/data/services/merchant_service.dart';
 import 'package:haphap_fe/data/services/surplus_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
+
 
 // ---------------------------------------------------------------------------
 // Layout constants
@@ -135,6 +135,54 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
     }
   }
 
+  Future<void> _deactivateSurplus(SurplusItemModel item) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Nonaktifkan Menu'),
+        content: Text('Apakah kamu yakin ingin menonaktifkan "${item.name}" dari daftar surplus aktif?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal', style: TextStyle(color: AppColors.greyDark)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Nonaktifkan', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await SurplusService.update(item.surplusItemId, {'isActive': false});
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('"${item.name}" berhasil dinonaktifkan.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      _fetchData();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal menonaktifkan menu. Coba lagi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   String _formatDate(DateTime date) {
     const months = [
       '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -228,8 +276,9 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
               _FiturSection(),
               const SizedBox(height: _BerandaMerchantLayout.fiturToMenuAktif),
               _MenuAktifSection(
-                surplusItems: _surplusItems,
+                surplusItems: _surplusItems.where((s) => s.isActive).toList(),
                 onStockAdded: () => _fetchData(),
+                onDeactivate: _deactivateSurplus,
               ),
               const SizedBox(height: _BerandaMerchantLayout.bottomScrollPadding),
             ],
@@ -424,10 +473,12 @@ class _FiturSection extends StatelessWidget {
 class _MenuAktifSection extends StatelessWidget {
   final List<SurplusItemModel> surplusItems;
   final VoidCallback? onStockAdded;
+  final void Function(SurplusItemModel)? onDeactivate;
 
   const _MenuAktifSection({
     required this.surplusItems,
     this.onStockAdded,
+    this.onDeactivate,
   });
 
   @override
@@ -452,6 +503,7 @@ class _MenuAktifSection extends StatelessWidget {
               // Kartu tambah stok (selalu ditampilkan)
               HapHapMerchantAddStockCard(
                 imagePath: 'assets/images/puypuy_laper_nih.png',
+                onStockAdded: onStockAdded,
               ),
               
               const SizedBox(height: _BerandaMerchantLayout.menuAktifSpacing),
@@ -474,7 +526,12 @@ class _MenuAktifSection extends StatelessWidget {
                       price: 'Rp ${_formatPrice(item.discountPrice)}',
                       stockText: stockText,
                       isSoldOut: isSoldOut,
-                      imageUrl: item.image ?? '',
+                      imageUrl: (item.image != null && item.image!.isNotEmpty)
+                          ? item.image!
+                          : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                      onDeactivate: onDeactivate != null
+                          ? () => onDeactivate!(item)
+                          : null,
                     ),
                   );
                 }),

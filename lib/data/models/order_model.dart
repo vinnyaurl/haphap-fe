@@ -54,10 +54,14 @@ class OrderItemModel {
 }
 
 /// Model utama untuk order.
-/// Response dari GET /orders/me dan GET /orders/:orderId.
+/// Response dari GET /orders/me, GET /orders/:orderId, dan GET /orders/merchant.
 ///
-/// Backend mengembalikan raw Prisma Order dengan include merchant + orderItems.
-/// Field ID di backend adalah [id], bukan [orderId].
+/// - GET /orders/me → includes merchant + orderItems (customer POV)
+/// - GET /orders/merchant → includes user + orderItems (merchant POV)
+/// - GET /orders/:orderId → includes merchant + user + orderItems
+///
+/// Field [merchant] nullable karena merchant order response tidak include merchant.
+/// Field [customerName] diambil dari user.name jika tersedia (merchant order response).
 class OrderModel {
   final String orderId;
   final String merchantId;
@@ -70,7 +74,8 @@ class OrderModel {
   final DateTime? paidAt;
   final DateTime? completedAt;
   final DateTime createdAt;
-  final OrderMerchantInfo merchant;
+  final OrderMerchantInfo? merchant;
+  final String? customerName;
   final List<OrderItemModel> orderItems;
 
   const OrderModel({
@@ -85,11 +90,26 @@ class OrderModel {
     this.paidAt,
     this.completedAt,
     required this.createdAt,
-    required this.merchant,
+    this.merchant,
+    this.customerName,
     required this.orderItems,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
+    // Parse merchant info (available in customer POV responses)
+    OrderMerchantInfo? merchantInfo;
+    if (json['merchant'] != null) {
+      merchantInfo = OrderMerchantInfo.fromJson(
+          json['merchant'] as Map<String, dynamic>);
+    }
+
+    // Parse customer name (available in merchant POV responses)
+    String? customerName;
+    if (json['user'] != null) {
+      final user = json['user'] as Map<String, dynamic>;
+      customerName = user['name'] as String?;
+    }
+
     return OrderModel(
       orderId: json['id'] as String,
       merchantId: json['merchantId'] as String,
@@ -106,8 +126,8 @@ class OrderModel {
           ? DateTime.parse(json['completedAt'] as String)
           : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      merchant: OrderMerchantInfo.fromJson(
-          json['merchant'] as Map<String, dynamic>),
+      merchant: merchantInfo,
+      customerName: customerName,
       orderItems: (json['orderItems'] as List<dynamic>?)
               ?.map(
                   (e) => OrderItemModel.fromJson(e as Map<String, dynamic>))

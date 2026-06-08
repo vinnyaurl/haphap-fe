@@ -195,12 +195,14 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
 
     switch (_currentTabIndex) {
       case 0:
+        // Menunggu Bayar = PENDING (customer belum bayar)
         filteredOrders = _orders.where((o) => o.status == 'PENDING').toList();
-        currentStatus = MerchantOrderStatus.baru;
+        currentStatus = MerchantOrderStatus.menungguBayar;
         break;
       case 1:
+        // Siap Diambil = PAID (customer sudah bayar, siap pickup)
         filteredOrders = _orders.where((o) => o.status == 'PAID').toList();
-        currentStatus = MerchantOrderStatus.menunggu; // Siap Diambil
+        currentStatus = MerchantOrderStatus.siapDiambil;
         break;
       case 2:
         filteredOrders = _orders.where((o) => o.status == 'COMPLETED').toList();
@@ -294,12 +296,12 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
             padding: const EdgeInsets.only(bottom: 16.0),
             child: HapHapMerchantOrderCard(
               status: status,
-              customerName: 'Customer',
+              customerName: order.customerName ?? 'Customer',
               orderId: order.orderId,
               items: order.orderItems,
               totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
-              onAccept: () {
-                if (status == MerchantOrderStatus.menunggu) {
+              onScanQR: () {
+                if (status == MerchantOrderStatus.siapDiambil) {
                   showDialog(
                     context: context,
                     builder: (context) => HapHapScanQRDialog(orderId: order.orderId),
@@ -321,7 +323,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
 // ============================================================================
 // KOMPONEN: KARTU ORDER MERCHANT
 // ============================================================================
-enum MerchantOrderStatus { baru, menunggu, selesai, dibatalkan }
+enum MerchantOrderStatus { menungguBayar, siapDiambil, selesai, dibatalkan }
 
 class HapHapMerchantOrderCard extends StatelessWidget {
   final MerchantOrderStatus status;
@@ -329,9 +331,7 @@ class HapHapMerchantOrderCard extends StatelessWidget {
   final String orderId;
   final List<OrderItemModel> items;
   final String totalPrice;
-  final VoidCallback? onAccept;
-  final VoidCallback? onReject;
-  final VoidCallback? onReady;
+  final VoidCallback? onScanQR;
 
   const HapHapMerchantOrderCard({
     super.key,
@@ -340,9 +340,7 @@ class HapHapMerchantOrderCard extends StatelessWidget {
     required this.orderId,
     required this.items,
     required this.totalPrice,
-    this.onAccept,
-    this.onReject,
-    this.onReady,
+    this.onScanQR,
   });
 
   @override
@@ -352,15 +350,15 @@ class HapHapMerchantOrderCard extends StatelessWidget {
     Color badgeBgColor = Colors.transparent;
 
     switch (status) {
-      case MerchantOrderStatus.baru:
+      case MerchantOrderStatus.menungguBayar:
         badgeText = 'MENUNGGU BAYAR';
         badgeColor = const Color(0xFFF2994A);
         badgeBgColor = const Color(0xFFFFF6ED);
         break;
-      case MerchantOrderStatus.menunggu:
+      case MerchantOrderStatus.siapDiambil:
         badgeText = 'SIAP DIAMBIL';
-        badgeColor = const Color(0xFFF2994A); 
-        badgeBgColor = const Color(0xFFFFF6ED);
+        badgeColor = const Color(0xFF2D9CDB);
+        badgeBgColor = const Color(0xFFE8F4FD);
         break;
       case MerchantOrderStatus.selesai:
         badgeText = 'SELESAI';
@@ -464,29 +462,19 @@ class HapHapMerchantOrderCard extends StatelessWidget {
               ],
             ),
           ),
-          if (status == MerchantOrderStatus.menunggu) ...[
+          // Tombol Scan QR hanya untuk pesanan Siap Diambil (PAID)
+          if (status == MerchantOrderStatus.siapDiambil) ...[
             const SizedBox(height: 16),
             const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: HapHapButton(
-                      text: 'Tolak',
-                      isOutline: true, 
-                      onPressed: onReject ?? () {},
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: HapHapButton(
-                      text: 'Scan QR Pengambil',
-                      onPressed: onAccept ?? () {},
-                    ),
-                  ),
-                ],
+              child: SizedBox(
+                width: double.infinity,
+                child: HapHapButton(
+                  text: 'Scan QR Pengambil',
+                  onPressed: onScanQR ?? () {},
+                ),
               ),
             ),
           ]

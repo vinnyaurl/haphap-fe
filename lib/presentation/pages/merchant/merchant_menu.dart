@@ -11,7 +11,7 @@ import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 // --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
-import 'package:haphap_fe/data/services/surplus_service.dart';
+import 'package:haphap_fe/data/services/menu_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 
@@ -23,7 +23,7 @@ class MenuMerchantPage extends StatefulWidget {
 }
 
 class _MenuMerchantPageState extends State<MenuMerchantPage> {
-  List<SurplusItemModel> _items = [];
+  List<MenuItemModel> _items = [];
   bool _isLoading = true;
   String? _errorMessage;
   bool _isUnauthorized = false;
@@ -46,10 +46,12 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
     }
 
     try {
-      final items = await SurplusService.getMySurplus();
+      final items = await MenuService.getAllMenus();
       if (!mounted) return;
+      // Hanya tampilkan menu yang aktif (isActive == true)
+      final activeItems = items.where((m) => m.isActive).toList();
       setState(() {
-        _items = items;
+        _items = activeItems;
         _isLoading = false;
         _errorMessage = null;
         _isUnauthorized = false;
@@ -79,10 +81,11 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
   /// Pull-to-refresh handler (tanpa loading indicator penuh)
   Future<void> _onRefresh() async {
     try {
-      final items = await SurplusService.getMySurplus();
+      final items = await MenuService.getAllMenus();
       if (!mounted) return;
+      final activeItems = items.where((m) => m.isActive).toList();
       setState(() {
-        _items = items;
+        _items = activeItems;
         _errorMessage = null;
         _isUnauthorized = false;
       });
@@ -119,7 +122,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
   }
 
   /// Mengembalikan list item yang sudah difilter berdasarkan search query.
-  List<SurplusItemModel> get _filteredItems {
+  List<MenuItemModel> get _filteredItems {
     if (_searchQuery.isEmpty) return _items;
     final query = _searchQuery.toLowerCase();
     return _items.where((item) {
@@ -236,7 +239,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
           final item = filtered[index];
           final menuTitle = item.name;
           final menuDesc = item.description ?? '';
-          final menuPrice = 'Rp ${_formatPrice(item.discountPrice)}';
+          final menuPrice = 'Rp ${_formatPrice(item.originalPrice)}';
 
           return HapHapMerchantMenuItemCard(
             title: menuTitle,
@@ -250,7 +253,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
               showDialog(
                 context: context,
                 builder: (context) => HapHapEditMenuDialog(
-                  surplusItemId: item.surplusItemId,
+                  menuItemId: item.menuItemId,
                   initialName: menuTitle,
                   initialPrice: menuPrice,
                   initialDesc: menuDesc,
@@ -263,6 +266,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
                 context: context,
                 builder: (context) => HapHapDeleteMenuDialog(
                   menuName: menuTitle,
+                  menuItemId: item.menuItemId,
                 ),
               ).then((_) => _fetchItems()); // Refresh list after delete
             },
@@ -335,4 +339,4 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
       ),
     );
   }
-}
+}

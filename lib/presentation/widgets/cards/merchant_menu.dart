@@ -8,6 +8,7 @@ class HapHapMerchantMenuCard extends StatelessWidget {
   final String stockText;
   final String imageUrl;
   final bool isSoldOut;
+  final VoidCallback? onDeactivate;
 
   const HapHapMerchantMenuCard({
     super.key,
@@ -17,6 +18,7 @@ class HapHapMerchantMenuCard extends StatelessWidget {
     required this.stockText,
     required this.imageUrl,
     this.isSoldOut = false, // Default false (belum sold out)
+    this.onDeactivate,
   });
 
   @override
@@ -50,6 +52,21 @@ class HapHapMerchantMenuCard extends StatelessWidget {
                 width: 90,
                 height: 90,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.restaurant,
+                      color: AppColors.greyDark,
+                      size: 36,
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -60,13 +77,33 @@ class HapHapMerchantMenuCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (onDeactivate != null)
+                      GestureDetector(
+                        onTap: onDeactivate,
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 4),
+                          child: Icon(
+                            Icons.close,
+                            size: 18,
+                            color: AppColors.greyDark,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -75,6 +112,8 @@ class HapHapMerchantMenuCard extends StatelessWidget {
                     fontSize: 12,
                     color: AppColors.greyDark,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 12),
                 Row(

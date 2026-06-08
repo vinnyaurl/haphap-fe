@@ -126,8 +126,8 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
       dateStatus = '${_formatDate(order.createdAt)} · Dibatalkan';
     }
 
-    final avatar = (order.merchant.avatar != null && order.merchant.avatar!.isNotEmpty) 
-        ? order.merchant.avatar! 
+    final avatar = (order.merchant?.avatar != null && order.merchant!.avatar!.isNotEmpty) 
+        ? order.merchant!.avatar! 
         : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=100';
 
     return SingleChildScrollView(
@@ -164,7 +164,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
           const SizedBox(height: 16),
 
           HapHapDetailPesananCard(
-            restaurantName: order.merchant.merchantName,
+            restaurantName: order.merchant?.merchantName ?? 'Merchant',
             restaurantLogoUrl: avatar,
             items: order.orderItems.map((item) => HapHapOrderItem(
               name: item.name,

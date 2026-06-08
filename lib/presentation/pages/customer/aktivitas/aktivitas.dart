@@ -216,7 +216,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
           child: HapHapAktivitasCard(
             statusText: statusText,
             mainText: mainText,
-            restaurantName: order.merchant.merchantName,
+            restaurantName: order.merchant?.merchantName ?? 'Merchant',
             imagePath: imagePath,
           ),
         );
@@ -243,8 +243,8 @@ class _AktivitasPageState extends State<AktivitasPage> {
         final dateStatus = '${_formatDate(order.createdAt)} · $statusString';
         
         // Use placeholder if avatar is null
-        final avatar = (order.merchant.avatar != null && order.merchant.avatar!.isNotEmpty) 
-            ? order.merchant.avatar! 
+        final avatar = (order.merchant?.avatar != null && order.merchant!.avatar!.isNotEmpty) 
+            ? order.merchant!.avatar! 
             : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400';
 
         return GestureDetector(
@@ -254,7 +254,7 @@ class _AktivitasPageState extends State<AktivitasPage> {
           child: HapHapRiwayatCard(
             imageUrl: avatar, 
             dateStatusText: dateStatus,
-            restaurantName: order.merchant.merchantName,
+            restaurantName: order.merchant?.merchantName ?? 'Merchant',
             price: 'Rp ${_formatPrice(order.totalAmount)}',
             buttonText: order.status == 'COMPLETED' ? 'Beri Rating' : 'Pesan Lagi',
             onButtonPressed: () {

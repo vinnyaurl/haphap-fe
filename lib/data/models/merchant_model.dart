@@ -48,6 +48,7 @@ class SurplusItemModel {
   final int discountPrice;
   final int originalPrice;
   final int stock;
+  final bool isActive;
 
   const SurplusItemModel({
     required this.surplusItemId,
@@ -57,6 +58,7 @@ class SurplusItemModel {
     required this.discountPrice,
     required this.originalPrice,
     required this.stock,
+    this.isActive = true,
   });
 
   factory SurplusItemModel.fromJson(Map<String, dynamic> json) {
@@ -68,6 +70,36 @@ class SurplusItemModel {
       discountPrice: (json['discountPrice'] as num?)?.toInt() ?? 0,
       originalPrice: (json['originalPrice'] as num?)?.toInt() ?? 0,
       stock: (json['stock'] as num?)?.toInt() ?? 0,
+      isActive: json['isActive'] as bool? ?? true,
+    );
+  }
+}
+
+class MenuItemModel {
+  final String menuItemId;
+  final String name;
+  final String? description;
+  final String? image;
+  final int originalPrice;
+  final bool isActive;
+
+  const MenuItemModel({
+    required this.menuItemId,
+    required this.name,
+    this.description,
+    this.image,
+    required this.originalPrice,
+    this.isActive = true,
+  });
+
+  factory MenuItemModel.fromJson(Map<String, dynamic> json) {
+    return MenuItemModel(
+      menuItemId: json['menuItemId'] as String,
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String?,
+      image: json['image'] as String?,
+      originalPrice: (json['originalPrice'] as num?)?.toInt() ?? 0,
+      isActive: json['isActive'] as bool? ?? true,
     );
   }
 }

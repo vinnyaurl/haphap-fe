@@ -119,6 +119,43 @@ class ApiClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Multipart File Upload
+  // ---------------------------------------------------------------------------
+
+  static Future<Map<String, dynamic>> uploadFile(
+    String path,
+    String filePath,
+    String fieldName,
+  ) async {
+    final uri = Uri.parse('$baseUrl$path');
+
+    try {
+      final request = http.MultipartRequest('POST', uri);
+      
+      // Add auth header
+      final token = await TokenManager.getToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      
+      // Add file
+      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+      
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return _handleResponse(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException(
+        message:
+            'Tidak dapat mengunggah file. Periksa koneksi internet kamu.',
+        statusCode: 0,
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Shared response handler
   // ---------------------------------------------------------------------------
 
