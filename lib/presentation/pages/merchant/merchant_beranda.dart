@@ -7,6 +7,11 @@ import 'package:haphap_fe/presentation/widgets/buttons/beranda_merchant_category
 import 'package:haphap_fe/presentation/widgets/cards/merchant_add_stock.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/data/services/merchant_service.dart';
+import 'package:haphap_fe/data/services/surplus_service.dart';
+import 'package:haphap_fe/data/models/merchant_model.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 
 // ---------------------------------------------------------------------------
 // Layout constants
@@ -36,17 +41,9 @@ class _BerandaMerchantLayout {
 // Content constants
 // ---------------------------------------------------------------------------
 class _BerandaMerchantContent {
-  static const String restoName = "Cal's Chicken Bowl";
-  static const String tagline = 'Welcome,\n$restoName!';
-
   static const String statsIncomeTitle = 'Total Penghasilan';
   static const String statsIncomePrefix = 'Rp ';
-  static const String statsIncomeValue = '500.000';
-  static const String statsIncomeSubtitle = 'Sejak 6 Juli 2026';
-
   static const String statsSavedTitle = 'Berhasil Selamatin';
-  static const String statsSavedValue = '67 Porsi';
-  static const String statsSavedSubtitle = 'Sejak 6 Juli 2026';
 }
 
 // ---------------------------------------------------------------------------
@@ -60,23 +57,183 @@ class BerandaMerchantPage extends StatefulWidget {
 }
 
 class _BerandaMerchantPageState extends State<BerandaMerchantPage> { 
+  MerchantDetailModel? _merchant;
+  List<SurplusItemModel> _surplusItems = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+  bool _isUnauthorized = false;
+
+  // Stats dari API (totalRevenue & totalPortion tidak ada di MerchantDetailModel,
+  // jadi kita parse langsung dari raw JSON)
+  int _totalRevenue = 0;
+  int _totalPortion = 0;
+  String _createdAtLabel = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    if (!_isLoading) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    }
+
+    try {
+      // Fetch merchant profile (raw JSON untuk ambil totalRevenue & totalPortion)
+      final rawJson = await ApiClient.get('/merchants/me');
+      final merchantData = rawJson['data'] as Map<String, dynamic>? ?? {};
+      
+      final merchant = MerchantDetailModel.fromJson(merchantData);
+      _totalRevenue = (merchantData['totalRevenue'] as num?)?.toInt() ?? 0;
+      _totalPortion = (merchantData['totalPortion'] as num?)?.toInt() ?? 0;
+
+      // Format createdAt label dari data merchant (gunakan createdAt jika ada)
+      final createdAtRaw = merchantData['createdAt'] as String?;
+      if (createdAtRaw != null) {
+        final createdAt = DateTime.tryParse(createdAtRaw);
+        if (createdAt != null) {
+          _createdAtLabel = 'Sejak ${_formatDate(createdAt)}';
+        }
+      }
+
+      // Fetch surplus items (menu aktif merchant)
+      final surplusItems = await SurplusService.getMySurplus();
+      
+      if (!mounted) return;
+      setState(() {
+        _merchant = merchant;
+        _surplusItems = surplusItems;
+        _isLoading = false;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        if (e.statusCode == 401) {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        } else if (e.statusCode == 403) {
+          _errorMessage = 'Kamu tidak memiliki akses ke halaman ini.';
+        } else {
+          _errorMessage = e.message;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Tidak dapat memuat data. Periksa koneksi internet kamu.';
+      });
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    ];
+    return '${date.day} ${months[date.month]} ${date.year}';
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.white,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        backgroundColor: AppColors.white,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _isUnauthorized ? Icons.lock_outline : Icons.error_outline,
+                    size: 48,
+                    color: AppColors.greyDark,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _errorMessage ?? 'Terjadi kesalahan.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.greyDark,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: 160,
+                    child: HapHapButton(
+                      text: _isUnauthorized ? 'Login Ulang' : 'Coba Lagi',
+                      onPressed: () {
+                        if (_isUnauthorized) {
+                          context.go(AppRoutes.login);
+                        } else {
+                          _fetchData();
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: SingleChildScrollView(
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            _HeroSection(),
-            SizedBox(height: 32),
-            _FiturSection(),
-            SizedBox(height: _BerandaMerchantLayout.fiturToMenuAktif),
-            _MenuAktifSection(),
-            SizedBox(height: _BerandaMerchantLayout.bottomScrollPadding),
-          ],
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          await _fetchData();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _HeroSection(
+                merchantName: _merchant?.merchantName ?? 'Toko',
+                totalRevenue: _formatPrice(_totalRevenue),
+                totalPortion: '$_totalPortion Porsi',
+                statsSubtitle: _createdAtLabel.isNotEmpty ? _createdAtLabel : '-',
+              ),
+              const SizedBox(height: 32),
+              _FiturSection(),
+              const SizedBox(height: _BerandaMerchantLayout.fiturToMenuAktif),
+              _MenuAktifSection(
+                surplusItems: _surplusItems,
+                onStockAdded: () => _fetchData(),
+              ),
+              const SizedBox(height: _BerandaMerchantLayout.bottomScrollPadding),
+            ],
+          ),
         ),
       ),
     );
@@ -87,7 +244,17 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
 // Hero section
 // ---------------------------------------------------------------------------
 class _HeroSection extends StatelessWidget {
-  const _HeroSection();
+  final String merchantName;
+  final String totalRevenue;
+  final String totalPortion;
+  final String statsSubtitle;
+
+  const _HeroSection({
+    required this.merchantName,
+    required this.totalRevenue,
+    required this.totalPortion,
+    required this.statsSubtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -109,13 +276,13 @@ class _HeroSection extends StatelessWidget {
             children: [
               const SizedBox(height: _BerandaMerchantLayout.heroTopPadding),
               
-              const Padding(
-                padding: EdgeInsets.symmetric(
+              Padding(
+                padding: const EdgeInsets.symmetric(
                   horizontal: _BerandaMerchantLayout.heroHorizontalPadding,
                 ),
                 child: Text(
-                  _BerandaMerchantContent.tagline,
-                  style: TextStyle(
+                  'Welcome,\n$merchantName!',
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: AppColors.white,
@@ -126,11 +293,15 @@ class _HeroSection extends StatelessWidget {
               
               const SizedBox(height: _BerandaMerchantLayout.heroTaglineToCards),
               
-              const Padding(
-                padding: EdgeInsets.symmetric(
+              Padding(
+                padding: const EdgeInsets.symmetric(
                   horizontal: _BerandaMerchantLayout.heroHorizontalPadding,
                 ),
-                child: _StatsRow(),
+                child: _StatsRow(
+                  totalRevenue: totalRevenue,
+                  totalPortion: totalPortion,
+                  subtitle: statsSubtitle,
+                ),
               ),
             ],
           ),
@@ -158,28 +329,36 @@ class _RedBackground extends StatelessWidget {
 }
 
 class _StatsRow extends StatelessWidget {
-  const _StatsRow();
+  final String totalRevenue;
+  final String totalPortion;
+  final String subtitle;
+
+  const _StatsRow({
+    required this.totalRevenue,
+    required this.totalPortion,
+    required this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
         Expanded(
           child: HapHapStatsCard(
             title: _BerandaMerchantContent.statsIncomeTitle,
             prefixText: _BerandaMerchantContent.statsIncomePrefix,
-            mainValue: _BerandaMerchantContent.statsIncomeValue,
+            mainValue: totalRevenue,
             valueColor: Colors.green, 
-            subtitle: _BerandaMerchantContent.statsIncomeSubtitle,
+            subtitle: subtitle,
           ),
         ),
-        SizedBox(width: _BerandaMerchantLayout.statCardSpacing),
+        const SizedBox(width: _BerandaMerchantLayout.statCardSpacing),
         Expanded(
           child: HapHapStatsCard(
             title: _BerandaMerchantContent.statsSavedTitle,
-            mainValue: _BerandaMerchantContent.statsSavedValue,
+            mainValue: totalPortion,
             valueColor: AppColors.primary, 
-            subtitle: _BerandaMerchantContent.statsSavedSubtitle,
+            subtitle: subtitle,
           ),
         ),
       ],
@@ -191,8 +370,6 @@ class _StatsRow extends StatelessWidget {
 // Fitur section
 // ---------------------------------------------------------------------------
 class _FiturSection extends StatelessWidget {
-  const _FiturSection();
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -245,7 +422,13 @@ class _FiturSection extends StatelessWidget {
 // Menu Aktif section
 // ---------------------------------------------------------------------------
 class _MenuAktifSection extends StatelessWidget {
-  const _MenuAktifSection();
+  final List<SurplusItemModel> surplusItems;
+  final VoidCallback? onStockAdded;
+
+  const _MenuAktifSection({
+    required this.surplusItems,
+    this.onStockAdded,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -265,35 +448,72 @@ class _MenuAktifSection extends StatelessWidget {
             horizontal: _BerandaMerchantLayout.sectionHorizontalPadding,
           ),
           child: Column(
-            children: const [
+            children: [
+              // Kartu tambah stok (selalu ditampilkan)
               HapHapMerchantAddStockCard(
                 imagePath: 'assets/images/puypuy_laper_nih.png',
               ),
               
-              SizedBox(height: _BerandaMerchantLayout.menuAktifSpacing),
-              
-              HapHapMerchantMenuCard(
-                title: 'Szechuan Chicken Bowl',
-                description: 'Nasi + Ayam Saus Szechuan',
-                price: 'Rp 25.000',
-                stockText: '2 left',
-                imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-              ),
-              
-              SizedBox(height: _BerandaMerchantLayout.menuAktifSpacing),
-              
-              HapHapMerchantMenuCard(
-                title: 'Szechuan Chicken Bowl',
-                description: 'Nasi + Ayam Saus Szechuan',
-                price: 'Rp 25.000',
-                stockText: 'Sold',
-                isSoldOut: true, 
-                imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-              ),
+              const SizedBox(height: _BerandaMerchantLayout.menuAktifSpacing),
+
+              // Daftar surplus items (dynamic dari API)
+              if (surplusItems.isEmpty)
+                _buildEmptyState()
+              else
+                ...surplusItems.map((item) {
+                  final isSoldOut = item.stock <= 0;
+                  final stockText = isSoldOut ? 'Sold' : '${item.stock} left';
+
+                  return Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: _BerandaMerchantLayout.menuAktifSpacing,
+                    ),
+                    child: HapHapMerchantMenuCard(
+                      title: item.name,
+                      description: item.description ?? '',
+                      price: 'Rp ${_formatPrice(item.discountPrice)}',
+                      stockText: stockText,
+                      isSoldOut: isSoldOut,
+                      imageUrl: item.image ?? '',
+                    ),
+                  );
+                }),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Column(
+        children: const [
+          Icon(
+            Icons.restaurant_menu_outlined,
+            size: 48,
+            color: AppColors.greyDark,
+          ),
+          SizedBox(height: 12),
+          Text(
+            'Belum ada menu aktif hari ini.\nTambahkan stok untuk mulai berjualan!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.greyDark,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -316,4 +536,4 @@ class _SectionTitle extends StatelessWidget {
       ),
     );
   }
-}
+}
