@@ -1,15 +1,42 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart'; 
-import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart'; 
-import 'package:haphap_fe/presentation/widgets/cards/aktivitas_lainnya.dart'; 
-import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart'; 
-
+import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_proses.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_lainnya.dart';
+import 'package:haphap_fe/presentation/widgets/cards/aktivitas_riwayat.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
-import 'package:haphap_fe/data/models/order_model.dart';
-import 'package:haphap_fe/data/services/order_service.dart';
+
+class _OrderItem {
+  final String orderId;
+  final String status;       // PENDING, PAID, COMPLETED, CANCELLED
+  final int totalAmount;
+  final String merchantName;
+  final String createdAt;
+
+  const _OrderItem({
+    required this.orderId,
+    required this.status,
+    required this.totalAmount,
+    required this.merchantName,
+    required this.createdAt,
+  });
+
+  factory _OrderItem.fromJson(Map<String, dynamic> json) {
+    final merchant = json['merchant'] as Map<String, dynamic>? ?? {};
+    return _OrderItem(
+      orderId: json['id'] as String? ?? '',
+      status: json['status'] as String? ?? 'PENDING',
+      totalAmount: json['totalAmount'] as int? ?? 0,
+      merchantName: merchant['merchantName'] as String? ?? '-',
+      createdAt: json['createdAt'] as String? ?? '',
+    );
+  }
+}
 
 class AktivitasPage extends StatefulWidget {
   const AktivitasPage({super.key});
@@ -18,54 +45,136 @@ class AktivitasPage extends StatefulWidget {
   State<AktivitasPage> createState() => _AktivitasPageState();
 }
 
-class _AktivitasPageState extends State<AktivitasPage> {
+class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserver {
   int _currentTabIndex = 0;
-  
-  List<OrderModel> _orders = [];
+
+  List<_OrderItem> _orders = [];
   bool _isLoading = true;
   String? _error;
+  String? _launchingOrderId;
+
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchOrders();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _fetchOrders(silent: true);
+    });
   }
 
-  Future<void> _fetchOrders() async {
-    try {
-      final orders = await OrderService.fetchMyOrders();
-      if (!mounted) return;
-      setState(() {
-        _orders = orders;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _fetchOrders(silent: true);
     }
   }
 
-  String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]}.',
-        );
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
-    final isYesterday = date.year == now.year && date.month == now.month && date.day == now.day - 1;
-    
-    final timeStr = '${date.hour.toString().padLeft(2, '0')}.${date.minute.toString().padLeft(2, '0')}';
-    
-    if (isToday) return 'Hari ini, $timeStr';
-    if (isYesterday) return 'Kemarin, $timeStr';
-    
-    return '${date.day}/${date.month}/${date.year}, $timeStr';
+  Future<void> _fetchOrders({bool silent = false}) async {
+    if (!silent) setState(() => _isLoading = true);
+
+    try {
+      final response = await ApiClient.get('/orders/me');
+      final raw = response['data'] ?? response;
+      final list = (raw as List).cast<Map<String, dynamic>>();
+      if (mounted) {
+        setState(() {
+          _orders = list.map(_OrderItem.fromJson).toList();
+          _isLoading = false;
+          _error = null;
+        });
+      }
+    } on ApiException catch (e) {
+      if (mounted) setState(() { _error = e.message; _isLoading = false; });
+    } catch (_) {
+      if (mounted) setState(() { _error = 'Gagal memuat aktivitas.'; _isLoading = false; });
+    }
+  }
+
+  Future<void> _launchPayment(_OrderItem order) async {
+    if (_launchingOrderId != null) return;
+    setState(() => _launchingOrderId = order.orderId);
+
+    try {
+      final response = await ApiClient.post('/payments/${order.orderId}', {});
+      final data = response['data'] as Map<String, dynamic>;
+      final redirectUrl = data['redirectUrl'] as String;
+
+      final uri = Uri.parse(redirectUrl);
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tidak dapat membuka halaman pembayaran.')),
+          );
+        }
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal membuka pembayaran. Coba lagi.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _launchingOrderId = null);
+    }
+  }
+
+  // Active = PENDING, PAID, COMPLETED (Yuk Ambil)
+  List<_OrderItem> get _activeOrders => _orders
+      .where((o) => o.status == 'PENDING' || o.status == 'PAID' || o.status == 'COMPLETED')
+      .toList();
+
+  // History = CANCELLED only (COMPLETED moves to riwayat after pickup)
+  // TODO: move COMPLETED to riwayat after user confirms pickup
+  List<_OrderItem> get _historyOrders => _orders
+      .where((o) => o.status == 'CANCELLED')
+      .toList();
+
+  String _formatPrice(int price) => 'Rp ${price.toString()
+      .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}';
+
+  String _statusText(_OrderItem order) {
+    switch (order.status) {
+      case 'PENDING':  return 'Menunggu Pembayaran';
+      case 'PAID':     return 'Pesanan lagi dikonfirmasi';
+      case 'COMPLETED': return 'Yuk Ambil!';
+      default:         return order.status;
+    }
+  }
+
+  String _mainText(_OrderItem order) {
+    switch (order.status) {
+      case 'PENDING':  return 'Bayar Sekarang!';
+      case 'PAID':     return 'Ditunggu...';
+      case 'COMPLETED': return 'Pesanan siap diambil!';
+      default:         return '-';
+    }
+  }
+
+  String _imagePath(_OrderItem order) {
+    switch (order.status) {
+      case 'PENDING':   return 'assets/images/aktivitas_puy_waiting1.png';
+      case 'PAID':      return 'assets/images/aktivitas_puy_processing.png';
+      case 'COMPLETED': return 'assets/images/aktivitas_puy_done.png';
+      default:          return 'assets/images/aktivitas_puy_processing.png';
+    }
   }
 
   @override
@@ -73,84 +182,49 @@ class _AktivitasPageState extends State<AktivitasPage> {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        bottom: false, // Disamakan agar konsisten
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16), // Jarak atas konsisten
-
-            // 1. HEADER (Sudah pakai komponen)
-            _buildHeader(context),
-
-            // KUNCI: Jarak presisi 16px langsung ke Tab Bar (Divider & padding dobel dihapus)
             const SizedBox(height: 16),
-
-            // 2. TAB BAR
+            _buildHeader(context),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapTabBar(
                 currentIndex: _currentTabIndex,
-                onTap: (index) {
-                  setState(() {
-                    _currentTabIndex = index;
-                  });
-                },
+                onTap: (index) => setState(() => _currentTabIndex = index),
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // 3. KONTEN TAB
-            Expanded(
-              child: _isLoading 
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-                  : _error != null
-                      ? Center(child: Text('Error: $_error'))
-                      : _buildTabContent(),
-            ),
+            Expanded(child: _buildTabContent()),
           ],
         ),
       ),
     );
   }
 
-  // ===========================================================================
-  // WIDGET HELPERS
-  // ===========================================================================
-
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Row(
         children: [
-          // HapHapPageHeader dibungkus Expanded agar mengambil sisa ruang di kiri
           const Expanded(
             child: HapHapPageHeader(
               title: 'Aktivitas',
-              showBackButton: false, // Ini halaman utama navbar, jadi matikan back-nya
-              fontSize: 24,          // Font dibesarkan sesuai desain aslimu
+              showBackButton: false,
+              fontSize: 24,
             ),
           ),
-          
-          // Tombol Laporan Transaksi di kanan
           GestureDetector(
-            onTap: () {
-              context.push(AppRoutes.laporanTransaksi);
-            },
+            onTap: () => context.push(AppRoutes.laporanTransaksi),
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: const BoxDecoration(
-                color: Color(0xFF505050), 
+                color: Color(0xFF505050),
                 shape: BoxShape.circle,
               ),
-              child: Image.asset(
-                'assets/icons/circle_arrow_down.svg',
-                width: 16,
-                height: 16,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.arrow_downward, size: 16, color: AppColors.white);
-                },
-              ),
+              child: const Icon(Icons.arrow_downward, size: 16, color: AppColors.white),
             ),
           ),
         ],
@@ -160,109 +234,130 @@ class _AktivitasPageState extends State<AktivitasPage> {
 
   Widget _buildTabContent() {
     switch (_currentTabIndex) {
-      case 0:
-        return _buildProsesTab();
-      case 1:
-        return _buildRiwayatTab();
-      case 2:
-        return _buildLainnyaTab();
-      default:
-        return const SizedBox();
+      case 0: return _buildProsesTab();
+      case 1: return _buildRiwayatTab();
+      case 2: return _buildLainnyaTab();
+      default: return const SizedBox();
     }
   }
 
   Widget _buildProsesTab() {
-    final activeOrders = _orders.where((o) => o.isInProgress).toList();
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
 
-    if (activeOrders.isEmpty) {
+    if (_error != null) {
+      return Center(
+        child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 14)),
+      );
+    }
+
+    if (_activeOrders.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/images/puypuy_laper_nih.png',
-              width: 250,
-            ),
+            Image.asset('assets/images/puypuy_laper_nih.png', width: 250,
+                errorBuilder: (_, __, ___) => const SizedBox(height: 100)),
             const SizedBox(height: 16),
             const Text(
               'Puypuy laper nih... 🥺',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.black,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.black),
             ),
           ],
         ),
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: activeOrders.length + 1,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        if (index == activeOrders.length) return const SizedBox(height: 100);
-        
-        final order = activeOrders[index];
-        final statusText = order.status == 'PENDING' ? 'Menunggu Pembayaran' : 'Pesanan Diproses';
-        final mainText = order.status == 'PENDING' ? 'Bayar Sekarang!' : 'Ditunggu...';
-        final imagePath = order.status == 'PENDING' ? 'assets/images/aktivitas_puy_waiting1.png' : 'assets/images/aktivitas_puy_processing.png';
-
-        return GestureDetector(
-          onTap: () {
-            context.push('${AppRoutes.detailPesanan}/${order.orderId}');
-          },
-          child: HapHapAktivitasCard(
-            statusText: statusText,
-            mainText: mainText,
-            restaurantName: order.merchant.merchantName,
-            imagePath: imagePath,
-          ),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: () => _fetchOrders(),
+      color: AppColors.primary,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            ..._activeOrders.map((order) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: GestureDetector(
+                onTap: () {
+                  if (order.status == 'PENDING') {
+                    _launchPayment(order);
+                  } else if (order.status == 'COMPLETED') {
+                    context.push(
+                      AppRoutes.detailPesanan,
+                      extra: order.orderId,
+                    );
+                  }
+                },
+                child: Stack(
+                  children: [
+                    HapHapAktivitasCard(
+                      statusText: _statusText(order),
+                      mainText: _mainText(order),
+                      restaurantName: order.merchantName,
+                      imagePath: _imagePath(order),
+                    ),
+                    if (_launchingOrderId == order.orderId)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: AppColors.white),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            )),
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildRiwayatTab() {
-    final historyOrders = _orders.where((o) => o.isCompleted || o.isCancelled).toList();
-
-    if (historyOrders.isEmpty) {
-      return const Center(child: Text('Belum ada riwayat pesanan.'));
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: historyOrders.length + 1,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        if (index == historyOrders.length) return const SizedBox(height: 100);
-        
-        final order = historyOrders[index];
-        final statusString = order.status == 'COMPLETED' ? 'Selesai' : 'Dibatalkan';
-        final dateStatus = '${_formatDate(order.createdAt)} · $statusString';
-        
-        // Use placeholder if avatar is null
-        final avatar = (order.merchant.avatar != null && order.merchant.avatar!.isNotEmpty) 
-            ? order.merchant.avatar! 
-            : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400';
+    if (_historyOrders.isEmpty) {
+      return const Center(
+        child: Text('Belum ada riwayat pesanan.',
+            style: TextStyle(color: AppColors.greyDark, fontSize: 14)),
+      );
+    }
 
-        return GestureDetector(
-          onTap: () {
-            context.push('${AppRoutes.detailPesanan}/${order.orderId}');
-          },
-          child: HapHapRiwayatCard(
-            imageUrl: avatar, 
-            dateStatusText: dateStatus,
-            restaurantName: order.merchant.merchantName,
-            price: 'Rp ${_formatPrice(order.totalAmount)}',
-            buttonText: order.status == 'COMPLETED' ? 'Beri Rating' : 'Pesan Lagi',
-            onButtonPressed: () {
-              print("Action for order ${order.orderId}");
-            },
-          ),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: () => _fetchOrders(),
+      color: AppColors.primary,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        itemCount: _historyOrders.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
+        itemBuilder: (_, i) {
+          final order = _historyOrders[i];
+          return GestureDetector(
+            onTap: () => context.push(AppRoutes.detailPesanan),
+            child: HapHapRiwayatCard(
+              imageUrl: '',
+              dateStatusText:
+                  '${order.createdAt.substring(0, 10)} · ${order.status == 'COMPLETED' ? 'Selesai' : 'Dibatalkan'}',
+              restaurantName: order.merchantName,
+              price: _formatPrice(order.totalAmount),
+              buttonText: order.status == 'COMPLETED' ? 'Beri Rating' : 'Pesan Lagi',
+              onButtonPressed: () {
+                // TODO: implement rating / reorder
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -274,9 +369,9 @@ class _AktivitasPageState extends State<AktivitasPage> {
           HapHapAktivitasLainnyaCard(
             title: 'HapHap lagi ada promo\nspesial nih 😋',
             subtitle: 'Ayo buruan pesan sebelum kehabisan!',
-            imagePath: 'assets/images/logo_haphap.png', // Pastikan assetnya ada
+            imagePath: 'assets/images/logo_haphap.png',
           ),
-          SizedBox(height: 100), // Jarak aman bawah
+          SizedBox(height: 100),
         ],
       ),
     );

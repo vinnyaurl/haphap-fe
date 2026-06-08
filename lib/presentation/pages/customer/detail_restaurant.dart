@@ -5,9 +5,9 @@ import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/data/services/merchant_service.dart';
-import 'package:haphap_fe/presentation/pages/customer/checkout.dart';
 import 'package:haphap_fe/presentation/widgets/cards/menu_card.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
+import 'package:haphap_fe/presentation/pages/customer/checkout.dart';
 
 class DetailRestoranPage extends StatefulWidget {
   final String merchantId;
