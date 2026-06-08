@@ -10,6 +10,7 @@ import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/data/services/order_service.dart';
 import 'package:haphap_fe/data/models/order_model.dart';
 import 'package:haphap_fe/presentation/widgets/dialog/merchant_scan_qr_dialog.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 
 class AktivitasMerchantPage extends StatefulWidget {
   const AktivitasMerchantPage({super.key});
@@ -23,6 +24,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
   List<OrderModel> _orders = [];
   bool _isLoading = true;
   String? _errorMessage;
+  bool _isUnauthorized = false;
 
   @override
   void initState() {
@@ -31,18 +33,70 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
   }
 
   Future<void> _fetchOrders() async {
+    // Jika dipanggil ulang (refresh), reset state terlebih dahulu
+    if (!_isLoading) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    }
+
     try {
       final orders = await OrderService.fetchOrderMerchant();
       if (!mounted) return;
       setState(() {
         _orders = orders;
         _isLoading = false;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        if (e.statusCode == 401) {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        } else if (e.statusCode == 403) {
+          _errorMessage = 'Kamu tidak memiliki akses ke halaman ini.';
+        } else {
+          _errorMessage = e.message;
+        }
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = e.toString();
         _isLoading = false;
+        _errorMessage = 'Tidak dapat memuat data pesanan. Periksa koneksi internet kamu.';
+      });
+    }
+  }
+
+  /// Pull-to-refresh handler
+  Future<void> _onRefresh() async {
+    try {
+      final orders = await OrderService.fetchOrderMerchant();
+      if (!mounted) return;
+      setState(() {
+        _orders = orders;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        if (e.statusCode == 401) {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        } else {
+          _errorMessage = e.message;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Tidak dapat memuat data pesanan. Periksa koneksi internet kamu.';
       });
     }
   }
@@ -133,7 +187,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
     if (_errorMessage != null) {
-      return Center(child: Text('Error: $_errorMessage'));
+      return _buildErrorState();
     }
 
     List<OrderModel> filteredOrders;
@@ -162,46 +216,104 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
     return _buildListPesanan(filteredOrders, currentStatus);
   }
 
+  /// Widget untuk menampilkan error state yang user-friendly dengan tombol retry.
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _isUnauthorized ? Icons.lock_outline : Icons.error_outline,
+              size: 48,
+              color: AppColors.greyDark,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage ?? 'Terjadi kesalahan.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.greyDark,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 160,
+              child: HapHapButton(
+                text: _isUnauthorized ? 'Login Ulang' : 'Coba Lagi',
+                onPressed: () {
+                  if (_isUnauthorized) {
+                    // Navigasi ke halaman login jika token expired
+                    context.go(AppRoutes.login);
+                  } else {
+                    _fetchOrders();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildListPesanan(List<OrderModel> pesananList, MerchantOrderStatus status) {
     if (pesananList.isEmpty) {
-      return const Center(
-        child: Text(
-          'Belum ada pesanan.',
-          style: TextStyle(color: AppColors.greyDark, fontSize: 14),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.receipt_long_outlined,
+              size: 48,
+              color: AppColors.greyDark,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Belum ada pesanan.',
+              style: TextStyle(color: AppColors.greyDark, fontSize: 14),
+            ),
+          ],
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      itemCount: pesananList.length,
-      itemBuilder: (context, index) {
-        final order = pesananList[index];
-        final itemsList = order.orderItems.map((i) => '${i.quantity}x ${i.name}').toList();
-        
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: HapHapMerchantOrderCard(
-            status: status,
-            customerName: 'Customer', // User name is not included in backend OrderMerchantInfo sadly
-            orderId: order.orderId,
-            items: itemsList,
-            totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
-            onAccept: () {
-              if (status == MerchantOrderStatus.menunggu) {
-                showDialog(
-                  context: context,
-                  builder: (context) => HapHapScanQRDialog(orderId: order.orderId),
-                ).then((success) {
-                  if (success == true) {
-                    _fetchOrders(); // Refresh setelah berhasil scan
-                  }
-                });
-              }
-            },
-          ),
-        );
-      },
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: _onRefresh,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        itemCount: pesananList.length,
+        itemBuilder: (context, index) {
+          final order = pesananList[index];
+          
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: HapHapMerchantOrderCard(
+              status: status,
+              customerName: 'Customer',
+              orderId: order.orderId,
+              items: order.orderItems,
+              totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
+              onAccept: () {
+                if (status == MerchantOrderStatus.menunggu) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => HapHapScanQRDialog(orderId: order.orderId),
+                  ).then((success) {
+                    if (success == true) {
+                      _fetchOrders(); // Refresh setelah berhasil scan
+                    }
+                  });
+                }
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -215,7 +327,7 @@ class HapHapMerchantOrderCard extends StatelessWidget {
   final MerchantOrderStatus status;
   final String customerName;
   final String orderId;
-  final List<String> items;
+  final List<OrderItemModel> items;
   final String totalPrice;
   final VoidCallback? onAccept;
   final VoidCallback? onReject;
@@ -308,7 +420,7 @@ class HapHapMerchantOrderCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      orderId,
+                      orderId.length > 8 ? '#${orderId.substring(0, 8)}' : orderId,
                       style: const TextStyle(fontSize: 12, color: AppColors.greyLight),
                     ),
                   ],
@@ -326,10 +438,13 @@ class HapHapMerchantOrderCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
                   children: [
-                    const Text('1x', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    Text(
+                      '${item.quantity}x',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(item, style: const TextStyle(fontSize: 12, color: AppColors.black)),
+                      child: Text(item.name, style: const TextStyle(fontSize: 12, color: AppColors.black)),
                     ),
                   ],
                 ),
