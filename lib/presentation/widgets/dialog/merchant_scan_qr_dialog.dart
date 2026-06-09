@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/data/services/order_service.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 
 class HapHapScanQRDialog extends StatefulWidget {
   final String orderId;
@@ -34,6 +35,12 @@ class _HapHapScanQRDialogState extends State<HapHapScanQRDialog> {
         const SnackBar(content: Text('Pesanan berhasil diselesaikan!')),
       );
       Navigator.pop(context, true); // Return true to signal success
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal verifikasi QR: ${e.message}')),
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);

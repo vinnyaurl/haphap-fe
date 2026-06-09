@@ -107,15 +107,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
         return;
       }
 
-      final payment = await PaymentService.createPayment(order['orderId']);
+      final payment = await PaymentService.createPayment(order['orderId'] as String);
 
       if (!mounted) return;
 
       final uri = Uri.parse(payment.redirectUrl);
-      if (await canLaunchUrl(uri)) {
+      try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        setState(() => _errorMessage = 'Tidak dapat membuka halaman pembayaran.');
+        if (mounted) setState(() => _pendingOrderId = order['orderId'] as String);
+      } catch (e) {
+        if (mounted) {
+          setState(() => _errorMessage = 'Tidak dapat membuka halaman pembayaran.');
+        }
       }
     } on ApiException catch (e) {
       if (!mounted) return;

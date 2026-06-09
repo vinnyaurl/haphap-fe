@@ -188,7 +188,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                         icon: Icons.edit,
                         title: 'Edit Detail',
                         onTap: () {
-                          context.push(AppRoutes.merchantEditProfil).then((_) {
+                          context.push(AppRoutes.editProfil).then((_) {
                             setState(() => _isLoading = true);
                             _fetchProfile(); // Refresh profile after returning
                           });
@@ -347,4 +347,4 @@ class _MenuItemData {
     this.badge,
     required this.onTap,
   });
-}
+}

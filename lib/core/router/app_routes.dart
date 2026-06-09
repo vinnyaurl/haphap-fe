@@ -29,33 +29,31 @@ import 'package:haphap_fe/presentation/pages/merchant/merchant_aktivitas.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_akun.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_statistik.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_notifikasi.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_edit_profil.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppRoutes {
   AppRoutes._();
 
-  static const String splash          = '/splash';
-  static const String onboarding      = '/onboarding';
-  static const String login           = '/login';
-  static const String register        = '/register';
+  static const String splash           = '/splash';
+  static const String onboarding       = '/onboarding';
+  static const String login            = '/login';
+  static const String register         = '/register';
 
-  static const String beranda         = '/beranda';
-  static const String jelajah         = '/jelajah';
-  static const String aktivitas       = '/aktivitas';
-  static const String akun            = '/akun';
-  static const String detailPesanan   = '/detail';
+  static const String beranda          = '/beranda';
+  static const String jelajah          = '/jelajah';
+  static const String aktivitas        = '/aktivitas';
+  static const String akun             = '/akun';
+  static const String detailPesanan    = '/detail';
   static const String laporanTransaksi = '/laporan';
-  static const String editProfil      = '/edit-profil';
-  static const String statistik       = '/statistik';
-  static const String alamat          = '/alamat';
-  static const String bahasa          = '/bahasa';
-  static const String notifikasi      = '/notifikasi';
+  static const String editProfil       = '/edit-profil';
+  static const String statistik        = '/statistik';
+  static const String alamat           = '/alamat';
+  static const String bahasa           = '/bahasa';
+  static const String notifikasi       = '/notifikasi';
 
-  static const String detailRestoran  = '/detail-restoran';
-  static const String checkout        = '/checkout';
-  static const String paymentWebView  = '/payment';
+  static const String detailRestoran   = '/detail-restoran';
+  static const String checkout         = '/checkout';
 
   static const String merchantBeranda    = '/merchant/beranda';
   static const String merchantMenu       = '/merchant/menu';
@@ -63,13 +61,32 @@ class AppRoutes {
   static const String merchantAkun       = '/merchant/akun';
   static const String merchantStatistik  = '/merchant/statistik';
   static const String merchantNotifikasi = '/merchant/notifikasi';
-  static const String merchantEditProfil = '/merchant/edit-profil';
 }
 
 final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: AppRoutes.beranda,
+  initialLocation: AppRoutes.splash,
+  errorBuilder: (context, state) => Scaffold(
+    body: Center(
+      child: TextButton(
+        onPressed: () => context.go(AppRoutes.splash),
+        child: const Text('Kembali ke Splash'),
+      ),
+    ),
+  ),
   routes: [
+    GoRoute(
+      path: '/',
+      redirect: (context, state) => AppRoutes.beranda,
+    ),
+    GoRoute(
+      path: '/payment/finish',
+      redirect: (context, state) => AppRoutes.aktivitas,
+    ),
+    GoRoute(
+      path: '/aktivitas-redirect',
+      redirect: (context, state) => AppRoutes.aktivitas,
+    ),
     GoRoute(
       path: AppRoutes.splash,
       builder: (context, state) => const SplashScreen(),
@@ -87,9 +104,9 @@ final appRouter = GoRouter(
       builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
-      path: '${AppRoutes.detailPesanan}/:orderId',
+      path: AppRoutes.detailPesanan,
       builder: (context, state) {
-        final orderId = state.pathParameters['orderId']!;
+        final orderId = state.extra as String?;
         return DetailPesananPage(orderId: orderId);
       },
     ),
@@ -139,66 +156,39 @@ final appRouter = GoRouter(
       path: AppRoutes.merchantNotifikasi,
       builder: (context, state) => const NotifikasiMerchantPage(),
     ),
-    GoRoute(
-      path: AppRoutes.merchantEditProfil,
-      builder: (context, state) => const EditProfilMerchantPage(),
-    ),
 
-    GoRoute(
-      path: '/finish',
-      redirect: (context, state) {
-        final orderId = state.uri.queryParameters['order_id'];
-        final status = state.uri.queryParameters['transaction_status'];
-        debugPrint('Midtrans Redirect - Order: $orderId, Status: $status');
-        return AppRoutes.aktivitas; 
-      },
-    ),
-    GoRoute(
-      path: '/payment/finish',
-      redirect: (context, state) => AppRoutes.aktivitas,
-    ),
 
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
           MainShell(navigationShell: navigationShell),
       branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.beranda,
-              builder: (context, state) => const BerandaPage(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.jelajah,
-              builder: (context, state) {
-                final category = state.uri.queryParameters['category'];
-                return JelajahPage(initialCategory: category);
-              },
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.aktivitas,
-              builder: (context, state) => const AktivitasPage(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.akun,
-              builder: (context, state) => const AkunPage(),
-            ),
-          ],
-        ),
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: AppRoutes.beranda,
+            builder: (context, state) => const BerandaPage(),
+          ),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: AppRoutes.jelajah,
+            builder: (context, state) => const JelajahPage(),
+          ),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: AppRoutes.aktivitas,
+            builder: (context, state) => const AktivitasPage(),
+          ),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: AppRoutes.akun,
+            builder: (context, state) => const AkunPage(),
+          ),
+        ]),
       ],
     ),
+
 
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
