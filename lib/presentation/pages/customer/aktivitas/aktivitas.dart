@@ -139,48 +139,13 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
     }
   }
 
-  Future<void> _verifyPayment(_OrderItem order) async {
-    if (_launchingOrderId != null) return;
-    setState(() => _launchingOrderId = order.orderId);
-
-    try {
-      final response = await ApiClient.post('/payments/${order.orderId}/verify', {});
-      final data = response['data'] as Map<String, dynamic>? ?? response;
-      final message = data['message'] as String? ?? 'Verifikasi selesai.';
-      final orderStatus = data['orderStatus'] as String? ?? order.status;
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: orderStatus == 'PAID' ? Colors.green : Colors.orange,
-          ),
-        );
-        await _fetchOrders(silent: true);
-      }
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal verifikasi pembayaran. Coba lagi.')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _launchingOrderId = null);
-    }
-  }
-
   // Active = PENDING, PAID, COMPLETED (Yuk Ambil)
   List<_OrderItem> get _activeOrders => _orders
       .where((o) => o.status == 'PENDING' || o.status == 'PAID' || o.status == 'COMPLETED')
       .toList();
 
-  // History = CANCELLED only
+  // History = CANCELLED only (COMPLETED moves to riwayat after pickup)
+  // TODO: move COMPLETED to riwayat after user confirms pickup
   List<_OrderItem> get _historyOrders => _orders
       .where((o) => o.status == 'CANCELLED')
       .toList();
@@ -317,69 +282,39 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
           children: [
             ..._activeOrders.map((order) => Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      if (order.status == 'PENDING') {
-                        _launchPayment(order);
-                      } else if (order.status == 'COMPLETED') {
-                        context.push(
-                          AppRoutes.detailPesanan,
-                          extra: order.orderId,
-                        );
-                      }
-                    },
-                    child: Stack(
-                      children: [
-                        HapHapAktivitasCard(
-                          statusText: _statusText(order),
-                          mainText: _mainText(order),
-                          restaurantName: order.merchantName,
-                          imagePath: _imagePath(order),
-                        ),
-                        if (_launchingOrderId == order.orderId)
-                          Positioned.fill(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: const Center(
-                                child: CircularProgressIndicator(color: AppColors.white),
-                              ),
-                            ),
-                          ),
-                      ],
+              child: GestureDetector(
+                onTap: () {
+                  if (order.status == 'PENDING') {
+                    _launchPayment(order);
+                  } else if (order.status == 'COMPLETED') {
+                    context.push(
+                      AppRoutes.detailPesanan,
+                      extra: order.orderId,
+                    );
+                  }
+                },
+                child: Stack(
+                  children: [
+                    HapHapAktivitasCard(
+                      statusText: _statusText(order),
+                      mainText: _mainText(order),
+                      restaurantName: order.merchantName,
+                      imagePath: _imagePath(order),
                     ),
-                  ),
-                  if (order.status == 'PENDING')
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 40,
-                        child: OutlinedButton.icon(
-                          onPressed: _launchingOrderId == null
-                              ? () => _verifyPayment(order)
-                              : null,
-                          icon: const Icon(Icons.verified_outlined, size: 18),
-                          label: const Text('Sudah Bayar? Verifikasi'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                            side: const BorderSide(color: AppColors.primary),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            textStyle: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    if (_launchingOrderId == order.orderId)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: AppColors.white),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             )),
             const SizedBox(height: 100),
@@ -410,14 +345,10 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
         separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (_, i) {
           final order = _historyOrders[i];
-          final avatar = (order.merchantAvatar != null && order.merchantAvatar!.isNotEmpty)
-              ? order.merchantAvatar!
-              : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400';
-
           return GestureDetector(
-            onTap: () => context.push(AppRoutes.detailPesanan, extra: order.orderId),
+            onTap: () => context.push(AppRoutes.detailPesanan),
             child: HapHapRiwayatCard(
-              imageUrl: avatar,
+              imageUrl: '',
               dateStatusText:
                   '${order.createdAt.substring(0, 10)} · ${order.status == 'COMPLETED' ? 'Selesai' : 'Dibatalkan'}',
               restaurantName: order.merchantName,

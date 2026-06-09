@@ -65,12 +65,12 @@ class AppRoutes {
 
 final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: AppRoutes.splash,
+  initialLocation: AppRoutes.beranda,
   errorBuilder: (context, state) => Scaffold(
     body: Center(
       child: TextButton(
-        onPressed: () => context.go(AppRoutes.splash),
-        child: const Text('Kembali ke Splash'),
+        onPressed: () => context.go(AppRoutes.beranda),
+        child: const Text('Kembali ke Beranda'),
       ),
     ),
   ),
