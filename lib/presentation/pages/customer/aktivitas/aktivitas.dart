@@ -294,7 +294,7 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
         itemBuilder: (_, i) {
           final order = _historyOrders[i];
           return GestureDetector(
-            onTap: () => context.push(AppRoutes.detailPesanan),
+            onTap: () => context.push(AppRoutes.detailPesanan, extra: order.orderId),
             child: HapHapRiwayatCard(
               imageUrl: '',
               dateStatusText:

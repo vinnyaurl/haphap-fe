@@ -30,7 +30,7 @@ class CheckoutPage extends StatefulWidget {
   final String? pendingOrderId;
 
   const CheckoutPage({super.key, this.args, this.pendingOrderId})
-      : assert(args != null || pendingOrderId != null);
+    : assert(args != null || pendingOrderId != null);
 
   /// Whether this checkout was opened for an existing pending order.
   bool get isPendingMode => pendingOrderId != null;
@@ -80,13 +80,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
       final items = <SurplusItemModel>[];
       final cart = <String, int>{};
       for (final oi in order.orderItems) {
-        items.add(SurplusItemModel(
-          surplusItemId: oi.surplusItemId,
-          name: oi.name,
-          discountPrice: oi.discountPrice,
-          originalPrice: oi.originalPrice,
-          stock: oi.quantity, // stock = quantity for display
-        ));
+        items.add(
+          SurplusItemModel(
+            surplusItemId: oi.surplusItemId,
+            name: oi.name,
+            discountPrice: oi.discountPrice,
+            originalPrice: oi.originalPrice,
+            stock: oi.quantity, // stock = quantity for display
+          ),
+        );
         cart[oi.surplusItemId] = oi.quantity;
       }
 
@@ -137,12 +139,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   bool _isValidUrl(String? url) =>
-      url != null &&
-      (url.startsWith('http://') || url.startsWith('https://'));
+      url != null && (url.startsWith('http://') || url.startsWith('https://'));
 
-  String _formatPrice(int price) => price
-      .toString()
-      .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+  String _formatPrice(int price) => price.toString().replaceAllMapped(
+    RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+    (m) => '${m[1]}.',
+  );
 
   Future<void> _buatPesanan() async {
     if (_activeItems.isEmpty || _isSubmitting) return;
@@ -169,17 +171,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
         return;
       }
 
-      final payment = await PaymentService.createPayment(order['orderId'] as String);
+      final payment = await PaymentService.createPayment(
+        order['orderId'] as String,
+      );
 
       if (!mounted) return;
 
       final uri = Uri.parse(payment.redirectUrl);
       try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
-        if (mounted) setState(() => _pendingOrderId = order['orderId'] as String);
+        if (mounted)
+          setState(() => _pendingOrderId = order['orderId'] as String);
       } catch (e) {
         if (mounted) {
-          setState(() => _errorMessage = 'Tidak dapat membuka halaman pembayaran.');
+          setState(
+            () => _errorMessage = 'Tidak dapat membuka halaman pembayaran.',
+          );
         }
       }
     } on ApiException catch (e) {
@@ -216,15 +223,53 @@ class _CheckoutPageState extends State<CheckoutPage> {
           _pendingOrderId = null;
         });
       } else {
-        setState(() => _errorMessage =
-            'Pembayaran belum terkonfirmasi. Pastikan kamu telah menyelesaikan pembayaran.');
+        setState(
+          () => _errorMessage =
+              'Pembayaran belum terkonfirmasi. Pastikan kamu telah menyelesaikan pembayaran.',
+        );
       }
     } on ApiException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
     } catch (_) {
-      if (mounted) setState(() => _errorMessage = 'Gagal mengecek status. Coba lagi.');
+      if (mounted)
+        setState(() => _errorMessage = 'Gagal mengecek status. Coba lagi.');
     } finally {
       if (mounted) setState(() => _isCheckingPayment = false);
+    }
+  }
+
+  Future<void> _bayarUlang() async {
+    if (_pendingOrderId == null || _isSubmitting) return;
+
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Reuse existing order — just create a new payment link for it
+      final payment = await PaymentService.createPayment(_pendingOrderId!);
+
+      if (!mounted) return;
+
+      final uri = Uri.parse(payment.redirectUrl);
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        if (mounted) {
+          setState(
+            () => _errorMessage = 'Tidak dapat membuka halaman pembayaran.',
+          );
+        }
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _errorMessage = e.message);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _errorMessage = 'Terjadi kesalahan. Silakan coba lagi.');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -302,7 +347,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                     child: Text(
                       _errorMessage!,
-                      style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.red.shade700,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ),
@@ -330,19 +378,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           child: Text(
                             'Keranjang kosong.',
                             style: TextStyle(
-                                color: AppColors.greyDark, fontSize: 14),
+                              color: AppColors.greyDark,
+                              fontSize: 14,
+                            ),
                           ),
                         )
                       else
-                        ..._activeItems.map((item) => Column(
-                              children: [
-                                _buildCartItem(item),
-                                const Divider(
-                                    color: Color(0xFFF1F1F1),
-                                    height: 1,
-                                    thickness: 1),
-                              ],
-                            )),
+                        ..._activeItems.map(
+                          (item) => Column(
+                            children: [
+                              _buildCartItem(item),
+                              const Divider(
+                                color: Color(0xFFF1F1F1),
+                                height: 1,
+                                thickness: 1,
+                              ),
+                            ],
+                          ),
+                        ),
 
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -361,10 +414,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Total',
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: AppColors.greyDark)),
+                                const Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.greyDark,
+                                  ),
+                                ),
                                 Text(
                                   'Rp ${_formatPrice(_totalPrice)}',
                                   style: const TextStyle(
@@ -439,7 +495,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         Text(
                           item.description!,
                           style: const TextStyle(
-                              fontSize: 12, color: AppColors.greyDark),
+                            fontSize: 12,
+                            color: AppColors.greyDark,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -467,35 +525,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           ),
                         )
                       else
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GestureDetector(
-                            onTap: () => _remove(item),
-                            behavior: HitTestBehavior.opaque,
-                            child: const Icon(Icons.remove_circle,
-                                color: AppColors.primary, size: 24),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 12.0),
-                            child: Text(
-                              '$qty',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.black,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () => _remove(item),
+                              behavior: HitTestBehavior.opaque,
+                              child: const Icon(
+                                Icons.remove_circle,
+                                color: AppColors.primary,
+                                size: 24,
                               ),
                             ),
-                          ),
-                          GestureDetector(
-                            onTap: () => _add(item),
-                            behavior: HitTestBehavior.opaque,
-                            child: const Icon(Icons.add_circle,
-                                color: AppColors.primary, size: 24),
-                          ),
-                        ],
-                      ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0,
+                              ),
+                              child: Text(
+                                '$qty',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.black,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => _add(item),
+                              behavior: HitTestBehavior.opaque,
+                              child: const Icon(
+                                Icons.add_circle,
+                                color: AppColors.primary,
+                                size: 24,
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ],
@@ -508,13 +573,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _placeholderBox() => Container(
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-        ),
-      );
+    width: 80,
+    height: 80,
+    decoration: BoxDecoration(
+      color: AppColors.primary.withValues(alpha: 0.15),
+      borderRadius: BorderRadius.circular(12),
+    ),
+  );
 
   Widget _buildCheckoutBottomBar() {
     final bottomSafeArea = MediaQuery.paddingOf(context).bottom;
@@ -548,8 +613,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 children: [
                   _selectedPaymentMethod == 'QRIS'
                       ? SvgPicture.asset(AppIcons.QRIS, height: 24)
-                      : const Icon(Icons.payments,
-                          color: Colors.green, size: 24),
+                      : const Icon(
+                          Icons.payments,
+                          color: Colors.green,
+                          size: 24,
+                        ),
                   const SizedBox(width: 12),
                   Text(
                     _selectedPaymentMethod,
@@ -589,7 +657,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   backgroundColor: AppColors.primary,
                   disabledBackgroundColor: AppColors.greyLight,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24)),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                   elevation: 0,
                 ),
                 child: _isCheckingPayment
@@ -616,11 +685,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
               width: double.infinity,
               height: 48,
               child: OutlinedButton(
-                onPressed: _isCheckingPayment ? null : _buatPesanan,
+                onPressed: (_isCheckingPayment || _isSubmitting) ? null : _bayarUlang,
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: AppColors.primary),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24)),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                 ),
                 child: const Text(
                   'Bayar Ulang',
@@ -644,7 +714,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   backgroundColor: AppColors.primary,
                   disabledBackgroundColor: AppColors.greyLight,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24)),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                   elevation: 0,
                 ),
                 child: _isSubmitting
@@ -677,8 +748,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
-          padding:
-              const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 34),
+          padding: const EdgeInsets.only(
+            top: 24,
+            left: 24,
+            right: 24,
+            bottom: 34,
+          ),
           decoration: const BoxDecoration(
             color: AppColors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -732,11 +807,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
           children: [
             icon,
             const SizedBox(width: 12),
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black)),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.black,
+              ),
+            ),
             const Spacer(),
             Container(
               width: 20,
