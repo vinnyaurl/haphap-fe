@@ -53,6 +53,20 @@ class OrderService {
         .toList();
   }
 
+  /// Merchant terima order → status PREPARING.
+  /// Endpoint: PATCH /orders/:orderId/accept
+  static Future<OrderModel> acceptOrder(String orderId) async {
+    final json = await ApiClient.patch('/orders/$orderId/accept', {});
+    return OrderModel.fromJson(json['data'] as Map<String, dynamic>);
+  }
+
+  /// Merchant tolak order → status CANCELLED.
+  /// Endpoint: PATCH /orders/:orderId/reject
+  static Future<OrderModel> rejectOrder(String orderId) async {
+    final json = await ApiClient.patch('/orders/$orderId/reject', {});
+    return OrderModel.fromJson(json['data'] as Map<String, dynamic>);
+  }
+
   /// Scan QR Code untuk menyelesaikan order.
   /// Endpoint: PATCH /orders/:orderId/scan
   static Future<OrderModel> scanOrder(String orderId, String qrCode) async {

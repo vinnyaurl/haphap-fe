@@ -102,7 +102,11 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   }
 
   List<_OrderItem> get _activeOrders => _orders
-      .where((o) => o.status == 'PENDING' || o.status == 'PROCESSING' || o.status == 'COMPLETED')
+      .where((o) =>
+          o.status == 'PENDING' ||
+          o.status == 'PROCESSING' ||
+          o.status == 'PREPARING' ||
+          o.status == 'COMPLETED')
       .toList();
 
   // History = CANCELLED only (COMPLETED moves to riwayat after pickup)
@@ -116,28 +120,31 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
 
   String _statusText(_OrderItem order) {
     switch (order.status) {
-      case 'PENDING':  return 'Menunggu Pembayaran';
-      case 'PROCESSING':     return 'Pesanan lagi dikonfirmasi';
-      case 'COMPLETED': return 'Yuk Ambil!';
-      default:         return order.status;
+      case 'PENDING':    return 'Menunggu Pembayaran';
+      case 'PROCESSING': return 'Pesanan lagi dikonfirmasi';
+      case 'PREPARING':  return 'Pesanan sedang disiapkan';
+      case 'COMPLETED':  return 'Yuk Ambil!';
+      default:           return order.status;
     }
   }
 
   String _mainText(_OrderItem order) {
     switch (order.status) {
-      case 'PENDING':  return 'Bayar Sekarang!';
-      case 'PROCESSING':     return 'Ditunggu...';
-      case 'COMPLETED': return 'Pesanan siap diambil!';
-      default:         return '-';
+      case 'PENDING':    return 'Bayar Sekarang!';
+      case 'PROCESSING': return 'Ditunggu...';
+      case 'PREPARING':  return 'Sabar ya, lagi disiapkan!';
+      case 'COMPLETED':  return 'Pesanan siap diambil!';
+      default:           return '-';
     }
   }
 
   String _imagePath(_OrderItem order) {
     switch (order.status) {
-      case 'PENDING':   return 'assets/images/aktivitas_puy_waiting1.png';
-      case 'PROCESSING':      return 'assets/images/aktivitas_puy_processing.png';
-      case 'COMPLETED': return 'assets/images/aktivitas_puy_done.png';
-      default:          return 'assets/images/aktivitas_puy_processing.png';
+      case 'PENDING':    return 'assets/images/aktivitas_puy_waiting1.png';
+      case 'PROCESSING': return 'assets/images/aktivitas_puy_processing.png';
+      case 'PREPARING':  return 'assets/images/aktivitas_puy_processing.png';
+      case 'COMPLETED':  return 'assets/images/aktivitas_puy_done.png';
+      default:           return 'assets/images/aktivitas_puy_processing.png';
     }
   }
 
