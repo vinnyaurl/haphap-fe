@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
@@ -25,14 +26,24 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
   OrderModel? _order;
   bool _isLoading = true;
   String? _error;
+  Timer? _pollTimer;
 
   @override
   void initState() {
     super.initState();
     _fetchOrder();
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _fetchOrder(silent: true);
+    });
   }
 
-  Future<void> _fetchOrder() async {
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchOrder({bool silent = false}) async {
     if (widget.orderId == null) {
       setState(() {
         _error = 'Order ID tidak ditemukan';
@@ -48,12 +59,18 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
         _order = order;
         _isLoading = false;
       });
+
+      if (order.status == 'COMPLETED' || order.status == 'CANCELLED') {
+        _pollTimer?.cancel();
+      }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (!silent) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -108,22 +125,46 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
   Widget _buildContent() {
     final order = _order!;
     
-    String mainTitle = 'Pesanan Diproses';
-    String imagePath = 'assets/images/on_process.png';
-    String dateStatus = '${_formatDate(order.createdAt)} · Disiapin';
+    String mainTitle;
+    String imagePath;
+    String dateStatus;
 
-    if (order.status == 'PENDING') {
-      mainTitle = 'Menunggu Pembayaran';
-      imagePath = 'assets/images/on_process.png'; 
-      dateStatus = '${_formatDate(order.createdAt)} · Menunggu';
-    } else if (order.isCompleted) {
-      mainTitle = 'Pesanan Selesai';
-      imagePath = 'assets/images/done.png';
-      dateStatus = '${_formatDate(order.createdAt)} · Selesai';
-    } else if (order.isCancelled) {
-      mainTitle = 'Pesanan Dibatalkan';
-      imagePath = 'assets/images/on_process.png'; 
-      dateStatus = '${_formatDate(order.createdAt)} · Dibatalkan';
+    switch (order.status) {
+      case 'PENDING':
+        mainTitle = 'Menunggu Pembayaran';
+        imagePath = 'assets/images/on_process.png';
+        dateStatus = '${_formatDate(order.createdAt)} · Menunggu';
+        break;
+      case 'PROCESSING':
+        mainTitle = 'Pesanan Dikonfirmasi Merchant';
+        imagePath = 'assets/images/on_process.png';
+        dateStatus = '${_formatDate(order.createdAt)} · Dikonfirmasi';
+        break;
+      case 'READY':
+        if (order.qrCode != null) {
+          mainTitle = 'Pesanan Siap Diambil';
+          imagePath = 'assets/images/done.png';
+          dateStatus = '${_formatDate(order.createdAt)} · Siap Diambil';
+        } else {
+          mainTitle = 'Pesanan Sedang Disiapkan';
+          imagePath = 'assets/images/on_process.png';
+          dateStatus = '${_formatDate(order.createdAt)} · Disiapkan';
+        }
+        break;
+      case 'COMPLETED':
+        mainTitle = 'Pesanan Selesai';
+        imagePath = 'assets/images/done.png';
+        dateStatus = '${_formatDate(order.createdAt)} · Selesai';
+        break;
+      case 'CANCELLED':
+        mainTitle = 'Pesanan Dibatalkan';
+        imagePath = 'assets/images/on_process.png';
+        dateStatus = '${_formatDate(order.createdAt)} · Dibatalkan';
+        break;
+      default:
+        mainTitle = 'Pesanan Diproses';
+        imagePath = 'assets/images/on_process.png';
+        dateStatus = '${_formatDate(order.createdAt)} · Diproses';
     }
 
     final avatar = (order.merchant?.avatar != null && order.merchant!.avatar!.isNotEmpty) 
@@ -143,11 +184,10 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
 
           const SizedBox(height: 32),
 
-          if (order.status == 'PENDING' || order.status == 'PAID') ...[
-            Center( 
+          if (order.status == 'READY' && order.qrCode != null) ...[
+            Center(
               child: HapHapQRCodeCard(
-                orderId: order.orderId,
-                qrImagePath: 'assets/images/qr_code.png', // QR dummy UI as fallback
+                qrToken: order.qrCode!,
               ),
             ),
             const SizedBox(height: 32),
@@ -168,7 +208,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
             restaurantLogoUrl: avatar,
             items: order.orderItems.map((item) => HapHapOrderItem(
               name: item.name,
-              description: '', // Optional description if available
+              description: '',
               price: 'Rp ${_formatPrice(item.discountPrice)}',
               quantity: item.quantity,
             )).toList(),
@@ -187,13 +227,12 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
           const SizedBox(height: 16),
 
           HapHapRincianPembayaran(
-            paymentMethod: 'Tunai di Kasir', // Or map from order if added later
+            paymentMethod: 'Tunai di Kasir',
             totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
             orderNumber: order.orderId,
             paymentTime: order.paidAt != null ? _formatDate(order.paidAt!) : '-',
             completionTime: order.completedAt != null ? _formatDate(order.completedAt!) : '-',
             onReceiptPressed: () {
-              // Add receipt logic if needed
             },
           ),
           

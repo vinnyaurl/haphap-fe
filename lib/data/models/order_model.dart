@@ -1,5 +1,3 @@
-/// Model untuk data merchant di dalam order response.
-/// Backend mengembalikan raw Prisma Merchant include, jadi field-nya pakai [id].
 class OrderMerchantInfo {
   final String merchantId;
   final String merchantName;
@@ -23,7 +21,6 @@ class OrderMerchantInfo {
   }
 }
 
-/// Model untuk item di dalam order.
 class OrderItemModel {
   final String orderItemId;
   final String surplusItemId;
@@ -53,15 +50,6 @@ class OrderItemModel {
   }
 }
 
-/// Model utama untuk order.
-/// Response dari GET /orders/me, GET /orders/:orderId, dan GET /orders/merchant.
-///
-/// - GET /orders/me → includes merchant + orderItems (customer POV)
-/// - GET /orders/merchant → includes user + orderItems (merchant POV)
-/// - GET /orders/:orderId → includes merchant + user + orderItems
-///
-/// Field [merchant] nullable karena merchant order response tidak include merchant.
-/// Field [customerName] diambil dari user.name jika tersedia (merchant order response).
 class OrderModel {
   final String orderId;
   final String merchantId;
@@ -96,14 +84,12 @@ class OrderModel {
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
-    // Parse merchant info (available in customer POV responses)
     OrderMerchantInfo? merchantInfo;
     if (json['merchant'] != null) {
       merchantInfo = OrderMerchantInfo.fromJson(
           json['merchant'] as Map<String, dynamic>);
     }
 
-    // Parse customer name (available in merchant POV responses)
     String? customerName;
     if (json['user'] != null) {
       final user = json['user'] as Map<String, dynamic>;
@@ -136,12 +122,12 @@ class OrderModel {
     );
   }
 
-  /// Apakah order sedang dalam proses (belum selesai/dibatalkan)
-  bool get isInProgress => status == 'PENDING' || status == 'PAID';
+  bool get isInProgress =>
+      status == 'PENDING' ||
+      status == 'PROCESSING' ||
+      status == 'READY';
 
-  /// Apakah order sudah selesai
   bool get isCompleted => status == 'COMPLETED';
 
-  /// Apakah order dibatalkan
   bool get isCancelled => status == 'CANCELLED';
 }

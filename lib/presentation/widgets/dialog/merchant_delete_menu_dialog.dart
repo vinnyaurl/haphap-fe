@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; // Import HapHapButton
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 class HapHapDeleteMenuDialog extends StatefulWidget {
   final String menuName;
@@ -34,7 +34,7 @@ class _HapHapDeleteMenuDialogState extends State<HapHapDeleteMenuDialog> {
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.pop(context, true); // Return true to signal success
+      Navigator.pop(context, true);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _isDeleting = false);
@@ -82,7 +82,7 @@ class _HapHapDeleteMenuDialogState extends State<HapHapDeleteMenuDialog> {
                 Expanded(
                   child: HapHapButton(
                     text: 'Batal',
-                    isOutline: true, // Asumsi ada parameter ini di tombolmu
+                    isOutline: true,
                     onPressed: _isDeleting ? () {} : () => Navigator.pop(context),
                   ),
                 ),

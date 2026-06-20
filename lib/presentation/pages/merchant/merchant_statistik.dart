@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // Import package chart
+import 'package:fl_chart/fl_chart.dart'; 
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
-// --- IMPORT KOMPONEN LEGO KITA ---
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu.dart'; 
-// Import komponen header-nya di sini (Sesuaikan path-nya jika beda)
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 
 class StatistikMerchantPage extends StatefulWidget {
@@ -19,15 +17,14 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9), // Background abu-abu muda
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              
-              // 1. HEADER (Menggunakan Komponen HapHapPageHeader)
+
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: HapHapPageHeader(
@@ -37,7 +34,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
               
               const SizedBox(height: 16),
 
-              // 2. KARTU STATISTIK ATAS
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: Row(
@@ -66,7 +62,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
 
               const SizedBox(height: 24),
 
-              // 3. KARTU GRAFIK (CHART)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Container(
@@ -84,7 +79,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                   ),
                   child: Column(
                     children: [
-                      // Area Chart
                       SizedBox(
                         height: 200,
                         child: _buildLineChart(),
@@ -93,8 +87,7 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                       const SizedBox(height: 24),
                       const Divider(color: Color(0xFFF1F1F1), height: 1),
                       const SizedBox(height: 16),
-                      
-                      // Area Detail Pendapatan di Bawah Chart
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -180,7 +173,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
 
               const SizedBox(height: 32),
 
-              // 4. MENU PALING LARIS
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: Text(
@@ -212,9 +204,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
     );
   }
 
-  // ===========================================================================
-  // WIDGET KHUSUS UNTUK MEMBANGUN FL_CHART (Versi 0.68.0)
-  // ===========================================================================
   Widget _buildLineChart() {
     return LineChart(
       LineChartData(

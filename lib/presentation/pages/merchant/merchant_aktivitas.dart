@@ -25,10 +25,6 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
   String? _errorMessage;
   bool _isUnauthorized = false;
 
-  // Tracks PREPARING orders where merchant tapped "Siap Ambil".
-  // UI-only: flips card from sedangDisiapkan → siapDiambil (shows Scan QR).
-  // Cleared on every _fetchOrders() so a hard refresh resets it.
-  final Set<String> _readyOrderIds = {};
 
   @override
   void initState() {
@@ -37,7 +33,6 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
   }
 
   Future<void> _fetchOrders() async {
-    // Jika dipanggil ulang (refresh), reset state terlebih dahulu
     if (!_isLoading) {
       setState(() {
         _isLoading = true;
@@ -54,7 +49,6 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
         _isLoading = false;
         _errorMessage = null;
         _isUnauthorized = false;
-        _readyOrderIds.clear();
       });
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -78,7 +72,6 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
     }
   }
 
-  /// Pull-to-refresh handler
   Future<void> _onRefresh() async {
     try {
       final orders = await OrderService.fetchOrderMerchant();
@@ -87,7 +80,6 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
         _orders = orders;
         _errorMessage = null;
         _isUnauthorized = false;
-        _readyOrderIds.clear();
       });
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -123,15 +115,12 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16), // Jarak 16px dari atas
+            const SizedBox(height: 16),
             
-            // 1. HEADER (Menggunakan komponen & struktur yang sama dengan Customer)
             _buildHeader(context),
 
-            // KUNCI: Jarak presisi 16px langsung ke Tab Bar (tanpa Divider)
             const SizedBox(height: 16),
 
-            // 2. TAB BAR
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: SingleChildScrollView(
@@ -148,9 +137,8 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
               ),
             ),
 
-            const SizedBox(height: 16), // Jarak 16px dari tab bar ke konten list
+            const SizedBox(height: 16),
 
-            // 3. KONTEN TAB
             Expanded(child: _buildTabContent()),
           ],
         ),
@@ -163,17 +151,15 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Row(
         children: [
-          // HapHapPageHeader dibungkus Expanded agar tombol di kanan nggak tergeser
           const Expanded(
             child: HapHapPageHeader(
               title: 'Aktivitas',
-              showBackButton: false, // Halaman utama tab, matikan tombol back
-              fontSize: 24,          // Font besar sesuai desain
+              showBackButton: false,
+              fontSize: 24,
             ),
           ),
           
           GestureDetector(
-            // --- NAVIGASI KE LAPORAN TRANSAKSI ---
             onTap: () {
               context.push(AppRoutes.laporanTransaksi);
             },
@@ -201,31 +187,25 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
 
     switch (_currentTabIndex) {
       case 0:
-        // Baru = PROCESSING (payment confirmed via webhook, waiting merchant action)
         filteredOrders = _orders.where((o) => o.status == 'PROCESSING').toList();
         currentStatus = MerchantOrderStatus.baru;
         break;
       case 1:
-        // Sedang Disiapkan = PREPARING (merchant accepted, currently preparing).
-        // Card status per-order: siapDiambil if merchant tapped "Siap Ambil",
-        // otherwise sedangDisiapkan. Handled inside _buildListPesanan for tab 1.
-        filteredOrders = _orders.where((o) => o.status == 'PREPARING').toList();
-        currentStatus = MerchantOrderStatus.sedangDisiapkan; // default; overridden per-card
+        filteredOrders = _orders.where((o) => o.status == 'READY').toList();
+        currentStatus = MerchantOrderStatus.sedangDisiapkan;
         break;
       case 2:
       default:
-        // Selesai tab: shows both COMPLETED and CANCELLED orders
         filteredOrders = _orders
             .where((o) => o.status == 'COMPLETED' || o.status == 'CANCELLED')
             .toList();
-        currentStatus = MerchantOrderStatus.selesai; // overridden per-card below
+        currentStatus = MerchantOrderStatus.selesai;
         break;
     }
 
     return _buildListPesanan(filteredOrders, currentStatus);
   }
 
-  /// Widget untuk menampilkan error state yang user-friendly dengan tombol retry.
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -254,7 +234,6 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
                 text: _isUnauthorized ? 'Login Ulang' : 'Coba Lagi',
                 onPressed: () {
                   if (_isUnauthorized) {
-                    // Navigasi ke halaman login jika token expired
                     context.go(AppRoutes.login);
                   } else {
                     _fetchOrders();
@@ -299,13 +278,9 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
         itemBuilder: (context, index) {
           final order = pesananList[index];
 
-          // Resolve the actual card status per-order:
-          // - Tab 1 (PREPARING): siapDiambil if merchant already tapped "Siap Ambil"
-          // - Tab 2 (Selesai): dibatalkan for CANCELLED, selesai for COMPLETED
-          // - All other tabs: use the tab-level status directly
           final MerchantOrderStatus cardStatus;
-          if (order.status == 'PREPARING') {
-            cardStatus = _readyOrderIds.contains(order.orderId)
+          if (order.status == 'READY') {
+            cardStatus = (order.qrCode != null && order.qrCode!.isNotEmpty)
                 ? MerchantOrderStatus.siapDiambil
                 : MerchantOrderStatus.sedangDisiapkan;
           } else if (order.status == 'CANCELLED') {
@@ -351,8 +326,17 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
                     }
                   : null,
               onReady: cardStatus == MerchantOrderStatus.sedangDisiapkan
-                  ? () {
-                      setState(() => _readyOrderIds.add(order.orderId));
+                  ? () async {
+                      try {
+                        await OrderService.readyOrder(order.orderId);
+                        if (!mounted) return;
+                        _fetchOrders();
+                      } catch (_) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Gagal menandai siap ambil. Coba lagi.')),
+                        );
+                      }
                     }
                   : null,
               onScanQR: cardStatus == MerchantOrderStatus.siapDiambil

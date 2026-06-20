@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
-// --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/data/services/merchant_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
@@ -32,7 +31,6 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
   }
 
   Future<void> _fetchProfile() async {
-    // Jika dipanggil ulang (refresh), reset state terlebih dahulu
     if (!_isLoading) {
       setState(() {
         _isLoading = true;
@@ -78,7 +76,6 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
     context.go(AppRoutes.login);
   }
 
-  // PERBAIKAN: Menambahkan deklarasi Widget build() yang sebelumnya tidak sengaja terhapus
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,9 +89,8 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                 : _buildContent(context),
       ),
     );
-  } // PERBAIKAN: Kurung kurawal penutup untuk fungsi build
-
-  /// Widget untuk menampilkan error state yang user-friendly dengan tombol retry.
+  }
+  
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -190,7 +186,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                         onTap: () {
                           context.push(AppRoutes.editProfil).then((_) {
                             setState(() => _isLoading = true);
-                            _fetchProfile(); // Refresh profile after returning
+                            _fetchProfile();
                           });
                         },
                       ),
@@ -212,7 +208,6 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
 
                     const SizedBox(height: 32), 
 
-                    // 3. SECTION: SELEBIHNYA DARI HAPHAP
                     _buildSectionTitle('Selebihnya dari HapHap'),
                     _buildMenuCard([
                       _MenuItemData(
@@ -227,7 +222,6 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
 
                     const SizedBox(height: 32), 
 
-                    // 4. SECTION: LAINNYA
                     _buildSectionTitle('Lainnya'),
                     _buildMenuCard([
                       _MenuItemData(
@@ -244,7 +238,6 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
 
                     const SizedBox(height: 32),
 
-                    // --- TOMBOL KELUAR ---
                     Center(
                       child: HapHapButton(
                         text: 'Keluar',
@@ -263,10 +256,6 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
       ],
     );
   }
-
-  // ===========================================================================
-  // HELPER WIDGETS 
-  // ===========================================================================
 
   Widget _buildSectionTitle(String title) {
     return Padding(
@@ -334,7 +323,6 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
   }
 }
 
-// Data class kecil untuk menyimpan info tiap baris menu
 class _MenuItemData {
   final IconData icon;
   final String title;

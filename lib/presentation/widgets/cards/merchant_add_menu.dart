@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; // Import HapHapButton
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
 
 class HapHapAddMenuDialog extends StatefulWidget {
@@ -74,7 +74,6 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
     setState(() => _isSaving = true);
 
     try {
-      // Step 1: Buat menu item via POST /menus
       final json = await ApiClient.post('/menus', {
         'name': name,
         'originalPrice': price,
@@ -84,12 +83,10 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
 
       final menuItemId = json['data']?['menuItemId'] as String?;
 
-      // Step 2: Upload gambar jika ada
       if (_selectedImage != null && menuItemId != null) {
         try {
           await MenuService.uploadImage(menuItemId, _selectedImage!.path);
         } catch (_) {
-          // Gambar gagal upload bukan masalah fatal — menu tetap terbuat
         }
       }
 
@@ -102,7 +99,7 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.pop(context, true); // Tutup dialog
+      Navigator.pop(context, true);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
@@ -121,7 +118,6 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
     }
   }
 
-  // Widget Helper untuk membungkus Label + TextField
   Widget _buildInputField({
     required String label,
     required String hint,
@@ -162,7 +158,7 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
             ),
           ),
         ),
-        const SizedBox(height: 16), // Spasi antar input
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -235,14 +231,13 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
       ),
       backgroundColor: AppColors.white,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-      child: SingleChildScrollView( // Agar tidak overflow saat keyboard muncul
+      child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Judul Pop-up
               const Text(
                 'Tambah Menu',
                 style: TextStyle(
@@ -253,7 +248,6 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
               ),
               const SizedBox(height: 24),
 
-              // Form Inputs
               _buildInputField(
                 label: 'Nama Menu',
                 hint: 'Szechuan Chicken Bowl',
@@ -274,7 +268,6 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
 
               const SizedBox(height: 16),
 
-              // Tombol Simpan
               Center(
                 child: HapHapButton(
                   text: 'Simpan',

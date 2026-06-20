@@ -184,7 +184,6 @@ class _StatsRowState extends State<_StatsRow> {
 
   Future<void> _fetchUserProfile() async {
     try {
-      // Hanya fetch jika user sudah login
       final hasToken = await TokenManager.hasToken();
       if (!hasToken) {
         if (!mounted) return;
@@ -204,7 +203,6 @@ class _StatsRowState extends State<_StatsRow> {
     }
   }
 
-  /// Format angka uang ke bentuk ringkas (misal: 67600 → '67.6rb')
   String _formatCurrency(int amount) {
     if (amount >= 1000000) {
       final value = amount / 1000000;

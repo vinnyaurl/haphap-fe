@@ -17,6 +17,7 @@ class _OrderItem {
   final String merchantName;
   final String? merchantAvatar;
   final String createdAt;
+  final String? qrCode;
 
   const _OrderItem({
     required this.orderId,
@@ -25,7 +26,10 @@ class _OrderItem {
     required this.merchantName,
     this.merchantAvatar,
     required this.createdAt,
+    this.qrCode,
   });
+
+  bool get hasQrCode => qrCode != null && qrCode!.isNotEmpty;
 
   factory _OrderItem.fromJson(Map<String, dynamic> json) {
     final merchant = json['merchant'] as Map<String, dynamic>? ?? {};
@@ -36,6 +40,7 @@ class _OrderItem {
       merchantName: merchant['merchantName'] as String? ?? '-',
       merchantAvatar: merchant['avatar'] as String?,
       createdAt: json['createdAt'] as String? ?? '',
+      qrCode: json['qrCode'] as String?,
     );
   }
 }
@@ -105,14 +110,11 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
       .where((o) =>
           o.status == 'PENDING' ||
           o.status == 'PROCESSING' ||
-          o.status == 'PREPARING' ||
-          o.status == 'COMPLETED')
+          o.status == 'READY')
       .toList();
 
-  // History = CANCELLED only (COMPLETED moves to riwayat after pickup)
-  // TODO: move COMPLETED to riwayat after user confirms pickup
   List<_OrderItem> get _historyOrders => _orders
-      .where((o) => o.status == 'CANCELLED')
+      .where((o) => o.status == 'CANCELLED' || o.status == 'COMPLETED')
       .toList();
 
   String _formatPrice(int price) => 'Rp ${price.toString()
@@ -121,9 +123,10 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   String _statusText(_OrderItem order) {
     switch (order.status) {
       case 'PENDING':    return 'Menunggu Pembayaran';
-      case 'PROCESSING': return 'Pesanan lagi dikonfirmasi';
-      case 'PREPARING':  return 'Pesanan sedang disiapkan';
-      case 'COMPLETED':  return 'Yuk Ambil!';
+      case 'PROCESSING': return 'Pesanan lagi Dikonfirmasi';
+      case 'READY':
+        return order.hasQrCode ? 'Tunjukkan QR ke Kasir' : 'Pesanan Sedang Disiapkan';
+      case 'COMPLETED':  return 'Pesanan Selesai';
       default:           return order.status;
     }
   }
@@ -131,9 +134,10 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   String _mainText(_OrderItem order) {
     switch (order.status) {
       case 'PENDING':    return 'Bayar Sekarang!';
-      case 'PROCESSING': return 'Ditunggu...';
-      case 'PREPARING':  return 'Sabar ya, lagi disiapkan!';
-      case 'COMPLETED':  return 'Pesanan siap diambil!';
+      case 'PROCESSING': return 'Tunggu merchant konfirmasi ya!';
+      case 'READY':
+        return order.hasQrCode ? 'Tunjukkin QRmu!' : 'Sabar ya, lagi disiapkan!';
+      case 'COMPLETED':  return 'Selamat Menikmati!';
       default:           return '-';
     }
   }
@@ -142,7 +146,10 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
     switch (order.status) {
       case 'PENDING':    return 'assets/images/aktivitas_puy_waiting1.png';
       case 'PROCESSING': return 'assets/images/aktivitas_puy_processing.png';
-      case 'PREPARING':  return 'assets/images/aktivitas_puy_processing.png';
+      case 'READY':
+        return order.hasQrCode
+            ? 'assets/images/aktivitas_puy_done.png'
+            : 'assets/images/aktivitas_puy_processing.png';
       case 'COMPLETED':  return 'assets/images/aktivitas_puy_done.png';
       default:           return 'assets/images/aktivitas_puy_processing.png';
     }
@@ -253,15 +260,9 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
               child: GestureDetector(
                 onTap: () {
                   if (order.status == 'PENDING') {
-                    context.push(
-                      AppRoutes.checkout,
-                      extra: order.orderId,
-                    );
-                  } else if (order.status == 'COMPLETED') {
-                    context.push(
-                      AppRoutes.detailPesanan,
-                      extra: order.orderId,
-                    );
+                    context.push(AppRoutes.checkout, extra: order.orderId);
+                  } else if (order.status == 'PROCESSING' || order.status == 'READY') {
+                    context.push(AppRoutes.detailPesanan, extra: order.orderId);
                   }
                 },
                 child: HapHapAktivitasCard(

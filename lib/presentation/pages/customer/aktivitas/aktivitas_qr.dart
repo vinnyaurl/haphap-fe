@@ -3,12 +3,12 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
 class HapHapQRCodeCard extends StatelessWidget {
-  final String orderId;
-  final String? qrImagePath; // keep to avoid breaking existing callers
+  final String qrToken;
+  final String? qrImagePath; 
 
   const HapHapQRCodeCard({
     super.key,
-    required this.orderId,
+    required this.qrToken,
     this.qrImagePath,
   });
 
@@ -31,7 +31,7 @@ class HapHapQRCodeCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           QrImageView(
-            data: orderId,           // ← real payload, no more hardcoded asset
+            data: qrToken, 
             version: QrVersions.auto,
             size: 200,
             backgroundColor: Colors.white,
@@ -40,15 +40,6 @@ class HapHapQRCodeCard extends StatelessWidget {
           const Text(
             'Tunjukkan ke kasir',
             style: TextStyle(fontSize: 13, color: Colors.grey),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            orderId,
-            style: const TextStyle(
-              fontSize: 11,
-              color: Colors.grey,
-              fontFamily: 'monospace',
-            ),
           ),
         ],
       ),

@@ -131,10 +131,8 @@ final appRouter = GoRouter(
         if (extra is CheckoutArgs) {
           return CheckoutPage(args: extra);
         } else if (extra is String) {
-          // orderId for pending order
           return CheckoutPage(pendingOrderId: extra);
         }
-        // Fallback — should not happen
         return const Scaffold(
           body: Center(child: Text('Invalid checkout arguments')),
         );

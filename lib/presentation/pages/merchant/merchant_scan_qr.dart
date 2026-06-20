@@ -19,16 +19,11 @@ class _MerchantScanQRPageState extends State<MerchantScanQRPage> {
     final barcode = capture.barcodes.firstOrNull;
     if (barcode?.rawValue == null) return;
 
-    // The QR data encoded by qr_flutter is just the orderId string.
-    // But your backend scanOrder expects both orderId AND qrCode.
-    // So the QR payload needs to carry both — see note below.
     final rawValue = barcode!.rawValue!;
 
     setState(() => _isProcessing = true);
 
     try {
-      // Pass rawValue as qrCode; orderId needs to be known too
-      // → depends on what your backend expects as qrCode (see note)
       await OrderService.scanOrder(rawValue, rawValue);
       if (!mounted) return;
       _showResult(success: true, orderId: rawValue);
@@ -51,11 +46,11 @@ class _MerchantScanQRPageState extends State<MerchantScanQRPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // close dialog
+              Navigator.pop(context); 
               if (success) {
-                Navigator.pop(context); // go back to beranda merchant
+                Navigator.pop(context);
               } else {
-                setState(() => _isProcessing = false); // allow retry
+                setState(() => _isProcessing = false); 
               }
             },
             child: Text(success ? 'Selesai' : 'Coba Lagi'),
@@ -78,7 +73,6 @@ class _MerchantScanQRPageState extends State<MerchantScanQRPage> {
         children: [
           MobileScanner(onDetect: _onDetect),
 
-          // Visual scan guide overlay
           Center(
             child: Container(
               width: 240,

@@ -1,12 +1,8 @@
-// ============================================================================
-// KOMPONEN: KARTU ORDER MERCHANT
-// ============================================================================
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/data/models/order_model.dart';
 
-// Penambahan state baru sesuai alur F&B
 enum MerchantOrderStatus { menungguBayar, baru, sedangDisiapkan, siapDiambil, selesai, dibatalkan }
 
 class HapHapMerchantOrderCard extends StatelessWidget {
@@ -163,7 +159,6 @@ class HapHapMerchantOrderCard extends StatelessWidget {
             ),
           ),
 
-          // LOGIKA RENDER TOMBOL BERDASARKAN STATE
           if (status == MerchantOrderStatus.baru) ...[
             const SizedBox(height: 16),
             const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),

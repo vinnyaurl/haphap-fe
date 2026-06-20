@@ -4,7 +4,7 @@ import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
 import 'package:haphap_fe/data/services/surplus_service.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; // Import HapHapButton
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 class HapHapMerchantAddStockCard extends StatelessWidget {
   final String imagePath;
@@ -16,7 +16,6 @@ class HapHapMerchantAddStockCard extends StatelessWidget {
     this.onStockAdded,
   });
 
-  // --- FUNGSI UNTUK MENAMPILKAN POP-UP DIALOG ---
   void _showAddStockDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -28,23 +27,21 @@ class HapHapMerchantAddStockCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // GestureDetector agar kartu bisa diklik
     return GestureDetector(
       onTap: () => _showAddStockDialog(context),
       child: Container(
-        width: 354, // Lebar standar card kita
+        width: 354,
         height: 120, 
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.primary, // Border oren sesuai desain
+            color: AppColors.primary, 
             width: 1,
           ),
         ),
         child: Stack(
           children: [
-            // 1. Teks dan Icon (+) persis di tengah
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -67,7 +64,6 @@ class HapHapMerchantAddStockCard extends StatelessWidget {
               ),
             ),
 
-            // 2. Gambar Karakter di Kanan Bawah
             Positioned(
               right: 16,
               bottom: 0,
@@ -83,11 +79,6 @@ class HapHapMerchantAddStockCard extends StatelessWidget {
     );
   }
 }
-
-// ============================================================================
-// WIDGET KHUSUS UNTUK POP-UP DIALOG AKTIFKAN MENU
-// (Dibuat Stateful agar Dropdown dan Text Input bisa berubah)
-// ============================================================================
 
 class _AddStockDialog extends StatefulWidget {
   final VoidCallback? onStockAdded;
@@ -118,7 +109,6 @@ class _AddStockDialogState extends State<_AddStockDialog> {
     try {
       final items = await MenuService.getAllMenus();
       if (!mounted) return;
-      // Hanya tampilkan menu yang aktif
       final activeItems = items.where((m) => m.isActive).toList();
       setState(() {
         _menuItems = activeItems;
@@ -275,29 +265,26 @@ class _AddStockDialogState extends State<_AddStockDialog> {
       mainAxisSize: MainAxisSize.min, 
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Judul
         const Text(
           'Aktifkan Menu',
           style: TextStyle(
-            fontSize: 20, // Diperbesar sedikit sesuai desain
+            fontSize: 20, 
             fontWeight: FontWeight.bold,
             color: AppColors.black,
           ),
         ),
         const SizedBox(height: 24),
 
-        // LABEL 1: Dropdown Pilih Menu
         const Text(
           'Pilih Menu',
           style: TextStyle(
-            fontSize: 14, // Diperbesar agar sesuai desain
+            fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppColors.black,
           ),
         ),
         const SizedBox(height: 8),
         
-        // KOTAK DROPDOWN (Tinggi dikunci 48)
         Container(
           height: 48, 
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -310,8 +297,8 @@ class _AddStockDialogState extends State<_AddStockDialog> {
             child: DropdownButton<String>(
               value: _selectedMenuItem?.menuItemId,
               isExpanded: true, 
-              dropdownColor: AppColors.white, // Menghilangkan background abu di list
-              focusColor: Colors.transparent, // Menghilangkan background abu saat diklik
+              dropdownColor: AppColors.white,
+              focusColor: Colors.transparent,
               icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.black),
               items: _menuItems.map((MenuItemModel menu) {
                 return DropdownMenuItem<String>(
@@ -335,7 +322,6 @@ class _AddStockDialogState extends State<_AddStockDialog> {
 
         const SizedBox(height: 16),
 
-        // LABEL 2: Input Harga Diskon
         const Text(
           'Harga Diskon',
           style: TextStyle(
@@ -375,29 +361,26 @@ class _AddStockDialogState extends State<_AddStockDialog> {
 
         const SizedBox(height: 16),
 
-        // LABEL 3: Input Tambah Stok
         const Text(
           'Tambahkan Stok',
           style: TextStyle(
-            fontSize: 14, // Diperbesar agar sesuai desain
+            fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppColors.black,
           ),
         ),
         const SizedBox(height: 8),
         
-        // KOTAK TEXTFIELD (Tinggi dikunci 48 agar sama dengan dropdown)
         SizedBox(
           height: 48,
           child: TextField(
             controller: _stockController,
             keyboardType: TextInputType.number, 
-            textAlignVertical: TextAlignVertical.center, // Bikin teks persis di tengah secara vertikal
+            textAlignVertical: TextAlignVertical.center,
             style: const TextStyle(fontSize: 14, color: AppColors.black),
             decoration: InputDecoration(
               hintText: '10',
               hintStyle: const TextStyle(color: AppColors.greyLight, fontSize: 14),
-              // Padding vertical di-nol-kan karena sudah pakai textAlignVertical & SizedBox height
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -413,7 +396,6 @@ class _AddStockDialogState extends State<_AddStockDialog> {
 
         const SizedBox(height: 32),
 
-        // Tombol Simpan
         Center(
           child: _isSaving
               ? const CircularProgressIndicator(color: AppColors.primary)

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // Wajib import ini buat navigasi
-import 'package:haphap_fe/core/router/app_routes.dart'; // Wajib import ini buat AppRoutes
+import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/data/services/merchant_service.dart';
 
-// --- IMPORT KOMPONEN LEGO DARI PLAYGROUND KAMU ---
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/beranda_category.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
@@ -48,7 +47,6 @@ class _JelajahPageState extends State<JelajahPage> {
     'Dessert': 'PENUTUP',
   };
 
-  // --- STATE UNTUK DATA DARI API ---
   List<MerchantModel> _merchants = [];
   bool _isLoading = true;
   String? _error;
@@ -71,7 +69,6 @@ class _JelajahPageState extends State<JelajahPage> {
 
   void _applyInitialCategory() {
     if (widget.initialCategory != null) {
-      // Find the UI label that matches the backend enum passed in query
       final entry = _categoryEnumMap.entries.firstWhere(
         (e) => e.value == widget.initialCategory,
         orElse: () => const MapEntry('All', ''),
@@ -120,11 +117,9 @@ class _JelajahPageState extends State<JelajahPage> {
     }
   }
 
-  /// Filter merchants berdasarkan kategori dan search query
   List<MerchantModel> get _filteredMerchants {
     List<MerchantModel> result = _merchants;
 
-    // Filter by category (index 0 = 'All', skip filtering)
     if (_selectedCategoryIndex > 0) {
       final selectedCategoryLabel = _categories[_selectedCategoryIndex];
       final backendEnum = _categoryEnumMap[selectedCategoryLabel];
@@ -136,7 +131,6 @@ class _JelajahPageState extends State<JelajahPage> {
       }
     }
 
-    // Filter by search query
     final query = _searchController.text.trim().toLowerCase();
     if (query.isNotEmpty) {
       result = result.where((merchant) {
@@ -168,7 +162,6 @@ class _JelajahPageState extends State<JelajahPage> {
             
             const SizedBox(height: 16), 
             
-            // 2. CATEGORY PILLS
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -192,7 +185,6 @@ class _JelajahPageState extends State<JelajahPage> {
             
             const SizedBox(height: 16), 
 
-            // 3. RESTAURANT LIST (dynamic dari API)
             Expanded(
               child: _buildMerchantList(),
             ),
@@ -203,14 +195,12 @@ class _JelajahPageState extends State<JelajahPage> {
   }
 
   Widget _buildMerchantList() {
-    // --- LOADING STATE ---
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
       );
     }
 
-    // --- ERROR STATE ---
     if (_error != null) {
       return Center(
         child: Padding(
@@ -245,7 +235,6 @@ class _JelajahPageState extends State<JelajahPage> {
       );
     }
 
-    // --- EMPTY STATE ---
     final filtered = _filteredMerchants;
     if (filtered.isEmpty) {
       return Center(
@@ -269,10 +258,9 @@ class _JelajahPageState extends State<JelajahPage> {
       );
     }
 
-    // --- SUCCESS STATE ---
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      itemCount: filtered.length + 1, // +1 for bottom spacing
+      itemCount: filtered.length + 1,
       itemBuilder: (context, index) {
         if (index == filtered.length) {
           return const SizedBox(height: 40);

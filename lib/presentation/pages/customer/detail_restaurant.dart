@@ -57,7 +57,6 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
   int get _cartTotalItems =>
       _cart.values.fold(0, (sum, qty) => sum + qty);
 
-  /// Hanya surplus yang aktif dan masih ada stok.
   List<SurplusItemModel> get _activeSurplusItems =>
       _merchant?.surplusItems.where((item) => item.isActive && item.stock > 0).toList() ?? [];
 

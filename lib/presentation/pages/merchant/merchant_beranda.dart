@@ -12,42 +12,29 @@ import 'package:haphap_fe/data/services/surplus_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 
-// ---------------------------------------------------------------------------
-// Layout constants
-// ---------------------------------------------------------------------------
 class _BerandaMerchantLayout {
-  // Hero section
   static const double heroTopPadding = 40;
   static const double heroHorizontalPadding = 24;
   static const double heroTaglineToCards = 32;
   static const double heroRedBgBottomCut = 80;
 
-  // Stats cards
   static const double statCardSpacing = 16;
 
-  // Features & Active Menu sections
   static const double sectionHorizontalPadding = 24;
   static const double sectionTitleToContent = 16;
   static const double fiturToMenuAktif = 32;
   static const double menuAktifSpacing = 16;
   static const double categoryItemSpacing = 20;
 
-  // Bottom padding
   static const double bottomScrollPadding = 80;
 }
 
-// ---------------------------------------------------------------------------
-// Content constants
-// ---------------------------------------------------------------------------
 class _BerandaMerchantContent {
   static const String statsIncomeTitle = 'Total Penghasilan';
   static const String statsIncomePrefix = 'Rp ';
   static const String statsSavedTitle = 'Berhasil Selamatin';
 }
 
-// ---------------------------------------------------------------------------
-// Main page
-// ---------------------------------------------------------------------------
 class BerandaMerchantPage extends StatefulWidget {
   const BerandaMerchantPage({super.key});
 
@@ -62,8 +49,6 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
   String? _errorMessage;
   bool _isUnauthorized = false;
 
-  // Stats dari API (totalRevenue & totalPortion tidak ada di MerchantDetailModel,
-  // jadi kita parse langsung dari raw JSON)
   int _totalRevenue = 0;
   int _totalPortion = 0;
   String _createdAtLabel = '';
@@ -84,7 +69,6 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
     }
 
     try {
-      // Fetch merchant profile (raw JSON untuk ambil totalRevenue & totalPortion)
       final rawJson = await ApiClient.get('/merchants/me');
       final merchantData = rawJson['data'] as Map<String, dynamic>? ?? {};
 
@@ -92,7 +76,6 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
       _totalRevenue = (merchantData['totalRevenue'] as num?)?.toInt() ?? 0;
       _totalPortion = (merchantData['totalPortion'] as num?)?.toInt() ?? 0;
 
-      // Format createdAt label dari data merchant (gunakan createdAt jika ada)
       final createdAtRaw = merchantData['createdAt'] as String?;
       if (createdAtRaw != null) {
         final createdAt = DateTime.tryParse(createdAtRaw);
@@ -101,7 +84,6 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
         }
       }
 
-      // Fetch surplus items (menu aktif merchant)
       final surplusItems = await SurplusService.getMySurplus();
 
       if (!mounted) return;
@@ -314,9 +296,6 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Hero section
-// ---------------------------------------------------------------------------
 class _HeroSection extends StatelessWidget {
   final String merchantName;
   final String totalRevenue;
@@ -440,9 +419,6 @@ class _StatsRow extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Fitur section
-// ---------------------------------------------------------------------------
 class _FiturSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -479,7 +455,6 @@ class _FiturSection extends StatelessWidget {
                 },
               ),
               const SizedBox(width: _BerandaMerchantLayout.categoryItemSpacing),
-              // AFTER
               HapHapCategoryButton(
                 iconPath: AppIcons.scan,
                 label: 'Scan QR',
@@ -493,9 +468,6 @@ class _FiturSection extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Menu Aktif section
-// ---------------------------------------------------------------------------
 class _MenuAktifSection extends StatelessWidget {
   final List<SurplusItemModel> surplusItems;
   final VoidCallback? onStockAdded;
@@ -526,7 +498,6 @@ class _MenuAktifSection extends StatelessWidget {
           ),
           child: Column(
             children: [
-              // Kartu tambah stok (selalu ditampilkan)
               HapHapMerchantAddStockCard(
                 imagePath: 'assets/images/puypuy_laper_nih.png',
                 onStockAdded: onStockAdded,
@@ -534,7 +505,6 @@ class _MenuAktifSection extends StatelessWidget {
 
               const SizedBox(height: _BerandaMerchantLayout.menuAktifSpacing),
 
-              // Daftar surplus items (dynamic dari API)
               if (surplusItems.isEmpty)
                 _buildEmptyState()
               else
@@ -598,9 +568,6 @@ class _MenuAktifSection extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Shared small widgets
-// ---------------------------------------------------------------------------
 class _SectionTitle extends StatelessWidget {
   final String text;
   const _SectionTitle({required this.text});

@@ -9,7 +9,6 @@ import 'package:haphap_fe/presentation/widgets/dialog/merchant_edit_menu_dialog.
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
-// --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
@@ -36,7 +35,6 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
   }
 
   Future<void> _fetchItems() async {
-    // Jika dipanggil ulang (refresh), reset state terlebih dahulu
     if (!_isLoading) {
       setState(() {
         _isLoading = true;
@@ -48,7 +46,6 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
     try {
       final items = await MenuService.getAllMenus();
       if (!mounted) return;
-      // Hanya tampilkan menu yang aktif (isActive == true)
       final activeItems = items.where((m) => m.isActive).toList();
       setState(() {
         _items = activeItems;
@@ -78,7 +75,6 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
     }
   }
 
-  /// Pull-to-refresh handler (tanpa loading indicator penuh)
   Future<void> _onRefresh() async {
     try {
       final items = await MenuService.getAllMenus();
@@ -111,7 +107,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
     showDialog(
       context: context,
       builder: (context) => const HapHapAddMenuDialog(),
-    ).then((_) => _fetchItems()); // Refresh list after adding
+    ).then((_) => _fetchItems()); 
   }
 
   String _formatPrice(int price) {
@@ -121,7 +117,6 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
         );
   }
 
-  /// Mengembalikan list item yang sudah difilter berdasarkan search query.
   List<MenuItemModel> get _filteredItems {
     if (_searchQuery.isEmpty) return _items;
     final query = _searchQuery.toLowerCase();
@@ -140,21 +135,18 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16), // Jarak 16px dari atas (status bar)
-            
-            // 1. HEADER MENGGUNAKAN KOMPONEN
+            const SizedBox(height: 16),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapPageHeader(
                 title: 'Menu',
-                showBackButton: false, // Karena ini halaman utama tab, matikan tombol back
-                fontSize: 24,          // Font dibesarkan sesuai desain
+                showBackButton: false,
+                fontSize: 24,  
               ),
             ),
             
-            const SizedBox(height: 16), // Jarak 16px dari header ke search bar
-            
-            // 2. SEARCH BAR (sekarang berfungsi untuk filter)
+            const SizedBox(height: 16), 
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapSearchBar(
@@ -168,9 +160,8 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
               ),
             ),
             
-            const SizedBox(height: 20), // Jarak dari search bar ke list menu
+            const SizedBox(height: 20),
             
-            // 3. DAFTAR MENU
             Expanded(
               child: _buildContent(),
             ),
@@ -178,7 +169,6 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
         ),
       ),
       
-      // 4. TOMBOL (+) MENGAMBANG
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddMenuDialog,
         backgroundColor: AppColors.primary, 
@@ -258,7 +248,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
                   initialPrice: menuPrice,
                   initialDesc: menuDesc,
                 ),
-              ).then((_) => _fetchItems()); // Refresh list after edit
+              ).then((_) => _fetchItems());
             },
             
             onDelete: () {
@@ -268,7 +258,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
                   menuName: menuTitle,
                   menuItemId: item.menuItemId,
                 ),
-              ).then((_) => _fetchItems()); // Refresh list after delete
+              ).then((_) => _fetchItems());
             },
           );
         },
@@ -276,7 +266,6 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
     );
   }
 
-  /// Widget error state yang user-friendly dengan tombol retry.
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -318,7 +307,6 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
     );
   }
 
-  /// Widget empty state saat belum ada menu.
   Widget _buildEmptyState() {
     return Center(
       child: Column(

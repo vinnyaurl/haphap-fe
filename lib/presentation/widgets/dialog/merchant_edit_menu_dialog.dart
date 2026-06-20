@@ -30,10 +30,8 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
   @override
   void initState() {
     super.initState();
-    // Isi otomatis data lama ke text field saat pop up muncul
     _nameController = TextEditingController(text: widget.initialName);
     
-    // Hilangkan "Rp " dan titik agar murni angka saja saat diedit
     String cleanPrice = widget.initialPrice.replaceAll(RegExp(r'[^0-9]'), '');
     _priceController = TextEditingController(text: cleanPrice);
     

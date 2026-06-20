@@ -17,7 +17,7 @@ class HapHapMerchantMenuCard extends StatelessWidget {
     required this.price,
     required this.stockText,
     required this.imageUrl,
-    this.isSoldOut = false, // Default false (belum sold out)
+    this.isSoldOut = false,
     this.onDeactivate,
   });
 
@@ -39,7 +39,6 @@ class HapHapMerchantMenuCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Gambar Menu (Otomatis Hitam Putih kalau Sold Out!)
           ColorFiltered(
             colorFilter: ColorFilter.mode(
               isSoldOut ? Colors.grey : Colors.transparent,
@@ -47,7 +46,7 @@ class HapHapMerchantMenuCard extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network( // Atau gunakan Image.asset jika gambarmu dari lokal
+              child: Image.network( 
                 imageUrl,
                 width: 90,
                 height: 90,
@@ -72,7 +71,6 @@ class HapHapMerchantMenuCard extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           
-          // Info Teks
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +132,6 @@ class HapHapMerchantMenuCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         decoration: TextDecoration.underline, 
                         decorationColor: AppColors.primary,
-                        // Kalau sold out warna merah, kalau sisa stock warna oren
                         color: isSoldOut ? Colors.red : AppColors.primary, 
                       ),
                     ),

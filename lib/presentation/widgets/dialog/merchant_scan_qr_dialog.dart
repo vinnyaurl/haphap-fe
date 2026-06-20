@@ -34,7 +34,7 @@ class _HapHapScanQRDialogState extends State<HapHapScanQRDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pesanan berhasil diselesaikan!')),
       );
-      Navigator.pop(context, true); // Return true to signal success
+      Navigator.pop(context, true); 
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);

@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:haphap_fe/core/network/token_manager.dart';
 
-/// Central HTTP client for HapHap API.
 class ApiClient {
   ApiClient._();
 

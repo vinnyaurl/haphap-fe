@@ -32,7 +32,6 @@ class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key, this.args, this.pendingOrderId})
     : assert(args != null || pendingOrderId != null);
 
-  /// Whether this checkout was opened for an existing pending order.
   bool get isPendingMode => pendingOrderId != null;
 
   @override
@@ -48,7 +47,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   late Map<String, int> _cart;
 
-  // For pending-order mode: loaded from API
   bool _isLoadingOrder = false;
   String _merchantName = '';
   String _merchantId = '';
@@ -76,7 +74,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       final order = await OrderService.fetchOrder(widget.pendingOrderId!);
       if (!mounted) return;
 
-      // Convert OrderItemModel list → SurplusItemModel list + cart map
       final items = <SurplusItemModel>[];
       final cart = <String, int>{};
       for (final oi in order.orderItems) {
@@ -86,7 +83,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             name: oi.name,
             discountPrice: oi.discountPrice,
             originalPrice: oi.originalPrice,
-            stock: oi.quantity, // stock = quantity for display
+            stock: oi.quantity,
           ),
         );
         cart[oi.surplusItemId] = oi.quantity;
@@ -114,7 +111,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       .toList();
 
   int get _totalPrice {
-    // For pending orders, use the server-provided total if available
     if (_fetchedTotalAmount != null) return _fetchedTotalAmount!;
     return _loadedItems.fold(0, (sum, item) {
       final qty = _cart[item.surplusItemId] ?? 0;
@@ -247,7 +243,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
     });
 
     try {
-      // Reuse existing order — just create a new payment link for it
       final payment = await PaymentService.createPayment(_pendingOrderId!);
 
       if (!mounted) return;
