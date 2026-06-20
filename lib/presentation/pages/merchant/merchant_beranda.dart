@@ -12,13 +12,12 @@ import 'package:haphap_fe/data/services/surplus_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 
-
 // ---------------------------------------------------------------------------
 // Layout constants
 // ---------------------------------------------------------------------------
 class _BerandaMerchantLayout {
   // Hero section
-  static const double heroTopPadding = 40; 
+  static const double heroTopPadding = 40;
   static const double heroHorizontalPadding = 24;
   static const double heroTaglineToCards = 32;
   static const double heroRedBgBottomCut = 80;
@@ -33,7 +32,7 @@ class _BerandaMerchantLayout {
   static const double menuAktifSpacing = 16;
   static const double categoryItemSpacing = 20;
 
-  // Bottom padding 
+  // Bottom padding
   static const double bottomScrollPadding = 80;
 }
 
@@ -56,7 +55,7 @@ class BerandaMerchantPage extends StatefulWidget {
   State<BerandaMerchantPage> createState() => _BerandaMerchantPageState();
 }
 
-class _BerandaMerchantPageState extends State<BerandaMerchantPage> { 
+class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
   MerchantDetailModel? _merchant;
   List<SurplusItemModel> _surplusItems = [];
   bool _isLoading = true;
@@ -88,7 +87,7 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
       // Fetch merchant profile (raw JSON untuk ambil totalRevenue & totalPortion)
       final rawJson = await ApiClient.get('/merchants/me');
       final merchantData = rawJson['data'] as Map<String, dynamic>? ?? {};
-      
+
       final merchant = MerchantDetailModel.fromJson(merchantData);
       _totalRevenue = (merchantData['totalRevenue'] as num?)?.toInt() ?? 0;
       _totalPortion = (merchantData['totalPortion'] as num?)?.toInt() ?? 0;
@@ -104,7 +103,7 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
 
       // Fetch surplus items (menu aktif merchant)
       final surplusItems = await SurplusService.getMySurplus();
-      
+
       if (!mounted) return;
       setState(() {
         _merchant = merchant;
@@ -130,7 +129,8 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Tidak dapat memuat data. Periksa koneksi internet kamu.';
+        _errorMessage =
+            'Tidak dapat memuat data. Periksa koneksi internet kamu.';
       });
     }
   }
@@ -141,15 +141,23 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Nonaktifkan Menu'),
-        content: Text('Apakah kamu yakin ingin menonaktifkan "${item.name}" dari daftar surplus aktif?'),
+        content: Text(
+          'Apakah kamu yakin ingin menonaktifkan "${item.name}" dari daftar surplus aktif?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal', style: TextStyle(color: AppColors.greyDark)),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: AppColors.greyDark),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Nonaktifkan', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Nonaktifkan',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -185,17 +193,28 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
 
   String _formatDate(DateTime date) {
     const months = [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+      '',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
     ];
     return '${date.day} ${months[date.month]} ${date.year}';
   }
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]}.',
-        );
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]}.',
+    );
   }
 
   @override
@@ -203,7 +222,9 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.white,
-        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
       );
     }
 
@@ -270,7 +291,9 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
                 merchantName: _merchant?.merchantName ?? 'Toko',
                 totalRevenue: _formatPrice(_totalRevenue),
                 totalPortion: '$_totalPortion Porsi',
-                statsSubtitle: _createdAtLabel.isNotEmpty ? _createdAtLabel : '-',
+                statsSubtitle: _createdAtLabel.isNotEmpty
+                    ? _createdAtLabel
+                    : '-',
               ),
               const SizedBox(height: 32),
               _FiturSection(),
@@ -280,7 +303,9 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
                 onStockAdded: () => _fetchData(),
                 onDeactivate: _deactivateSurplus,
               ),
-              const SizedBox(height: _BerandaMerchantLayout.bottomScrollPadding),
+              const SizedBox(
+                height: _BerandaMerchantLayout.bottomScrollPadding,
+              ),
             ],
           ),
         ),
@@ -324,7 +349,7 @@ class _HeroSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: _BerandaMerchantLayout.heroTopPadding),
-              
+
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: _BerandaMerchantLayout.heroHorizontalPadding,
@@ -339,9 +364,9 @@ class _HeroSection extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: _BerandaMerchantLayout.heroTaglineToCards),
-              
+
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: _BerandaMerchantLayout.heroHorizontalPadding,
@@ -367,7 +392,7 @@ class _RedBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: AppColors.primary, 
+        color: AppColors.primary,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
@@ -397,7 +422,7 @@ class _StatsRow extends StatelessWidget {
             title: _BerandaMerchantContent.statsIncomeTitle,
             prefixText: _BerandaMerchantContent.statsIncomePrefix,
             mainValue: totalRevenue,
-            valueColor: Colors.green, 
+            valueColor: Colors.green,
             subtitle: subtitle,
           ),
         ),
@@ -406,7 +431,7 @@ class _StatsRow extends StatelessWidget {
           child: HapHapStatsCard(
             title: _BerandaMerchantContent.statsSavedTitle,
             mainValue: totalPortion,
-            valueColor: AppColors.primary, 
+            valueColor: AppColors.primary,
             subtitle: subtitle,
           ),
         ),
@@ -431,7 +456,7 @@ class _FiturSection extends StatelessWidget {
           child: _SectionTitle(text: 'Fitur'),
         ),
         const SizedBox(height: _BerandaMerchantLayout.sectionTitleToContent),
-        
+
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: _BerandaMerchantLayout.sectionHorizontalPadding,
@@ -454,10 +479,11 @@ class _FiturSection extends StatelessWidget {
                 },
               ),
               const SizedBox(width: _BerandaMerchantLayout.categoryItemSpacing),
+              // AFTER
               HapHapCategoryButton(
                 iconPath: AppIcons.scan,
                 label: 'Scan QR',
-                onTap: () {},
+                onTap: () => context.push(AppRoutes.merchantScanQR),
               ),
             ],
           ),
@@ -493,7 +519,7 @@ class _MenuAktifSection extends StatelessWidget {
           child: _SectionTitle(text: 'Menu Aktif'),
         ),
         const SizedBox(height: _BerandaMerchantLayout.sectionTitleToContent),
-        
+
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: _BerandaMerchantLayout.sectionHorizontalPadding,
@@ -505,7 +531,7 @@ class _MenuAktifSection extends StatelessWidget {
                 imagePath: 'assets/images/puypuy_laper_nih.png',
                 onStockAdded: onStockAdded,
               ),
-              
+
               const SizedBox(height: _BerandaMerchantLayout.menuAktifSpacing),
 
               // Daftar surplus items (dynamic dari API)
@@ -544,9 +570,9 @@ class _MenuAktifSection extends StatelessWidget {
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]}.',
-        );
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]}.',
+    );
   }
 
   Widget _buildEmptyState() {
@@ -564,10 +590,7 @@ class _MenuAktifSection extends StatelessWidget {
           Text(
             'Belum ada menu aktif hari ini.\nTambahkan stok untuk mulai berjualan!',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.greyDark,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: AppColors.greyDark, fontSize: 14),
           ),
         ],
       ),
@@ -593,4 +616,4 @@ class _SectionTitle extends StatelessWidget {
       ),
     );
   }
-}
+}

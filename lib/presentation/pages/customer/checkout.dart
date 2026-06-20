@@ -26,9 +26,14 @@ class CheckoutArgs {
 }
 
 class CheckoutPage extends StatefulWidget {
-  final CheckoutArgs args;
+  final CheckoutArgs? args;
+  final String? pendingOrderId;
 
-  const CheckoutPage({super.key, required this.args});
+  const CheckoutPage({super.key, this.args, this.pendingOrderId})
+      : assert(args != null || pendingOrderId != null);
+
+  /// Whether this checkout was opened for an existing pending order.
+  bool get isPendingMode => pendingOrderId != null;
 
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
@@ -43,20 +48,77 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   late Map<String, int> _cart;
 
+  // For pending-order mode: loaded from API
+  bool _isLoadingOrder = false;
+  String _merchantName = '';
+  String _merchantId = '';
+  List<SurplusItemModel> _loadedItems = [];
+  int? _fetchedTotalAmount;
+
   @override
   void initState() {
     super.initState();
-    _cart = Map<String, int>.from(widget.args.cart);
+    if (widget.isPendingMode) {
+      _cart = {};
+      _pendingOrderId = widget.pendingOrderId;
+      _fetchPendingOrder();
+    } else {
+      _cart = Map<String, int>.from(widget.args!.cart);
+      _merchantName = widget.args!.merchantName;
+      _merchantId = widget.args!.merchantId;
+      _loadedItems = widget.args!.items;
+    }
   }
 
-  List<SurplusItemModel> get _activeItems => widget.args.items
+  Future<void> _fetchPendingOrder() async {
+    setState(() => _isLoadingOrder = true);
+    try {
+      final order = await OrderService.fetchOrder(widget.pendingOrderId!);
+      if (!mounted) return;
+
+      // Convert OrderItemModel list → SurplusItemModel list + cart map
+      final items = <SurplusItemModel>[];
+      final cart = <String, int>{};
+      for (final oi in order.orderItems) {
+        items.add(SurplusItemModel(
+          surplusItemId: oi.surplusItemId,
+          name: oi.name,
+          discountPrice: oi.discountPrice,
+          originalPrice: oi.originalPrice,
+          stock: oi.quantity, // stock = quantity for display
+        ));
+        cart[oi.surplusItemId] = oi.quantity;
+      }
+
+      setState(() {
+        _loadedItems = items;
+        _cart = cart;
+        _merchantName = order.merchant?.merchantName ?? 'Merchant';
+        _merchantId = order.merchantId;
+        _fetchedTotalAmount = order.totalAmount;
+        _isLoadingOrder = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Gagal memuat pesanan. Silakan coba lagi.';
+        _isLoadingOrder = false;
+      });
+    }
+  }
+
+  List<SurplusItemModel> get _activeItems => _loadedItems
       .where((item) => (_cart[item.surplusItemId] ?? 0) > 0)
       .toList();
 
-  int get _totalPrice => widget.args.items.fold(0, (sum, item) {
-        final qty = _cart[item.surplusItemId] ?? 0;
-        return sum + (item.discountPrice * qty);
-      });
+  int get _totalPrice {
+    // For pending orders, use the server-provided total if available
+    if (_fetchedTotalAmount != null) return _fetchedTotalAmount!;
+    return _loadedItems.fold(0, (sum, item) {
+      final qty = _cart[item.surplusItemId] ?? 0;
+      return sum + (item.discountPrice * qty);
+    });
+  }
 
   void _add(SurplusItemModel item) {
     final current = _cart[item.surplusItemId] ?? 0;
@@ -96,7 +158,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           .toList();
 
       final order = await OrderService.createOrder(
-        merchantId: widget.args.merchantId,
+        merchantId: _merchantId,
         orderItems: orderItems,
       );
 
@@ -146,7 +208,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
       if (!mounted) return;
 
-      if (status == 'PAID') {
+      if (status == 'PROCESSING') {
         context.go(AppRoutes.aktivitas);
       } else if (status == 'CANCELLED' || status == 'EXPIRED') {
         setState(() {
@@ -168,6 +230,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingOrder) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF9F9F9),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
@@ -179,7 +250,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: HapHapPageHeader(title: widget.args.merchantName),
+                child: HapHapPageHeader(title: _merchantName),
               ),
 
               const SizedBox(height: 32),
@@ -197,19 +268,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         color: AppColors.black,
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => context.pop(),
-                      child: const Text(
-                        'Tambah Pesanan',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          decoration: TextDecoration.underline,
-                          decorationColor: AppColors.primary,
+                    if (_pendingOrderId == null)
+                      GestureDetector(
+                        onTap: () => context.pop(),
+                        child: const Text(
+                          'Tambah Pesanan',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppColors.primary,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -385,6 +457,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           color: AppColors.primary,
                         ),
                       ),
+                      if (_pendingOrderId != null)
+                        Text(
+                          'x$qty',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.black,
+                          ),
+                        )
+                      else
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

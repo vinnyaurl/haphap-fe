@@ -201,7 +201,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
         break;
       case 1:
         // Siap Diambil = PAID (customer sudah bayar, siap pickup)
-        filteredOrders = _orders.where((o) => o.status == 'PAID').toList();
+        filteredOrders = _orders.where((o) => o.status == 'PROCESSING').toList();
         currentStatus = MerchantOrderStatus.siapDiambil;
         break;
       case 2:

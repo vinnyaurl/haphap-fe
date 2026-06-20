@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
@@ -13,7 +12,7 @@ import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 
 class _OrderItem {
   final String orderId;
-  final String status;       // PENDING, PAID, COMPLETED, CANCELLED
+  final String status;
   final int totalAmount;
   final String merchantName;
   final String? merchantAvatar;
@@ -54,7 +53,6 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   List<_OrderItem> _orders = [];
   bool _isLoading = true;
   String? _error;
-  String? _launchingOrderId;
 
   Timer? _refreshTimer;
 
@@ -103,45 +101,8 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
     }
   }
 
-  Future<void> _launchPayment(_OrderItem order) async {
-    if (_launchingOrderId != null) return;
-    setState(() => _launchingOrderId = order.orderId);
-
-    try {
-      final response = await ApiClient.post('/payments/${order.orderId}', {});
-      final data = response['data'] as Map<String, dynamic>;
-      final redirectUrl = data['redirectUrl'] as String;
-
-      final uri = Uri.parse(redirectUrl);
-      try {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } catch (_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tidak dapat membuka halaman pembayaran.')),
-          );
-        }
-      }
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membuka pembayaran. Coba lagi.')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _launchingOrderId = null);
-    }
-  }
-
-  // Active = PENDING, PAID, COMPLETED (Yuk Ambil)
   List<_OrderItem> get _activeOrders => _orders
-      .where((o) => o.status == 'PENDING' || o.status == 'PAID' || o.status == 'COMPLETED')
+      .where((o) => o.status == 'PENDING' || o.status == 'PROCESSING' || o.status == 'COMPLETED')
       .toList();
 
   // History = CANCELLED only (COMPLETED moves to riwayat after pickup)
@@ -156,7 +117,7 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   String _statusText(_OrderItem order) {
     switch (order.status) {
       case 'PENDING':  return 'Menunggu Pembayaran';
-      case 'PAID':     return 'Pesanan lagi dikonfirmasi';
+      case 'PROCESSING':     return 'Pesanan lagi dikonfirmasi';
       case 'COMPLETED': return 'Yuk Ambil!';
       default:         return order.status;
     }
@@ -165,7 +126,7 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   String _mainText(_OrderItem order) {
     switch (order.status) {
       case 'PENDING':  return 'Bayar Sekarang!';
-      case 'PAID':     return 'Ditunggu...';
+      case 'PROCESSING':     return 'Ditunggu...';
       case 'COMPLETED': return 'Pesanan siap diambil!';
       default:         return '-';
     }
@@ -174,7 +135,7 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   String _imagePath(_OrderItem order) {
     switch (order.status) {
       case 'PENDING':   return 'assets/images/aktivitas_puy_waiting1.png';
-      case 'PAID':      return 'assets/images/aktivitas_puy_processing.png';
+      case 'PROCESSING':      return 'assets/images/aktivitas_puy_processing.png';
       case 'COMPLETED': return 'assets/images/aktivitas_puy_done.png';
       default:          return 'assets/images/aktivitas_puy_processing.png';
     }
@@ -285,7 +246,10 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
               child: GestureDetector(
                 onTap: () {
                   if (order.status == 'PENDING') {
-                    _launchPayment(order);
+                    context.push(
+                      AppRoutes.checkout,
+                      extra: order.orderId,
+                    );
                   } else if (order.status == 'COMPLETED') {
                     context.push(
                       AppRoutes.detailPesanan,
@@ -293,27 +257,11 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
                     );
                   }
                 },
-                child: Stack(
-                  children: [
-                    HapHapAktivitasCard(
-                      statusText: _statusText(order),
-                      mainText: _mainText(order),
-                      restaurantName: order.merchantName,
-                      imagePath: _imagePath(order),
-                    ),
-                    if (_launchingOrderId == order.orderId)
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(color: AppColors.white),
-                          ),
-                        ),
-                      ),
-                  ],
+                child: HapHapAktivitasCard(
+                  statusText: _statusText(order),
+                  mainText: _mainText(order),
+                  restaurantName: order.merchantName,
+                  imagePath: _imagePath(order),
                 ),
               ),
             )),
