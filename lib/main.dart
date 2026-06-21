@@ -28,8 +28,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 final _debugRouter = GoRouter(
-  initialLocation: AppRoutes.beranda,
+  initialLocation: AppRoutes.splash,
   routes: appRouter.configuration.routes,
 );

@@ -72,7 +72,15 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       AppSnackbar.showSuccess(context, 'Login berhasil! Selamat datang.');
-      context.go(AppRoutes.beranda);
+
+      final role = response.data?.role;
+      if (role == 'ADMIN') {
+        context.go(AppRoutes.adminBeranda);
+      } else if (role == 'MERCHANT') {
+        context.go(AppRoutes.merchantBeranda);
+      } else {
+        context.go(AppRoutes.beranda);
+      }
 
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -116,7 +124,15 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       AppSnackbar.showSuccess(context, 'Login Google berhasil! Selamat datang.');
-      context.go(AppRoutes.beranda);
+
+      final role = response['data']?['role'] as String?;
+      if (role == 'ADMIN') {
+        context.go(AppRoutes.adminBeranda);
+      } else if (role == 'MERCHANT') {
+        context.go(AppRoutes.merchantBeranda);
+      } else {
+        context.go(AppRoutes.beranda);
+      }
 
     } on ApiException catch (e) {
       if (!mounted) return;
