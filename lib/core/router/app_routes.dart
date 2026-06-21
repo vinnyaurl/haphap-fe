@@ -176,10 +176,10 @@ final appRouter = GoRouter(
       path: AppRoutes.merchantNotifikasi,
       builder: (context, state) => const NotifikasiMerchantPage(),
     ),
-    GoRoute(
-      path: AppRoutes.merchantEditProfil,
-      builder: (context, state) => const EditProfilMerchantPage(),
-    ),
+    // GoRoute(
+    //   path: AppRoutes.merchantEditProfil,
+    //   builder: (context, state) => const EditProfilMerchantPage(),
+    // ),
 
     GoRoute(
       path: '/finish',

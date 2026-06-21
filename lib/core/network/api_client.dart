@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:haphap_fe/core/network/token_manager.dart';
 
 class ApiClient {
@@ -118,28 +119,44 @@ class ApiClient {
   }
 
   // ---------------------------------------------------------------------------
-  // Multipart File Upload
+  // Multipart POST — text fields + optional file
+  // Digunakan untuk endpoint yang menerima multipart/form-data,
+  // misalnya POST /menus (name, originalPrice, description?, image?).
   // ---------------------------------------------------------------------------
 
-  static Future<Map<String, dynamic>> uploadFile(
-    String path,
-    String filePath,
-    String fieldName,
-  ) async {
+  static Future<Map<String, dynamic>> multipartPost(
+    String path, {
+    required Map<String, String> fields,
+    String? filePath,
+    String fileFieldName = 'image',
+  }) async {
     final uri = Uri.parse('$baseUrl$path');
 
     try {
       final request = http.MultipartRequest('POST', uri);
-      
-      // Add auth header
+
+      // Auth header
       final token = await TokenManager.getToken();
       if (token != null && token.isNotEmpty) {
         request.headers['Authorization'] = 'Bearer $token';
       }
-      
-      // Add file
-      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
-      
+
+      // Text fields
+      request.fields.addAll(fields);
+
+      // Optional file — eksplisit set contentType agar Supabase tidak
+      // menolak dengan error "mime type application/octet-stream not supported".
+      if (filePath != null && filePath.isNotEmpty) {
+        final mimeType = _mimeTypeFromPath(filePath);
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            fileFieldName,
+            filePath,
+            contentType: MediaType.parse(mimeType),
+          ),
+        );
+      }
+
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       return _handleResponse(response);
@@ -147,11 +164,24 @@ class ApiClient {
       rethrow;
     } catch (e) {
       throw ApiException(
-        message:
-            'Tidak dapat mengunggah file. Periksa koneksi internet kamu.',
+        message: 'Tidak dapat mengirim data. Periksa koneksi internet kamu.',
         statusCode: 0,
       );
     }
+  }
+
+  static String _mimeTypeFromPath(String filePath) {
+    final ext = filePath.split('.').last.toLowerCase();
+    const map = <String, String>{
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'webp': 'image/webp',
+      'gif': 'image/gif',
+      'heic': 'image/heic',
+      'heif': 'image/heif',
+    };
+    return map[ext] ?? 'image/jpeg';
   }
 
   // ---------------------------------------------------------------------------
