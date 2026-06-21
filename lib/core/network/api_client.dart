@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:haphap_fe/core/network/token_manager.dart';
 
 class ApiClient {
@@ -138,7 +139,11 @@ class ApiClient {
       }
       
       // Add file
-      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+      request.files.add(await http.MultipartFile.fromPath(
+        fieldName, 
+        filePath,
+        contentType: _getMediaType(filePath),
+      ));
       
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -149,6 +154,54 @@ class ApiClient {
       throw ApiException(
         message:
             'Tidak dapat mengunggah file. Periksa koneksi internet kamu.',
+        statusCode: 0,
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Multipart POST (multiple files + text fields)
+  // ---------------------------------------------------------------------------
+
+  static Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    Map<String, String> files = const {},
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+
+    try {
+      final request = http.MultipartRequest('POST', uri);
+
+      // Auth header
+      final token = await TokenManager.getToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      // Text fields
+      request.fields.addAll(fields);
+
+      // File fields
+      for (final entry in files.entries) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            entry.key, 
+            entry.value,
+            contentType: _getMediaType(entry.value),
+          ),
+        );
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return _handleResponse(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException(
+        message:
+            'Tidak dapat mengirim data. Periksa koneksi internet kamu.',
         statusCode: 0,
       );
     }
@@ -172,6 +225,22 @@ class ApiClient {
       message: message.toString(),
       statusCode: response.statusCode,
     );
+  }
+
+  static MediaType _getMediaType(String filePath) {
+    final ext = filePath.split('.').last.toLowerCase();
+    if (ext == 'jpg' || ext == 'jpeg') {
+      return MediaType('image', 'jpeg');
+    } else if (ext == 'png') {
+      return MediaType('image', 'png');
+    } else if (ext == 'pdf') {
+      return MediaType('application', 'pdf');
+    } else if (ext == 'doc') {
+      return MediaType('application', 'msword');
+    } else if (ext == 'docx') {
+      return MediaType('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document');
+    }
+    return MediaType('application', 'octet-stream');
   }
 }
 

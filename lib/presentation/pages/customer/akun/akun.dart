@@ -5,6 +5,7 @@ import 'package:haphap_fe/core/theme/app_colors.dart';
 
 // --- IMPORT SERVICE & MODEL ---
 import 'package:haphap_fe/data/services/user_service.dart';
+import 'package:haphap_fe/data/services/application_service.dart';
 import 'package:haphap_fe/data/models/user_profile_model.dart';
 
 // --- IMPORT KOMPONEN ---
@@ -52,6 +53,55 @@ class _AkunPageState extends State<AkunPage> {
       return 'Hemat ${(totalSaved / 1000).toInt()}rb';
     }
     return 'Hemat $totalSaved';
+  }
+
+  Future<void> _handleJoinMerchant(BuildContext context) async {
+    // Check role first
+    if (_profile?.role == 'MERCHANT') {
+      context.push(AppRoutes.merchantBeranda);
+      return;
+    }
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+    );
+
+    try {
+      final myApps = await ApplicationService.findMyApplications();
+      
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+
+      final hasPending = myApps.any((app) => app.status == 'PENDING');
+      final hasApproved = myApps.any((app) => app.status == 'APPROVED');
+
+      if (hasApproved) {
+        // Fallback check, just in case user is merchant but role hasn't synced locally
+        context.push(AppRoutes.merchantBeranda);
+      } else if (hasPending) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pengajuan pendaftaran merchant Anda sedang diproses oleh Admin.'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      } else {
+        // Can register (No application, or previous ones were rejected)
+        context.push(AppRoutes.merchantRegister);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -188,9 +238,7 @@ class _AkunPageState extends State<AkunPage> {
                       _MenuItemData(
                         icon: Icons.store,
                         title: 'Bergabung sebagai Merchant', 
-                        onTap: () {
-                          context.go(AppRoutes.merchantBeranda); 
-                        },
+                        onTap: () => _handleJoinMerchant(context),
                       ),
                     ]),
 
