@@ -18,7 +18,7 @@ import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/pages/customer/jelajah.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/aktivitas.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.dart';
-import 'package:haphap_fe/presentation/pages/customer/aktivitas/laporan_transaksi.dart';
+
 import 'package:haphap_fe/presentation/pages/customer/akun/akun.dart';
 
 import 'package:haphap_fe/presentation/pages/customer/detail_restaurant.dart';
@@ -30,7 +30,7 @@ import 'package:haphap_fe/presentation/pages/merchant/merchant_aktivitas.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_akun.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_statistik.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_notifikasi.dart';
-import 'package:haphap_fe/presentation/pages/merchant/merchant_edit_profil.dart';
+import 'package:haphap_fe/presentation/pages/merchant/merchant_scan_qr.dart';
 
 import 'package:haphap_fe/presentation/pages/admin/admin_beranda.dart';
 import 'package:haphap_fe/presentation/pages/admin/admin_pengajuan.dart';
@@ -43,32 +43,31 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 class AppRoutes {
   AppRoutes._();
 
-  static const String splash          = '/splash';
-  static const String onboarding      = '/onboarding';
-  static const String login           = '/login';
-  static const String register        = '/register';
+  static const String splash = '/splash';
+  static const String onboarding = '/onboarding';
+  static const String login = '/login';
+  static const String register = '/register';
 
-  static const String beranda         = '/beranda';
-  static const String jelajah         = '/jelajah';
-  static const String aktivitas       = '/aktivitas';
-  static const String akun            = '/akun';
-  static const String detailPesanan   = '/detail';
-  static const String laporanTransaksi = '/laporan';
-  static const String editProfil      = '/edit-profil';
-  static const String statistik       = '/statistik';
-  static const String alamat          = '/alamat';
-  static const String bahasa          = '/bahasa';
-  static const String notifikasi      = '/notifikasi';
+  static const String beranda = '/beranda';
+  static const String jelajah = '/jelajah';
+  static const String aktivitas = '/aktivitas';
+  static const String akun = '/akun';
+  static const String detailPesanan = '/detail';
 
-  static const String detailRestoran  = '/detail-restoran';
-  static const String checkout        = '/checkout';
-  static const String paymentWebView  = '/payment';
+  static const String editProfil = '/edit-profil';
+  static const String statistik = '/statistik';
+  static const String alamat = '/alamat';
+  static const String bahasa = '/bahasa';
+  static const String notifikasi = '/notifikasi';
 
-  static const String merchantBeranda    = '/merchant/beranda';
-  static const String merchantMenu       = '/merchant/menu';
-  static const String merchantAktivitas  = '/merchant/aktivitas';
-  static const String merchantAkun       = '/merchant/akun';
-  static const String merchantStatistik  = '/merchant/statistik';
+  static const String detailRestoran = '/detail-restoran';
+  static const String checkout = '/checkout';
+
+  static const String merchantBeranda = '/merchant/beranda';
+  static const String merchantMenu = '/merchant/menu';
+  static const String merchantAktivitas = '/merchant/aktivitas';
+  static const String merchantAkun = '/merchant/akun';
+  static const String merchantStatistik = '/merchant/statistik';
   static const String merchantNotifikasi = '/merchant/notifikasi';
   static const String merchantEditProfil = '/merchant/edit-profil';
 
@@ -76,12 +75,34 @@ class AppRoutes {
   static const String adminPengajuan       = '/admin/pengajuan';
   static const String adminAkun            = '/admin/akun';
   static const String adminDetailPengajuan = '/admin/detail-pengajuan';
+  static const String merchantScanQR = '/merchant/scan-qr';
 }
 
 final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: AppRoutes.beranda,
+  initialLocation: AppRoutes.splash,
+  errorBuilder: (context, state) => Scaffold(
+    body: Center(
+      child: TextButton(
+        onPressed: () => context.go(AppRoutes.splash),
+        child: const Text('Kembali ke Beranda'),
+      ),
+    ),
+  ),
   routes: [
+    GoRoute(path: '/', redirect: (context, state) => AppRoutes.beranda),
+    GoRoute(
+      path: '/payment/finish',
+      redirect: (context, state) => AppRoutes.aktivitas,
+    ),
+    GoRoute(
+      path: '/aktivitas-redirect',
+      redirect: (context, state) => AppRoutes.aktivitas,
+    ),
+    GoRoute(
+      path: AppRoutes.merchantScanQR,
+      builder: (_, __) => const MerchantScanQRPage(),
+    ),
     GoRoute(
       path: AppRoutes.splash,
       builder: (context, state) => const SplashScreen(),
@@ -99,16 +120,13 @@ final appRouter = GoRouter(
       builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
-      path: '${AppRoutes.detailPesanan}/:orderId',
+      path: AppRoutes.detailPesanan,
       builder: (context, state) {
-        final orderId = state.pathParameters['orderId']!;
+        final orderId = state.extra as String?;
         return DetailPesananPage(orderId: orderId);
       },
     ),
-    GoRoute(
-      path: AppRoutes.laporanTransaksi,
-      builder: (context, state) => const LaporanTransaksiPage(),
-    ),
+
     GoRoute(
       path: '${AppRoutes.detailRestoran}/:merchantId',
       builder: (context, state) {
@@ -119,8 +137,15 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.checkout,
       builder: (context, state) {
-        final args = state.extra as CheckoutArgs;
-        return CheckoutPage(args: args);
+        final extra = state.extra;
+        if (extra is CheckoutArgs) {
+          return CheckoutPage(args: extra);
+        } else if (extra is String) {
+          return CheckoutPage(pendingOrderId: extra);
+        }
+        return const Scaffold(
+          body: Center(child: Text('Invalid checkout arguments')),
+        );
       },
     ),
     GoRoute(
@@ -194,10 +219,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.jelajah,
-              builder: (context, state) {
-                final category = state.uri.queryParameters['category'];
-                return JelajahPage(initialCategory: category);
-              },
+              builder: (context, state) => const JelajahPage(),
             ),
           ],
         ),
@@ -205,7 +227,11 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.aktivitas,
-              builder: (context, state) => const AktivitasPage(),
+              builder: (context, state) {
+                final tabStr = state.uri.queryParameters['tab'];
+                final initialTab = tabStr != null ? int.tryParse(tabStr) ?? 0 : 0;
+                return AktivitasPage(initialTab: initialTab);
+              },
             ),
           ],
         ),
@@ -224,30 +250,38 @@ final appRouter = GoRouter(
       builder: (context, state, navigationShell) =>
           MerchantShell(navigationShell: navigationShell),
       branches: [
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.merchantBeranda,
-            builder: (context, state) => const BerandaMerchantPage(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.merchantMenu,
-            builder: (context, state) => const MenuMerchantPage(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.merchantAktivitas,
-            builder: (context, state) => const AktivitasMerchantPage(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.merchantAkun,
-            builder: (context, state) => const AkunMerchantPage(),
-          ),
-        ]),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.merchantBeranda,
+              builder: (context, state) => const BerandaMerchantPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.merchantMenu,
+              builder: (context, state) => const MenuMerchantPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.merchantAktivitas,
+              builder: (context, state) => const AktivitasMerchantPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.merchantAkun,
+              builder: (context, state) => const AkunMerchantPage(),
+            ),
+          ],
+        ),
       ],
     ),
 

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // Import package chart
+import 'package:fl_chart/fl_chart.dart'; 
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
-// --- IMPORT KOMPONEN LEGO KITA ---
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu.dart'; 
-// Import komponen header-nya di sini (Sesuaikan path-nya jika beda)
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/data/services/merchant_service.dart';
+import 'package:haphap_fe/data/services/order_service.dart';
+import 'package:haphap_fe/data/models/order_model.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 
 class StatistikMerchantPage extends StatefulWidget {
   const StatistikMerchantPage({super.key});
@@ -16,18 +18,158 @@ class StatistikMerchantPage extends StatefulWidget {
 }
 
 class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  int _totalRevenue = 0;
+  int _totalPortion = 0;
+  String _createdAtLabel = '';
+
+  // Chart & weekly stats
+  List<double> _weeklySales = List.filled(7, 0.0);
+  int _weeklyGross = 0;
+  int _weeklyNet = 0;
+
+  // Best selling
+  OrderItemModel? _bestSellingItem;
+  int _bestSellingSoldCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final merchant = await MerchantService.getMe();
+      final orders = await OrderService.fetchOrderMerchant();
+
+      if (!mounted) return;
+
+      _totalRevenue = merchant.totalRevenue;
+      _totalPortion = merchant.totalPortion;
+
+      // createdAt logic if needed (optional since we might not display it)
+      if (merchant.createdAt != null) {
+        _createdAtLabel = 'Terdaftar sejak ${merchant.createdAt!.year}';
+      }
+
+      _processOrders(orders);
+
+      setState(() {
+        _isLoading = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Gagal memuat statistik';
+      });
+    }
+  }
+
+  void _processOrders(List<OrderModel> orders) {
+    final now = DateTime.now();
+    // Start of the week (Monday)
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final startOfWeekDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    
+    // End of the week (Sunday 23:59:59)
+    final endOfWeekDate = startOfWeekDate.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
+
+    _weeklySales = List.filled(7, 0.0);
+    _weeklyGross = 0;
+    _weeklyNet = 0;
+
+    final Map<String, int> itemSalesCount = {};
+    final Map<String, OrderItemModel> itemDetails = {};
+
+    for (var order in orders) {
+      if (!order.isCompleted) continue;
+
+      // Count items for best selling (all time or just week? let's do all time completed orders)
+      for (var item in order.orderItems) {
+        itemSalesCount[item.surplusItemId] = (itemSalesCount[item.surplusItemId] ?? 0) + item.quantity;
+        itemDetails[item.surplusItemId] = item;
+      }
+
+      // Check if order is in current week
+      if (order.createdAt.isAfter(startOfWeekDate) && order.createdAt.isBefore(endOfWeekDate)) {
+        // weekday is 1 for Monday, 7 for Sunday. 
+        // array index 0 is Monday, 6 is Sunday.
+        final dayIndex = order.createdAt.weekday - 1;
+        _weeklySales[dayIndex] += order.totalAmount.toDouble();
+        
+        _weeklyGross += order.totalOriginal;
+        _weeklyNet += order.totalAmount;
+      }
+    }
+
+    // Determine best selling
+    String? bestSellingId;
+    int maxCount = 0;
+    for (var entry in itemSalesCount.entries) {
+      if (entry.value > maxCount) {
+        maxCount = entry.value;
+        bestSellingId = entry.key;
+      }
+    }
+
+    if (bestSellingId != null) {
+      _bestSellingItem = itemDetails[bestSellingId];
+      _bestSellingSoldCount = maxCount;
+    }
+  }
+
+  String _formatCurrency(int value) {
+    if (value >= 1000000) {
+      final v = value / 1000000;
+      return 'Rp${v % 1 == 0 ? v.toInt() : v.toStringAsFixed(1)}jt';
+    } else if (value >= 1000) {
+      final v = value / 1000;
+      return 'Rp${v % 1 == 0 ? v.toInt() : v.toStringAsFixed(1)}rb';
+    }
+    return 'Rp$value';
+  }
+
+  String _formatPrice(int value) {
+    final parts = value.toString().split('').reversed.toList();
+    String result = '';
+    for (int i = 0; i < parts.length; i++) {
+      if (i > 0 && i % 3 == 0) result = '.$result';
+      result = parts[i] + result;
+    }
+    return result;
+  }
+
+  String _formatChartLabel(double value) {
+    if (value == 0) return '0';
+    if (value >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(1)}jt';
+    } else if (value >= 1000) {
+      return '${(value / 1000).toInt()}rb';
+    }
+    return value.toInt().toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9), // Background abu-abu muda
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              
-              // 1. HEADER (Menggunakan Komponen HapHapPageHeader)
+
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: HapHapPageHeader(
@@ -37,36 +179,38 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
               
               const SizedBox(height: 16),
 
-              // 2. KARTU STATISTIK ATAS
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: HapHapStatsCard(
-                        title: 'Total Penghasilan',
-                        prefixText: 'Rp ',
-                        mainValue: '500.000',
-                        valueColor: Colors.green,
-                        subtitle: 'Sejak 6 Juli 2026',
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: HapHapStatsCard(
-                        title: 'Total Pesanan',
-                        mainValue: '67 Porsi',
-                        valueColor: AppColors.primary,
-                        subtitle: 'Sejak 6 Juli 2026',
-                      ),
-                    ),
-                  ],
-                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: _isLoading 
+                    ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                    : _errorMessage != null
+                        ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: HapHapStatsCard(
+                                  title: 'Total Penghasilan',
+                                  prefixText: 'Rp ',
+                                  mainValue: _formatPrice(_totalRevenue),
+                                  valueColor: Colors.green,
+                                  subtitle: 'Total pendapatan kamu',
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: HapHapStatsCard(
+                                  title: 'Total Pesanan',
+                                  mainValue: '$_totalPortion Porsi',
+                                  valueColor: AppColors.primary,
+                                  subtitle: 'Total porsi diselamatkan',
+                                ),
+                              ),
+                            ],
+                          ),
               ),
 
               const SizedBox(height: 24),
 
-              // 3. KARTU GRAFIK (CHART)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Container(
@@ -84,7 +228,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                   ),
                   child: Column(
                     children: [
-                      // Area Chart
                       SizedBox(
                         height: 200,
                         child: _buildLineChart(),
@@ -93,8 +236,7 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                       const SizedBox(height: 24),
                       const Divider(color: Color(0xFFF1F1F1), height: 1),
                       const SizedBox(height: 16),
-                      
-                      // Area Detail Pendapatan di Bawah Chart
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -117,8 +259,8 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                                   color: Color(0xFFAAAAAA), 
                                 ),
                               ),
-                              SizedBox(width: 4),
-                              Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFFAAAAAA)),
+                              //SizedBox(width: 4),
+                              //Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFFAAAAAA)),
                             ],
                           ),
                         ],
@@ -129,17 +271,17 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                'Rp1.200jt', 
-                                style: TextStyle(
+                                _formatCurrency(_weeklyGross), 
+                                style: const TextStyle(
                                   fontSize: 18, 
                                   fontWeight: FontWeight.bold, 
                                   color: AppColors.black,
                                 ),
                               ),
-                              SizedBox(height: 2), 
-                              Text(
+                              const SizedBox(height: 2), 
+                              const Text(
                                 'Pendapatan Kotor', 
                                 style: TextStyle(
                                   fontSize: 12, 
@@ -151,17 +293,17 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
-                            children: const [
+                            children: [
                               Text(
-                                'Rp800rb', 
-                                style: TextStyle(
+                                _formatCurrency(_weeklyNet), 
+                                style: const TextStyle(
                                   fontSize: 18, 
                                   fontWeight: FontWeight.bold, 
                                   color: AppColors.black,
                                 ),
                               ),
-                              SizedBox(height: 2),
-                              Text(
+                              const SizedBox(height: 2),
+                              const Text(
                                 'Pendapatan Bersih', 
                                 style: TextStyle(
                                   fontSize: 12, 
@@ -180,7 +322,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
 
               const SizedBox(height: 32),
 
-              // 4. MENU PALING LARIS
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: Text(
@@ -193,15 +334,22 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: HapHapMerchantMenuCard(
-                  title: 'Szechuan Chicken Bowl',
-                  description: 'Nasi + Ayam Saus Szechuan',
-                  price: 'Rp 25.000',
-                  stockText: '167 Sold', 
-                  imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: _isLoading
+                    ? const SizedBox()
+                    : _bestSellingItem != null
+                        ? HapHapMerchantMenuCard(
+                            title: _bestSellingItem!.name,
+                            description: 'Menu favorit pelanggan',
+                            price: 'Rp ${_formatPrice(_bestSellingItem!.discountPrice)}',
+                            stockText: '$_bestSellingSoldCount Terjual', 
+                            imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                          )
+                        : const Text(
+                            'Belum ada data pesanan.',
+                            style: TextStyle(color: AppColors.greyDark),
+                          ),
               ),
 
               const SizedBox(height: 40),
@@ -212,19 +360,17 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
     );
   }
 
-  // ===========================================================================
-  // WIDGET KHUSUS UNTUK MEMBANGUN FL_CHART (Versi 0.68.0)
-  // ===========================================================================
   Widget _buildLineChart() {
+    double maxSales = _weeklySales.reduce((a, b) => a > b ? a : b);
+    
     return LineChart(
       LineChartData(
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false, 
-          horizontalInterval: 250,
           getDrawingHorizontalLine: (value) {
-            return FlLine(
-              color: const Color(0xFFE0E0E0),
+            return const FlLine(
+              color: Color(0xFFE0E0E0),
               strokeWidth: 1,
               dashArray: [5, 5], 
             );
@@ -263,11 +409,10 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 250, 
               reservedSize: 40,
               getTitlesWidget: (value, meta) {
                 return Text(
-                  value.toInt().toString(),
+                  _formatChartLabel(value),
                   style: const TextStyle(color: AppColors.greyDark, fontSize: 10),
                   textAlign: TextAlign.left,
                 );
@@ -279,17 +424,17 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
         minX: 0,
         maxX: 6,
         minY: 0,
-        maxY: 1000,
+        maxY: maxSales == 0 ? 1000 : maxSales * 1.2,
         lineBarsData: [
           LineChartBarData(
-            spots: const [
-              FlSpot(0, 150),
-              FlSpot(1, 280),
-              FlSpot(2, 200),
-              FlSpot(3, 300),
-              FlSpot(4, 750),
-              FlSpot(5, 950), 
-              FlSpot(6, 680),
+            spots: [
+              FlSpot(0, _weeklySales[0]),
+              FlSpot(1, _weeklySales[1]),
+              FlSpot(2, _weeklySales[2]),
+              FlSpot(3, _weeklySales[3]),
+              FlSpot(4, _weeklySales[4]),
+              FlSpot(5, _weeklySales[5]), 
+              FlSpot(6, _weeklySales[6]),
             ],
             isCurved: true, 
             color: AppColors.primary, 
@@ -298,7 +443,8 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
             dotData: FlDotData(
               show: true,
               checkToShowDot: (spot, barData) {
-                return spot.x == 5; 
+                final todayIndex = DateTime.now().weekday - 1;
+                return spot.x == todayIndex; 
               },
               getDotPainter: (spot, percent, barData, index) {
                 return FlDotCirclePainter(

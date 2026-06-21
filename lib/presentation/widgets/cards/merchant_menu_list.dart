@@ -23,9 +23,7 @@ class HapHapMerchantMenuItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      // Padding vertikal dibikin pas seukuran gambar biar nggak menuh-menuhin tempat
       padding: const EdgeInsets.symmetric(vertical: 8), 
-      // HAPUS SEMUA BORDER DI SINI
       color: AppColors.white, 
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -44,7 +42,7 @@ class HapHapMerchantMenuItemCard extends StatelessWidget {
           
           Expanded(
             child: SizedBox(
-              height: 112, // Dikunci sama dengan tinggi gambar
+              height: 112,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

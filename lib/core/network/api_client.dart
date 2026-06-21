@@ -4,12 +4,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:haphap_fe/core/network/token_manager.dart';
 
-/// Central HTTP client for HapHap API.
 class ApiClient {
   ApiClient._();
 
   static String get baseUrl =>
-      dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:3000';
+      dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:3000/api';
 
   static Future<Map<String, String>> get _headers async {
     final token = await TokenManager.getToken();
@@ -113,6 +112,43 @@ class ApiClient {
       throw ApiException(
         message:
             'Tidak dapat terhubung ke server. Periksa koneksi internet kamu.',
+        statusCode: 0,
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Multipart File Upload
+  // ---------------------------------------------------------------------------
+
+  static Future<Map<String, dynamic>> uploadFile(
+    String path,
+    String filePath,
+    String fieldName,
+  ) async {
+    final uri = Uri.parse('$baseUrl$path');
+
+    try {
+      final request = http.MultipartRequest('POST', uri);
+      
+      // Add auth header
+      final token = await TokenManager.getToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      
+      // Add file
+      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+      
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return _handleResponse(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException(
+        message:
+            'Tidak dapat mengunggah file. Periksa koneksi internet kamu.',
         statusCode: 0,
       );
     }
