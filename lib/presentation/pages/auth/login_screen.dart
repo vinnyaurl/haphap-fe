@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'Kata sandi tidak boleh kosong.';
+    if (value == null || value.isEmpty) return 'Password tidak boleh kosong.';
     return null;
   }
 
@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF70340C),
+                          color: AppColors.white,
                         ),
                       ),
                     ],
@@ -189,8 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           HapHapTextField(
-                            labelText: 'Alamat Email',
-                            hintText: 'PuyPuy@gmail.com',
+                            labelText: 'Email',
+                            hintText: 'puypuy@gmail.com',
                             controller: _emailController,
                             isPassword: false,
                             isRequired: true,
@@ -200,8 +200,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 32),
 
                           HapHapTextField(
-                            labelText: 'Kata Sandi',
-                            hintText: 'Password',
+                            labelText: 'Password',
+                            hintText: 'password',
                             controller: _passwordController,
                             isPassword: true,
                             isRequired: true,
@@ -234,21 +234,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fontFamily: 'Plus Jakarta Sans',
                                   fontSize: 14,
                                   color: AppColors.black,
-                                ),
-                              ),
-                              const Spacer(),
-                              GestureDetector(
-                                onTap: () {
-                                  // TODO: Navigate to Forgot Password screen
-                                },
-                                child: const Text(
-                                  'Lupa Password?',
-                                  style: TextStyle(
-                                    fontFamily: 'Plus Jakarta Sans',
-                                    fontSize: 14,
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
                                 ),
                               ),
                             ],

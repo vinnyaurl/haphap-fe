@@ -46,14 +46,15 @@ class _OrderItem {
 }
 
 class AktivitasPage extends StatefulWidget {
-  const AktivitasPage({super.key});
+  final int initialTab;
+  const AktivitasPage({super.key, this.initialTab = 0});
 
   @override
   State<AktivitasPage> createState() => _AktivitasPageState();
 }
 
 class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserver {
-  int _currentTabIndex = 0;
+  late int _currentTabIndex;
 
   List<_OrderItem> _orders = [];
   bool _isLoading = true;
@@ -64,11 +65,22 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   @override
   void initState() {
     super.initState();
+    _currentTabIndex = widget.initialTab;
     WidgetsBinding.instance.addObserver(this);
     _fetchOrders();
     _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       _fetchOrders(silent: true);
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant AktivitasPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != oldWidget.initialTab) {
+      setState(() {
+        _currentTabIndex = widget.initialTab;
+      });
+    }
   }
 
   @override
@@ -194,17 +206,7 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
               fontSize: 24,
             ),
           ),
-          GestureDetector(
-            onTap: () => context.push(AppRoutes.laporanTransaksi),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Color(0xFF505050),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.arrow_downward, size: 16, color: AppColors.white),
-            ),
-          ),
+
         ],
       ),
     );

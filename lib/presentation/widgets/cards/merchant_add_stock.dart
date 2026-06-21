@@ -53,7 +53,7 @@ class HapHapMerchantAddStockCard extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Update your stock!',
+                    'Aktifkan menu kamu disini!',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

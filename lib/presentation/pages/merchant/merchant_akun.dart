@@ -141,7 +141,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.0),
           child: HapHapPageHeader(
-            title: 'Akun Toko',
+            title: 'Profile Toko',
             showBackButton: false, 
             titleColor: AppColors.white, 
             fontSize: 24,
@@ -178,7 +178,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('Umum'),
+                    _buildSectionTitle('Akun'),
                     _buildMenuCard([
                       _MenuItemData(
                         icon: Icons.edit,
@@ -197,9 +197,22 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                           context.push(AppRoutes.merchantStatistik);
                         },
                       ),
+                    ]),
+
+                    const SizedBox(height: 32), 
+
+                    _buildSectionTitle('Preferensi'),
+                    _buildMenuCard([
+                      _MenuItemData(
+                        icon: Icons.language, 
+                        title: 'Bahasa',
+                        onTap: () {
+                          context.push(AppRoutes.bahasa);
+                        },
+                      ),
                       _MenuItemData(
                         icon: Icons.notifications,
-                        title: 'Notifications',
+                        title: 'Notifikasi',
                         onTap: () {
                           context.push(AppRoutes.merchantNotifikasi);
                         },
