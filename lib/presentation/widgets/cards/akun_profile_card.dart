@@ -5,7 +5,7 @@ class HapHapProfileCard extends StatelessWidget {
   final String name;
   final String email;
   final String phoneNumber;
-  final String? imageUrl; 
+  final String? imageUrl;
 
   const HapHapProfileCard({
     super.key,
@@ -19,10 +19,10 @@ class HapHapProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageProvider = (imageUrl != null && imageUrl!.isNotEmpty)
         ? NetworkImage(imageUrl!) as ImageProvider
-        : const AssetImage('assets/images/profile_image.png');
+        : NetworkImage('https://api.dicebear.com/9.x/adventurer/png?seed=${Uri.encodeComponent(name)}');
 
     return Container(
-      width: 354,
+      width: double.infinity,
       height: 128,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -48,7 +48,6 @@ class HapHapProfileCard extends StatelessWidget {
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFFF8F8F8), 
               image: DecorationImage(
                 image: imageProvider,
                 fit: BoxFit.cover,

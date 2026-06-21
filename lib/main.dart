@@ -27,6 +27,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
+final _debugRouter = GoRouter(
+  initialLocation: AppRoutes.splash,
+  routes: appRouter.configuration.routes,
+);
 // final _debugRouter = GoRouter(
 //   initialLocation: AppRoutes.splash,
 //   routes: appRouter.configuration.routes,

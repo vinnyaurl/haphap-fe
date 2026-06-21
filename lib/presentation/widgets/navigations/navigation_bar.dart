@@ -3,8 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
 
-// Enum untuk membedakan tipe user
-enum NavBarType { user, merchant }
+enum NavBarType { user, merchant, admin }
 
 class HapHapNavBar extends StatelessWidget {
   final int currentIndex;
@@ -42,9 +41,11 @@ class HapHapNavBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center, 
         crossAxisAlignment: CrossAxisAlignment.start, 
         
-        children: type == NavBarType.user 
-          ? _buildUserItems() 
-          : _buildMerchantItems(),
+        children: type == NavBarType.user
+          ? _buildUserItems()
+          : type == NavBarType.merchant
+              ? _buildMerchantItems()
+              : _buildAdminItems(),
       ),
     );
   }
@@ -65,11 +66,21 @@ class HapHapNavBar extends StatelessWidget {
     return [
       _buildNavItem(0, AppIcons.nav_beranda, 'Beranda'),
       const SizedBox(width: 32),
-      _buildNavItem(1, AppIcons.nav_menu, 'Menu'), 
+      _buildNavItem(1, AppIcons.nav_menu, 'Menu'),
       const SizedBox(width: 32),
       _buildNavItem(2, AppIcons.nav_aktivitas, 'Aktivitas'),
       const SizedBox(width: 32),
       _buildNavItem(3, AppIcons.nav_akun, 'Akun'),
+    ];
+  }
+
+  List<Widget> _buildAdminItems() {
+    return [
+      _buildNavItem(0, AppIcons.nav_beranda, 'Beranda'),
+      const SizedBox(width: 56),
+      _buildNavItem(1, AppIcons.nav_aktivitas, 'Pengajuan'),
+      const SizedBox(width: 56),
+      _buildNavItem(2, AppIcons.nav_akun, 'Akun'),
     ];
   }
 
@@ -80,12 +91,9 @@ class HapHapNavBar extends StatelessWidget {
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 60, 
-        // Column secara default meletakkan anak pertamanya di paling atas.
-        // Karena Row luarnya sudah rata atas, garis oren ini akan menempel di top edge Nav Bar.
+        width: 60,
         child: Column(
           children: [
-            // 1. INDIKATOR GARIS OREN (Nempel di paling atas)
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 32,

@@ -7,6 +7,7 @@ import 'package:haphap_fe/presentation/pages/customer/akun/notifikasi.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun/statistik.dart';
 import 'package:haphap_fe/presentation/shell/merchant_shell.dart';
 import 'package:haphap_fe/presentation/shell/user_shell.dart';
+import 'package:haphap_fe/presentation/shell/admin_shell.dart';
 
 import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
 import 'package:haphap_fe/presentation/pages/splash/onboarding_screen.dart';
@@ -30,6 +31,12 @@ import 'package:haphap_fe/presentation/pages/merchant/merchant_akun.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_statistik.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_notifikasi.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_scan_qr.dart';
+
+import 'package:haphap_fe/presentation/pages/admin/admin_beranda.dart';
+import 'package:haphap_fe/presentation/pages/admin/admin_pengajuan.dart';
+import 'package:haphap_fe/presentation/pages/admin/admin_detail_pengajuan.dart';
+import 'package:haphap_fe/presentation/pages/admin/admin_akun.dart';
+import 'package:haphap_fe/data/models/application_model.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -62,6 +69,12 @@ class AppRoutes {
   static const String merchantAkun = '/merchant/akun';
   static const String merchantStatistik = '/merchant/statistik';
   static const String merchantNotifikasi = '/merchant/notifikasi';
+  static const String merchantEditProfil = '/merchant/edit-profil';
+
+  static const String adminBeranda         = '/admin/beranda';
+  static const String adminPengajuan       = '/admin/pengajuan';
+  static const String adminAkun            = '/admin/akun';
+  static const String adminDetailPengajuan = '/admin/detail-pengajuan';
   static const String merchantScanQR = '/merchant/scan-qr';
 }
 
@@ -163,6 +176,32 @@ final appRouter = GoRouter(
       path: AppRoutes.merchantNotifikasi,
       builder: (context, state) => const NotifikasiMerchantPage(),
     ),
+    GoRoute(
+      path: AppRoutes.merchantEditProfil,
+      builder: (context, state) => const EditProfilMerchantPage(),
+    ),
+
+    GoRoute(
+      path: '/finish',
+      redirect: (context, state) {
+        final orderId = state.uri.queryParameters['order_id'];
+        final status = state.uri.queryParameters['transaction_status'];
+        debugPrint('Midtrans Redirect - Order: $orderId, Status: $status');
+        return AppRoutes.aktivitas;
+      },
+    ),
+    GoRoute(
+      path: '/payment/finish',
+      redirect: (context, state) => AppRoutes.aktivitas,
+    ),
+
+    GoRoute(
+      path: AppRoutes.adminDetailPengajuan,
+      builder: (context, state) {
+        final app = state.extra as ApplicationModel;
+        return DetailPengajuanAdminPage(application: app);
+      },
+    ),
 
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
@@ -243,6 +282,31 @@ final appRouter = GoRouter(
             ),
           ],
         ),
+      ],
+    ),
+
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          AdminShell(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: AppRoutes.adminBeranda,
+            builder: (context, state) => const BerandaAdminPage(),
+          ),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: AppRoutes.adminPengajuan,
+            builder: (context, state) => const PengajuanAdminPage(),
+          ),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: AppRoutes.adminAkun,
+            builder: (context, state) => const AkunAdminPage(),
+          ),
+        ]),
       ],
     ),
   ],
