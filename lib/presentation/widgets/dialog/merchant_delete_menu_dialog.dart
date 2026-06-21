@@ -99,14 +99,10 @@ class _HapHapDeleteMenuDialogState extends State<HapHapDeleteMenuDialog> {
                             ),
                           ),
                         )
-                      : ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red, // Tombol bahaya
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
+                      : HapHapButton(
+                          text: 'Hapus',
+                          isDanger: true,
                           onPressed: _onDelete,
-                          child: const Text('Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         ),
                 ),
               ],

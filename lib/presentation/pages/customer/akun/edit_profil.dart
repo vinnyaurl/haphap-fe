@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
-// --- IMPORT KOMPONEN LEGO KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
@@ -74,7 +73,6 @@ class _EditProfilPageState extends State<EditProfilPage> {
             children: [
               const SizedBox(height: 16),
               
-              // 1. HEADER
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: HapHapPageHeader(
@@ -84,12 +82,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
               
               const SizedBox(height: 24),
 
-              // 2. FOTO PROFIL DENGAN ICON KAMERA
               _buildProfilePicture(),
 
               const SizedBox(height: 24),
 
-              // 3. FORM INPUT
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
@@ -98,10 +94,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
                       labelText: 'Nama Lengkap',
                       hintText: 'Masukkan nama lengkap',
                       controller: _namaController,
-                      isRequired: true, // Memunculkan bintang merah
+                      isRequired: true,
                     ),
                     
-                    const SizedBox(height: 32), // Jarak 32px sesuai garis pink di desain
+                    const SizedBox(height: 32),
                     
                     HapHapTextField(
                       labelText: 'Nomor Telepon',
@@ -122,28 +118,21 @@ class _EditProfilPageState extends State<EditProfilPage> {
                 ),
               ),
               
-              const SizedBox(height: 100), // Jarak napas sebelum bottom bar
+              const SizedBox(height: 100),
             ],
           ),
         ),
       ),
-      
-      // 4. TOMBOL SIMPAN DI BAWAH
       bottomNavigationBar: _buildBottomButton(),
     );
   }
-
-  // ===========================================================================
-  // WIDGET HELPERS
-  // ===========================================================================
 
   Widget _buildProfilePicture() {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Foto Utama
         ClipRRect(
-          borderRadius: BorderRadius.circular(60), // Setengah dari lebar/tinggi
+          borderRadius: BorderRadius.circular(60),
           child: _avatarUrl != null && _avatarUrl!.isNotEmpty
               ? Image.network(
                   _avatarUrl!,
@@ -155,7 +144,6 @@ class _EditProfilPageState extends State<EditProfilPage> {
               : _buildPlaceholderAvatar(),
         ),
         
-        // Icon Kamera Bulat (di pojok kanan bawah foto)
         Positioned(
           bottom: 0,
           right: 0,
@@ -164,12 +152,12 @@ class _EditProfilPageState extends State<EditProfilPage> {
               print('Ganti foto profil ditekan');
             },
             child: Container(
-              padding: const EdgeInsets.all(6), // Jarak icon ke border
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AppColors.primary, // Background oren
+                color: AppColors.primary,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.white, // Border putih memisahkan icon dengan foto
+                  color: AppColors.white,
                   width: 3,
                 ),
               ),
@@ -195,7 +183,6 @@ class _EditProfilPageState extends State<EditProfilPage> {
   }
 
   Widget _buildBottomButton() {
-    // Menghindari tombol nabrak home indicator iPhone
     final bottomSafeArea = MediaQuery.paddingOf(context).bottom;
     
     return Container(
@@ -207,7 +194,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
       ),
       color: const Color(0xFFF9F9F9),
       child: Center(
-        heightFactor: 1, // Biar button tidak melar penuh ke container
+        heightFactor: 1,
         child: _isSaving
             ? const CircularProgressIndicator(color: AppColors.primary)
             : HapHapButton(

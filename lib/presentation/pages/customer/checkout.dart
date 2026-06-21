@@ -9,6 +9,7 @@ import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/data/services/order_service.dart';
 import 'package:haphap_fe/data/services/payment_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 
 class CheckoutArgs {
@@ -643,94 +644,25 @@ class _CheckoutPageState extends State<CheckoutPage> {
           const SizedBox(height: 20),
 
           if (_pendingOrderId != null) ...[
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _isCheckingPayment ? null : _checkPaymentStatus,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.greyLight,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 0,
-                ),
-                child: _isCheckingPayment
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: AppColors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        'Saya Sudah Bayar',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.white,
-                        ),
-                      ),
-              ),
+            HapHapButton(
+              text: 'Saya Sudah Bayar',
+              isExpanded: true,
+              isLoading: _isCheckingPayment,
+              onPressed: _checkPaymentStatus,
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton(
-                onPressed: (_isCheckingPayment || _isSubmitting) ? null : _bayarUlang,
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: const Text(
-                  'Bayar Ulang',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
+            HapHapButton(
+              text: 'Bayar Ulang',
+              isExpanded: true,
+              isOutline: true,
+              onPressed: (_isCheckingPayment || _isSubmitting) ? null : _bayarUlang,
             ),
           ] else
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: (_activeItems.isEmpty || _isSubmitting)
-                    ? null
-                    : _buatPesanan,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.greyLight,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 0,
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: AppColors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        'Buat Pesanan',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.white,
-                        ),
-                      ),
-              ),
+            HapHapButton(
+              text: 'Buat Pesanan',
+              isExpanded: true,
+              isLoading: _isSubmitting,
+              onPressed: _activeItems.isEmpty ? null : _buatPesanan,
             ),
         ],
       ),

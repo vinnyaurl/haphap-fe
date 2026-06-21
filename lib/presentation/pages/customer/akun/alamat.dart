@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/constants/app_icons.dart';
 
-// --- IMPORT KOMPONEN KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart'; 
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; 
@@ -33,7 +32,6 @@ class _AlamatPageState extends State<AlamatPage> {
           children: [
             const SizedBox(height: 16),
             
-            // 1. HEADER (Menggunakan komponen HapHapPageHeader)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapPageHeader(
@@ -41,7 +39,6 @@ class _AlamatPageState extends State<AlamatPage> {
               ),
             ),
             
-            // 2. SEARCH BAR (Menggunakan komponen HapHapSearchBar)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: HapHapSearchBar(
@@ -57,13 +54,11 @@ class _AlamatPageState extends State<AlamatPage> {
               ),
             ),
 
-            // 3. DAFTAR ALAMAT & BANTUAN (Scrollable)
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Daftar Alamat
                     _buildAddressItem(
                       icon: Icons.gps_fixed, 
                       title: 'Rumah denis bagus',
@@ -86,7 +81,6 @@ class _AlamatPageState extends State<AlamatPage> {
                       isLast: true, 
                     ),
 
-                    // Bagian Bantuan 
                     Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: Column(
@@ -97,13 +91,13 @@ class _AlamatPageState extends State<AlamatPage> {
                             child: const Text(
                               'Butuh Bantuan?',
                               style: TextStyle(
-                                fontSize: 16, // Update ke 16px
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.black, 
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16), // Gap 16px
+                          const SizedBox(height: 16),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -137,15 +131,9 @@ class _AlamatPageState extends State<AlamatPage> {
           ],
         ),
       ),
-      
-      // 4. TOMBOL SIMPAN
       bottomNavigationBar: _buildBottomButton(),
     );
   }
-
-  // ===========================================================================
-  // WIDGET HELPERS
-  // ===========================================================================
 
   Widget _buildAddressItem({
     required IconData icon,
@@ -173,7 +161,7 @@ class _AlamatPageState extends State<AlamatPage> {
                       Text(
                         title,
                         style: const TextStyle(
-                          fontSize: 16, // Update ke 16px
+                          fontSize: 16,
                           color: AppColors.black,
                         ),
                       ),
@@ -181,7 +169,7 @@ class _AlamatPageState extends State<AlamatPage> {
                       Text(
                         address,
                         style: const TextStyle(
-                          fontSize: 14, // Update ke 14px
+                          fontSize: 14,
                           color: AppColors.greyLight,
                           height: 1.4,
                         ),
@@ -195,13 +183,11 @@ class _AlamatPageState extends State<AlamatPage> {
             ),
           ),
         ),
-        // Garis pemisah antar list
         if (!isLast)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
               children: [
-                //SizedBox(height: 16), // Jarak ke divider 16px
                 Divider(color: AppColors.greyLight, height: 0.5, thickness: 1),
               ],
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 class AdminRejectDialog extends StatefulWidget {
   final Future<void> Function(String rejectNote) onSubmit;
@@ -102,38 +103,11 @@ class _AdminRejectDialogState extends State<AdminRejectDialog> {
 
             const SizedBox(height: 24),
 
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
-                  disabledBackgroundColor:
-                      AppColors.primary.withValues(alpha: 0.6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  elevation: 0,
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: AppColors.white,
-                        ),
-                      )
-                    : const Text(
-                        'Kirim Penolakan',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
+            HapHapButton(
+              text: 'Kirim Penolakan',
+              isExpanded: true,
+              isLoading: _isSubmitting,
+              onPressed: _handleSubmit,
             ),
           ],
         ),

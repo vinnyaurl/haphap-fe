@@ -20,10 +20,6 @@ class ApiClient {
     };
   }
 
-  // ---------------------------------------------------------------------------
-  // GET
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> get(String path) async {
     final uri = Uri.parse('$baseUrl$path');
 
@@ -40,10 +36,6 @@ class ApiClient {
       );
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // POST
-  // ---------------------------------------------------------------------------
 
   static Future<Map<String, dynamic>> post(
     String path,
@@ -69,10 +61,6 @@ class ApiClient {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // PATCH
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> patch(
     String path,
     Map<String, dynamic> body,
@@ -97,10 +85,6 @@ class ApiClient {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // DELETE
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> delete(String path) async {
     final uri = Uri.parse('$baseUrl$path');
 
@@ -118,12 +102,6 @@ class ApiClient {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Multipart POST — text fields + optional file
-  // Digunakan untuk endpoint yang menerima multipart/form-data,
-  // misalnya POST /menus (name, originalPrice, description?, image?).
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> multipartPost(
     String path, {
     required Map<String, String> fields,
@@ -135,17 +113,13 @@ class ApiClient {
     try {
       final request = http.MultipartRequest('POST', uri);
 
-      // Auth header
       final token = await TokenManager.getToken();
       if (token != null && token.isNotEmpty) {
         request.headers['Authorization'] = 'Bearer $token';
       }
 
-      // Text fields
       request.fields.addAll(fields);
 
-      // Optional file — eksplisit set contentType agar Supabase tidak
-      // menolak dengan error "mime type application/octet-stream not supported".
       if (filePath != null && filePath.isNotEmpty) {
         final mimeType = _mimeTypeFromPath(filePath);
         request.files.add(
@@ -184,10 +158,6 @@ class ApiClient {
     return map[ext] ?? 'image/jpeg';
   }
 
-  // ---------------------------------------------------------------------------
-  // Multipart POST (multiple files + text fields)
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> postMultipart(
     String path, {
     required Map<String, String> fields,
@@ -198,16 +168,13 @@ class ApiClient {
     try {
       final request = http.MultipartRequest('POST', uri);
 
-      // Auth header
       final token = await TokenManager.getToken();
       if (token != null && token.isNotEmpty) {
         request.headers['Authorization'] = 'Bearer $token';
       }
 
-      // Text fields
       request.fields.addAll(fields);
 
-      // File fields
       for (final entry in files.entries) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -231,10 +198,6 @@ class ApiClient {
       );
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // Shared response handler
-  // ---------------------------------------------------------------------------
 
   static Map<String, dynamic> _handleResponse(http.Response response) {
     debugPrint('RAW RESPONSE: ${response.body}');

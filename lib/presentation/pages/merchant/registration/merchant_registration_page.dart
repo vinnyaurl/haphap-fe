@@ -23,11 +23,9 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
   int _currentStep = 0;
   bool _isLoading = false;
 
-  // Forms
   final _step1FormKey = GlobalKey<FormState>();
   final _step2FormKey = GlobalKey<FormState>();
 
-  // Controllers Step 1
   final _ownerNameCtrl = TextEditingController();
   final _businessNameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
@@ -37,12 +35,10 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
   final _openTimeCtrl = TextEditingController();
   final _closeTimeCtrl = TextEditingController();
 
-  // Controllers Step 2
   String? _selectedBank;
   final _accountNumberCtrl = TextEditingController();
   final _accountHolderCtrl = TextEditingController();
 
-  // Step 3
   XFile? _avatarFile;
   XFile? _documentFile;
 
@@ -116,7 +112,6 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
         imageQuality: 80,
       );
       if (pickedFile != null) {
-        // Simple file size check (~5MB)
         final length = await pickedFile.length();
         if (length > 5 * 1024 * 1024) {
           _showErrorSnackBar('Ukuran file maksimal 5 MB');
@@ -160,12 +155,12 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
         'merchantName': _businessNameCtrl.text,
         'merchantOwner': _ownerNameCtrl.text,
         'address': _addressCtrl.text,
-        'latitude': '-6.2', // Dummy, for real app get from maps
-        'longitude': '106.8', // Dummy
+        'latitude': '-6.2',
+        'longitude': '106.8',
         'openTime': _openTimeCtrl.text,
         'closeTime': _closeTimeCtrl.text,
         'phone': _phoneCtrl.text,
-        'categories': 'RESTORAN', // Using RESTORAN as default for now
+        'categories': 'RESTORAN',
         'bankType': _selectedBank!,
         'bankAccount': _accountNumberCtrl.text,
         'bankHolder': _accountHolderCtrl.text,

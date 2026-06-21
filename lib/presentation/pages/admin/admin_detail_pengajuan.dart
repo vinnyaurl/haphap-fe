@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/models/application_model.dart';
 import 'package:haphap_fe/data/services/application_service.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/presentation/widgets/dialog/admin_reject_dialog.dart';
 import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 
@@ -482,62 +483,20 @@ class _DetailPengajuanAdminPageState extends State<DetailPengajuanAdminPage> {
       child: Row(
         children: [
           Expanded(
-            child: SizedBox(
-              height: 52,
-              child: OutlinedButton(
-                onPressed: _isProcessing ? null : _showRejectDialog,
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primary, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                ),
-                child: const Text(
-                  'Tolak',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
+            child: HapHapButton(
+              text: 'Tolak',
+              isExpanded: true,
+              isOutline: true,
+              onPressed: _isProcessing ? null : _showRejectDialog,
             ),
           ),
-
           const SizedBox(width: 12),
-
           Expanded(
-            child: SizedBox(
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _isProcessing ? null : _approve,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
-                  disabledBackgroundColor:
-                      AppColors.primary.withValues(alpha: 0.6),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                ),
-                child: _isProcessing
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: AppColors.white,
-                        ),
-                      )
-                    : const Text(
-                        'Terima',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
+            child: HapHapButton(
+              text: 'Terima',
+              isExpanded: true,
+              isLoading: _isProcessing,
+              onPressed: _approve,
             ),
           ),
         ],

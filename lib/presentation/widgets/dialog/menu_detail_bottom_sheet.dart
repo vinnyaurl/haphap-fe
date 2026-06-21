@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 void showMenuDetailBottomSheet(
   BuildContext context, {
@@ -75,30 +76,13 @@ void showMenuDetailBottomSheet(
             const SizedBox(height: 24),
             
             // 5. TOMBOL TAMBAH KE KERANJANG
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  onAddToCart();
-                  Navigator.pop(context); // Tutup bottom sheet setelah diklik
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary, // Warna Oren HapHap
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 0, // Dibuat flat
-                ),
-                child: Text(
-                  'Tambahkan ke Keranjang - $price',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
+            HapHapButton(
+              text: 'Tambahkan ke Keranjang - $price',
+              isExpanded: true,
+              onPressed: () {
+                onAddToCart();
+                Navigator.pop(context);
+              },
             ),
           ],
         ),

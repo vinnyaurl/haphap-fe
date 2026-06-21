@@ -25,12 +25,10 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
   int _totalPortion = 0;
   String _createdAtLabel = '';
 
-  // Chart & weekly stats
   List<double> _weeklySales = List.filled(7, 0.0);
   int _weeklyGross = 0;
   int _weeklyNet = 0;
 
-  // Best selling
   OrderItemModel? _bestSellingItem;
   int _bestSellingSoldCount = 0;
 
@@ -50,7 +48,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
       _totalRevenue = merchant.totalRevenue;
       _totalPortion = merchant.totalPortion;
 
-      // createdAt logic if needed (optional since we might not display it)
       if (merchant.createdAt != null) {
         _createdAtLabel = 'Terdaftar sejak ${merchant.createdAt!.year}';
       }
@@ -77,11 +74,9 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
 
   void _processOrders(List<OrderModel> orders) {
     final now = DateTime.now();
-    // Start of the week (Monday)
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final startOfWeekDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
     
-    // End of the week (Sunday 23:59:59)
     final endOfWeekDate = startOfWeekDate.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
 
     _weeklySales = List.filled(7, 0.0);
@@ -94,16 +89,12 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
     for (var order in orders) {
       if (!order.isCompleted) continue;
 
-      // Count items for best selling (all time or just week? let's do all time completed orders)
       for (var item in order.orderItems) {
         itemSalesCount[item.surplusItemId] = (itemSalesCount[item.surplusItemId] ?? 0) + item.quantity;
         itemDetails[item.surplusItemId] = item;
       }
 
-      // Check if order is in current week
       if (order.createdAt.isAfter(startOfWeekDate) && order.createdAt.isBefore(endOfWeekDate)) {
-        // weekday is 1 for Monday, 7 for Sunday. 
-        // array index 0 is Monday, 6 is Sunday.
         final dayIndex = order.createdAt.weekday - 1;
         _weeklySales[dayIndex] += order.totalAmount.toDouble();
         
@@ -112,7 +103,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
       }
     }
 
-    // Determine best selling
     String? bestSellingId;
     int maxCount = 0;
     for (var entry in itemSalesCount.entries) {
@@ -259,8 +249,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                                   color: Color(0xFFAAAAAA), 
                                 ),
                               ),
-                              //SizedBox(width: 4),
-                              //Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFFAAAAAA)),
                             ],
                           ),
                         ],

@@ -111,7 +111,7 @@ class HapHapFileUploadField extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        'Drag & drop files or Browse',
+                        'Telusuri file',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -120,7 +120,7 @@ class HapHapFileUploadField extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Supported formats: JPEG, PNG\nMaximum size: 5MB',
+                        'Format yang didukung: .pdf, .jpeg, .jpg, .png\nUkuran maksimal: 5MB',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,

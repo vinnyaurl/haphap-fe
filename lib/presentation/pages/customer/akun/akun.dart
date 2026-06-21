@@ -3,12 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
-// --- IMPORT SERVICE & MODEL ---
 import 'package:haphap_fe/data/services/user_service.dart';
 import 'package:haphap_fe/data/services/application_service.dart';
 import 'package:haphap_fe/data/models/user_profile_model.dart';
 
-// --- IMPORT KOMPONEN ---
 import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart'; 
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
@@ -28,7 +26,7 @@ class _AkunPageState extends State<AkunPage> {
   @override
   void initState() {
     super.initState();
-    _fetchProfile(); // Panggil API saat halaman diload
+    _fetchProfile();
   }
 
   Future<void> _fetchProfile() async {
@@ -46,7 +44,6 @@ class _AkunPageState extends State<AkunPage> {
     }
   }
 
-  // Helper untuk format "Hemat 67rb"
   String _formatHemat(int totalSaved) {
     if (totalSaved == 0) return 'Belum ada';
     if (totalSaved >= 1000) {
@@ -56,7 +53,6 @@ class _AkunPageState extends State<AkunPage> {
   }
 
   Future<void> _handleJoinMerchant(BuildContext context) async {
-    // Show loading on the root navigator so it overlays everything
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -65,7 +61,6 @@ class _AkunPageState extends State<AkunPage> {
     );
 
     try {
-      // Always re-fetch profile to get the latest role from server
       final freshProfile = await UserService.getMe();
       if (!mounted) return;
 
@@ -75,7 +70,7 @@ class _AkunPageState extends State<AkunPage> {
       });
 
       if (freshProfile.role == 'MERCHANT') {
-        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+        Navigator.of(context, rootNavigator: true).pop();
         context.go(AppRoutes.merchantBeranda);
         return;
       }
@@ -83,13 +78,12 @@ class _AkunPageState extends State<AkunPage> {
       final myApps = await ApplicationService.findMyApplications();
       
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
 
       final hasPending = myApps.any((app) => app.status == 'PENDING');
       final hasApproved = myApps.any((app) => app.status == 'APPROVED');
 
       if (hasApproved) {
-        // Role on server is MERCHANT but hadn't synced — go to merchant
         context.go(AppRoutes.merchantBeranda);
       } else if (hasPending) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -99,12 +93,11 @@ class _AkunPageState extends State<AkunPage> {
           ),
         );
       } else {
-        // Can register (No application, or previous ones were rejected)
         context.push(AppRoutes.merchantRegister);
       }
     } catch (e) {
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Terjadi kesalahan: $e'),
@@ -152,7 +145,6 @@ class _AkunPageState extends State<AkunPage> {
         
         const SizedBox(height: 16),
 
-        // 1. DATA DINAMIS KE KARTU PROFIL
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: HapHapProfileCard(
@@ -181,7 +173,6 @@ class _AkunPageState extends State<AkunPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // --- SECTION 1: AKUN ---
                     _buildSectionTitle('Akun'),
                     _buildMenuCard([
                       _MenuItemData(
@@ -194,7 +185,6 @@ class _AkunPageState extends State<AkunPage> {
                       _MenuItemData(
                         icon: Icons.info, 
                         title: 'Statistik',
-                        // 2. DATA DINAMIS STATISTIK
                         badge: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
@@ -214,7 +204,6 @@ class _AkunPageState extends State<AkunPage> {
 
                     const SizedBox(height: 32),
 
-                    // --- SECTION 2: PREFERENSI ---
                     _buildSectionTitle('Preferensi'),
                     _buildMenuCard([
                       _MenuItemData(
@@ -242,7 +231,6 @@ class _AkunPageState extends State<AkunPage> {
 
                     const SizedBox(height: 32),
 
-                    // --- SECTION 3: SELEBIHNYA DARI HAPHAP ---
                     _buildSectionTitle('Selebihnya dari HapHap'),
                     _buildMenuCard([
                       _MenuItemData(
@@ -254,7 +242,6 @@ class _AkunPageState extends State<AkunPage> {
 
                     const SizedBox(height: 32),
 
-                    // --- SECTION 4: LAINNYA ---
                     _buildSectionTitle('Lainnya'),
                     _buildMenuCard([
                       _MenuItemData(
@@ -271,7 +258,6 @@ class _AkunPageState extends State<AkunPage> {
 
                     const SizedBox(height: 32),
 
-                    // --- TOMBOL KELUAR ---
                     Center(
                       child: HapHapButton(
                         text: 'Keluar',
@@ -292,10 +278,6 @@ class _AkunPageState extends State<AkunPage> {
       ],
     );
   }
-
-  // ===========================================================================
-  // HELPER WIDGETS
-  // ===========================================================================
 
   Widget _buildSectionTitle(String title) {
     return Padding(

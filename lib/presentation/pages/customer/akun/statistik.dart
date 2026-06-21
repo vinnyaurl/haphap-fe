@@ -3,7 +3,6 @@ import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/cards/akun_gelar_card.dart';
 import 'package:haphap_fe/presentation/widgets/cards/akun_statistik_pribadi.dart';
 
-// --- IMPORT KOMPONEN LEGO KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/data/services/user_service.dart';
 import 'package:haphap_fe/data/models/user_profile_model.dart';
@@ -59,7 +58,6 @@ class _StatistikPageState extends State<StatistikPage> {
             children: [
               const SizedBox(height: 16),
               
-              // 1. HEADER
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
                 child: HapHapPageHeader(
@@ -69,7 +67,6 @@ class _StatistikPageState extends State<StatistikPage> {
               
               const SizedBox(height: 16),
 
-              // 2. KARTU STATISTIK 1 (Menghemat Uang)
               if (_isLoading)
                 const Center(child: CircularProgressIndicator(color: AppColors.primary))
               else ...[
@@ -87,7 +84,6 @@ class _StatistikPageState extends State<StatistikPage> {
 
                 const SizedBox(height: 16), 
 
-                // 3. KARTU STATISTIK 2 (Menyelamatkan Porsi)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: HapHapStatistikPribadiCard(
@@ -101,10 +97,8 @@ class _StatistikPageState extends State<StatistikPage> {
                 ),
               ],
 
-              // KUNCI: Jarak 16px antar kartu
               const SizedBox(height: 16),
 
-              // 4. KARTU GELAR 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: HapHapGelarCard(
