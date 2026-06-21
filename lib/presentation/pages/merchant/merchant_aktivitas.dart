@@ -158,16 +158,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
             ),
           ),
           
-          GestureDetector(
-            onTap: () {
-              context.push(AppRoutes.laporanTransaksi);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: Color(0xFF505050), shape: BoxShape.circle),
-              child: const Icon(Icons.arrow_downward, size: 16, color: AppColors.white),
-            ),
-          ),
+
         ],
       ),
     );

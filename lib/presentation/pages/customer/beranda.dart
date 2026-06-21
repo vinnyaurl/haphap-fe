@@ -138,15 +138,20 @@ class _TaglineWithMascot extends StatelessWidget {
               ),
             ),
             const SizedBox(height: _BerandaLayout.heroTaglineToDiskon),
-            Row(
-              children: const [
-                Text(
-                  _BerandaContent.discountCta,
-                  style: TextStyle(fontSize: 14, color: AppColors.white),
-                ),
-                SizedBox(width: 4),
-                Icon(Icons.chevron_right, color: AppColors.white, size: 16),
-              ],
+            GestureDetector(
+              onTap: () {
+                context.go('${AppRoutes.aktivitas}?tab=2');
+              },
+              child: Row(
+                children: const [
+                  Text(
+                    _BerandaContent.discountCta,
+                    style: TextStyle(fontSize: 14, color: AppColors.white),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.chevron_right, color: AppColors.white, size: 16),
+                ],
+              ),
             ),
           ],
         ),
@@ -493,7 +498,7 @@ class _BerandaLayout {
 class _BerandaContent {
   static const String searchHint = 'Mau makan apa hari ini?';
   static const String tagline = 'Selalu hemat beli\nmakanan pakai HapHap.';
-  static const String discountCta = 'Lihat diskon selengkapnya disini';
+  static const String discountCta = 'Lihat promo selengkapnya disini';
   static const String mascotPath = 'assets/images/puy_beranda1.png';
 
   static const String statsSavingsTitle = 'Berhasil Hemat';

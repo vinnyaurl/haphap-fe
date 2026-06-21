@@ -18,9 +18,13 @@ class MainShell extends StatelessWidget {
         currentIndex: navigationShell.currentIndex,
         type: NavBarType.user,
         onTap: (index) {
+          bool initialLocation = index == navigationShell.currentIndex;
+          if (index == 2 && navigationShell.currentIndex != 2) {
+            initialLocation = true;
+          }
           navigationShell.goBranch(
             index,
-            initialLocation: index == navigationShell.currentIndex,
+            initialLocation: initialLocation,
           );
         },
       ),

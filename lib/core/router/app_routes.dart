@@ -17,7 +17,7 @@ import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/pages/customer/jelajah.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/aktivitas.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.dart';
-import 'package:haphap_fe/presentation/pages/customer/aktivitas/laporan_transaksi.dart';
+
 import 'package:haphap_fe/presentation/pages/customer/akun/akun.dart';
 
 import 'package:haphap_fe/presentation/pages/customer/detail_restaurant.dart';
@@ -46,7 +46,7 @@ class AppRoutes {
   static const String aktivitas = '/aktivitas';
   static const String akun = '/akun';
   static const String detailPesanan = '/detail';
-  static const String laporanTransaksi = '/laporan';
+
   static const String editProfil = '/edit-profil';
   static const String statistik = '/statistik';
   static const String alamat = '/alamat';
@@ -113,10 +113,7 @@ final appRouter = GoRouter(
         return DetailPesananPage(orderId: orderId);
       },
     ),
-    GoRoute(
-      path: AppRoutes.laporanTransaksi,
-      builder: (context, state) => const LaporanTransaksiPage(),
-    ),
+
     GoRoute(
       path: '${AppRoutes.detailRestoran}/:merchantId',
       builder: (context, state) {
@@ -191,7 +188,11 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.aktivitas,
-              builder: (context, state) => const AktivitasPage(),
+              builder: (context, state) {
+                final tabStr = state.uri.queryParameters['tab'];
+                final initialTab = tabStr != null ? int.tryParse(tabStr) ?? 0 : 0;
+                return AktivitasPage(initialTab: initialTab);
+              },
             ),
           ],
         ),

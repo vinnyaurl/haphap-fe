@@ -56,14 +56,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'Kata sandi tidak boleh kosong.';
-    if (value.length < 8) return 'Kata sandi minimal 8 karakter.';
+    if (value == null || value.isEmpty) return 'Password tidak boleh kosong.';
+    if (value.length < 8) return 'Password minimal 8 karakter.';
     return null;
   }
 
   String? _validateConfirmPassword(String? value) {
-    if (value == null || value.isEmpty) return 'Konfirmasi kata sandi tidak boleh kosong.';
-    if (value != _passwordController.text) return 'Kata sandi tidak cocok.';
+    if (value == null || value.isEmpty) return 'Konfirmasi password tidak boleh kosong.';
+    if (value != _passwordController.text) return 'Password tidak cocok.';
     return null;
   }
 
@@ -185,7 +185,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF70340C),
+                          color: AppColors.white,
                         ),
                       ),
                     ],
@@ -231,8 +231,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 32),
 
                           HapHapTextField(
-                            labelText: 'Alamat Email',
-                            hintText: 'PuyPuy@gmail.com',
+                            labelText: 'Email',
+                            hintText: 'puypuy@gmail.com',
                             controller: _emailController,
                             isPassword: false,
                             isRequired: true,
@@ -242,8 +242,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 32),
 
                           HapHapTextField(
-                            labelText: 'Kata Sandi',
-                            hintText: 'Min. 8 karakter',
+                            labelText: 'Password',
+                            hintText: 'password',
                             controller: _passwordController,
                             isPassword: true,
                             isRequired: true,
@@ -253,8 +253,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 32),
 
                           HapHapTextField(
-                            labelText: 'Konfirmasi Kata Sandi',
-                            hintText: 'Ulangi kata sandi',
+                            labelText: 'Konfirmasi Password',
+                            hintText: 'password',
                             controller: _confirmPasswordController,
                             isPassword: true,
                             isRequired: true,

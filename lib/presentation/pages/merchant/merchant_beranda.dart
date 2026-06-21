@@ -32,7 +32,10 @@ class _BerandaMerchantLayout {
 class _BerandaMerchantContent {
   static const String statsIncomeTitle = 'Total Penghasilan';
   static const String statsIncomePrefix = 'Rp ';
+  static const String statsIncomeSubtitle = 'Total pendapatan kamu';
+  
   static const String statsSavedTitle = 'Berhasil Selamatin';
+  static const String statsSavedSubtitle = 'Total porsi diselamatkan';
 }
 
 class BerandaMerchantPage extends StatefulWidget {
@@ -273,9 +276,6 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
                 merchantName: _merchant?.merchantName ?? 'Toko',
                 totalRevenue: _formatPrice(_totalRevenue),
                 totalPortion: '$_totalPortion Porsi',
-                statsSubtitle: _createdAtLabel.isNotEmpty
-                    ? _createdAtLabel
-                    : '-',
               ),
               const SizedBox(height: 32),
               _FiturSection(),
@@ -300,13 +300,11 @@ class _HeroSection extends StatelessWidget {
   final String merchantName;
   final String totalRevenue;
   final String totalPortion;
-  final String statsSubtitle;
 
   const _HeroSection({
     required this.merchantName,
     required this.totalRevenue,
     required this.totalPortion,
-    required this.statsSubtitle,
   });
 
   @override
@@ -353,7 +351,6 @@ class _HeroSection extends StatelessWidget {
                 child: _StatsRow(
                   totalRevenue: totalRevenue,
                   totalPortion: totalPortion,
-                  subtitle: statsSubtitle,
                 ),
               ),
             ],
@@ -384,12 +381,10 @@ class _RedBackground extends StatelessWidget {
 class _StatsRow extends StatelessWidget {
   final String totalRevenue;
   final String totalPortion;
-  final String subtitle;
 
   const _StatsRow({
     required this.totalRevenue,
     required this.totalPortion,
-    required this.subtitle,
   });
 
   @override
@@ -402,7 +397,7 @@ class _StatsRow extends StatelessWidget {
             prefixText: _BerandaMerchantContent.statsIncomePrefix,
             mainValue: totalRevenue,
             valueColor: Colors.green,
-            subtitle: subtitle,
+            subtitle: _BerandaMerchantContent.statsIncomeSubtitle,
           ),
         ),
         const SizedBox(width: _BerandaMerchantLayout.statCardSpacing),
@@ -411,7 +406,7 @@ class _StatsRow extends StatelessWidget {
             title: _BerandaMerchantContent.statsSavedTitle,
             mainValue: totalPortion,
             valueColor: AppColors.primary,
-            subtitle: subtitle,
+            subtitle: _BerandaMerchantContent.statsSavedSubtitle,
           ),
         ),
       ],

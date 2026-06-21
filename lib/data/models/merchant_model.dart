@@ -117,6 +117,9 @@ class MerchantDetailModel {
   final String? avatar;
   final List<String> categories;
   final double? rating;
+  final int totalRevenue;
+  final int totalPortion;
+  final DateTime? createdAt;
   final List<SurplusItemModel> surplusItems;
 
   const MerchantDetailModel({
@@ -132,6 +135,9 @@ class MerchantDetailModel {
     this.avatar,
     required this.categories,
     this.rating,
+    this.totalRevenue = 0,
+    this.totalPortion = 0,
+    this.createdAt,
     required this.surplusItems,
   });
 
@@ -152,6 +158,11 @@ class MerchantDetailModel {
               .toList() ??
           [],
       rating: (json['rating'] as num?)?.toDouble(),
+      totalRevenue: (json['totalRevenue'] as num?)?.toInt() ?? 0,
+      totalPortion: (json['totalPortion'] as num?)?.toInt() ?? 0,
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString())
+          : null,
       surplusItems: (json['surplusItems'] as List<dynamic>?)
               ?.map((e) => SurplusItemModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
