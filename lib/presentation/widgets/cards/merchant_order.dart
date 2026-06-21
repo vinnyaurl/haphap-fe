@@ -1,21 +1,20 @@
-// ============================================================================
-// KOMPONEN: KARTU ORDER MERCHANT
-// ============================================================================
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/data/models/order_model.dart';
 
-enum MerchantOrderStatus { baru, disiapkan, menunggu, selesai }
+enum MerchantOrderStatus { menungguBayar, baru, sedangDisiapkan, siapDiambil, selesai, dibatalkan }
 
 class HapHapMerchantOrderCard extends StatelessWidget {
   final MerchantOrderStatus status;
   final String customerName;
   final String orderId;
-  final List<String> items;
+  final List<OrderItemModel> items;
   final String totalPrice;
   final VoidCallback? onAccept;
   final VoidCallback? onReject;
   final VoidCallback? onReady;
+  final VoidCallback? onScanQR;
 
   const HapHapMerchantOrderCard({
     super.key,
@@ -27,6 +26,7 @@ class HapHapMerchantOrderCard extends StatelessWidget {
     this.onAccept,
     this.onReject,
     this.onReady,
+    this.onScanQR,
   });
 
   @override
@@ -36,30 +36,39 @@ class HapHapMerchantOrderCard extends StatelessWidget {
     Color badgeBgColor = Colors.transparent;
 
     switch (status) {
+      case MerchantOrderStatus.menungguBayar:
+        badgeText = 'MENUNGGU BAYAR';
+        badgeColor = const Color(0xFFF2994A);
+        badgeBgColor = const Color(0xFFFFF6ED);
+        break;
       case MerchantOrderStatus.baru:
         badgeText = 'BARU';
         badgeColor = Colors.red;
         badgeBgColor = const Color(0xFFFFEBEB);
         break;
-      case MerchantOrderStatus.disiapkan:
+      case MerchantOrderStatus.sedangDisiapkan:
         badgeText = 'SEDANG DISIAPKAN';
         badgeColor = const Color(0xFFF2994A); 
         badgeBgColor = const Color(0xFFFFF6ED);
         break;
-      case MerchantOrderStatus.menunggu:
-        badgeText = 'MENUNGGU PENGAMBILAN';
-        badgeColor = Colors.red;
-        badgeBgColor = const Color(0xFFFFEBEB);
+      case MerchantOrderStatus.siapDiambil:
+        badgeText = 'SIAP DIAMBIL';
+        badgeColor = const Color(0xFF2D9CDB);
+        badgeBgColor = const Color(0xFFE8F4FD);
         break;
       case MerchantOrderStatus.selesai:
         badgeText = 'SELESAI';
         badgeColor = Colors.green;
         badgeBgColor = const Color(0xFFE8F5E9);
         break;
+      case MerchantOrderStatus.dibatalkan:
+        badgeText = 'DIBATALKAN';
+        badgeColor = Colors.red;
+        badgeBgColor = const Color(0xFFFFEBEB);
+        break;
     }
 
     return Container(
-      // RAHASIA PRESISI: Padding cuma atas bawah, kiri kanan nol biar garis bisa mentok
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -76,7 +85,6 @@ class HapHapMerchantOrderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. BADGE & INFO CUSTOMER (Dikasih padding kiri-kanan manual)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -93,9 +101,7 @@ class HapHapMerchantOrderCard extends StatelessWidget {
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: badgeColor),
                   ),
                 ),
-                
                 const SizedBox(height: 12),
-
                 Row(
                   children: [
                     const Icon(Icons.person_outline, size: 16, color: AppColors.primary),
@@ -103,12 +109,12 @@ class HapHapMerchantOrderCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         customerName,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.black),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
-                      orderId,
+                      orderId.length > 8 ? '#${orderId.substring(0, 8)}' : orderId,
                       style: const TextStyle(fontSize: 12, color: AppColors.greyLight),
                     ),
                   ],
@@ -116,12 +122,9 @@ class HapHapMerchantOrderCard extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: 16),
-          const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1), // Garis Mentok Ujung!
+          const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
           const SizedBox(height: 16),
-
-          // 2. LIST MAKANAN
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -129,34 +132,33 @@ class HapHapMerchantOrderCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
                   children: [
-                    const Text('1x', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    Text(
+                      '${item.quantity}x',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(item, style: const TextStyle(fontSize: 12, color: AppColors.black)),
+                      child: Text(item.name, style: const TextStyle(fontSize: 12, color: AppColors.black)),
                     ),
                   ],
                 ),
               )).toList(),
             ),
           ),
-
-          const SizedBox(height: 8), // Jarak tambahan biar genap 16px sebelum garis
+          const SizedBox(height: 8), 
           const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
-          const SizedBox(height: 16), // Jarak simetris persis di atas tulisan Total
-
-          // 3. TOTAL PESANAN (Sekarang beneran di tengah-tengah!)
+          const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Total Pesanan', style: TextStyle(fontSize: 12, color: AppColors.greyDark)),
-                Text(totalPrice, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.black)),
+                Text(totalPrice, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black)),
               ],
             ),
           ),
 
-          // 4. TOMBOL AKSI
           if (status == MerchantOrderStatus.baru) ...[
             const SizedBox(height: 16),
             const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
@@ -166,7 +168,6 @@ class HapHapMerchantOrderCard extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    // Tombol TOLAK pakai outline
                     child: HapHapButton(
                       text: 'Tolak',
                       isOutline: true, 
@@ -175,7 +176,6 @@ class HapHapMerchantOrderCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    // Tombol TERIMA pakai full color (default)
                     child: HapHapButton(
                       text: 'Terima',
                       onPressed: onAccept ?? () {},
@@ -184,21 +184,35 @@ class HapHapMerchantOrderCard extends StatelessWidget {
                 ],
               ),
             ),
-          ] else if (status == MerchantOrderStatus.disiapkan) ...[
+          ] else if (status == MerchantOrderStatus.sedangDisiapkan) ...[
             const SizedBox(height: 16),
             const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Align(
-                alignment: Alignment.centerRight, // Tetap di kanan
+                alignment: Alignment.centerRight,
                 child: SizedBox(
-                  width: 140, // Lebar dibatasi agar tidak membentang full
-                  // Tombol SIAP AMBIL pakai full color (default)
+                  width: 140,
                   child: HapHapButton(
                     text: 'Siap Ambil',
+                    isOutline: true,
                     onPressed: onReady ?? () {},
                   ),
+                ),
+              ),
+            ),
+          ] else if (status == MerchantOrderStatus.siapDiambil) ...[
+            const SizedBox(height: 16),
+            const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: HapHapButton(
+                  text: 'Scan QR Pengambil',
+                  onPressed: onScanQR ?? () {},
                 ),
               ),
             ),

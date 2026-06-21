@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
-import 'package:haphap_fe/data/services/surplus_service.dart';
+import 'package:haphap_fe/data/services/menu_service.dart';
 
 class HapHapEditMenuDialog extends StatefulWidget {
-  final String surplusItemId;
+  final String menuItemId;
   final String initialName;
   final String initialPrice;
   final String initialDesc;
 
   const HapHapEditMenuDialog({
     super.key,
-    required this.surplusItemId,
+    required this.menuItemId,
     required this.initialName,
     required this.initialPrice,
     required this.initialDesc,
@@ -25,16 +25,13 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
   late TextEditingController _nameController;
   late TextEditingController _priceController;
   late TextEditingController _descController;
-  final TextEditingController _imageController = TextEditingController();
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    // Isi otomatis data lama ke text field saat pop up muncul
     _nameController = TextEditingController(text: widget.initialName);
     
-    // Hilangkan "Rp " dan titik agar murni angka saja saat diedit
     String cleanPrice = widget.initialPrice.replaceAll(RegExp(r'[^0-9]'), '');
     _priceController = TextEditingController(text: cleanPrice);
     
@@ -46,7 +43,6 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
     _nameController.dispose();
     _priceController.dispose();
     _descController.dispose();
-    _imageController.dispose();
     super.dispose();
   }
 
@@ -113,7 +109,6 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
               _buildInputField(label: 'Nama Menu', hint: 'Masukkan nama...', controller: _nameController),
               _buildInputField(label: 'Harga', hint: '0', controller: _priceController, keyboardType: TextInputType.number),
               _buildInputField(label: 'Deskripsi', hint: 'Masukkan deskripsi...', controller: _descController),
-              _buildInputField(label: 'Gambar', hint: 'Pilih Gambar Baru', controller: _imageController),
 
               const SizedBox(height: 16),
               Center(
@@ -124,14 +119,29 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
                   onPressed: () async {
                     setState(() => _isSaving = true);
                     try {
-                      await SurplusService.update(widget.surplusItemId, {
-                        'name': _nameController.text,
-                        'description': _descController.text,
-                        'discountPrice': int.tryParse(_priceController.text) ?? 0,
-                        if (_imageController.text.isNotEmpty) 'image': _imageController.text,
-                      });
+                      final updateData = <String, dynamic>{};
+                      
+                      if (_nameController.text.isNotEmpty) {
+                        updateData['name'] = _nameController.text;
+                      }
+                      if (_descController.text.isNotEmpty) {
+                        updateData['description'] = _descController.text;
+                      }
+                      final price = int.tryParse(_priceController.text);
+                      if (price != null && price > 0) {
+                        updateData['originalPrice'] = price;
+                      }
+
+                      await MenuService.updateMenu(widget.menuItemId, updateData);
                       if (!mounted) return;
                       setState(() => _isSaving = false);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Menu berhasil diperbarui!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
                       Navigator.pop(context, true);
                     } catch (e) {
                       if (!mounted) return;

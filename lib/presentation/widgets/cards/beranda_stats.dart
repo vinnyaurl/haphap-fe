@@ -37,7 +37,6 @@ class HapHapStatsCard extends StatelessWidget {
           ),
         ],
       ),
-      // Langsung ke Padding dan Column teks, karena Stack dan gambar sudah dihapus
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0), 
         child: SizedBox(

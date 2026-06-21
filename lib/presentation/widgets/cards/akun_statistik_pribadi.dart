@@ -38,7 +38,6 @@ class HapHapStatistikPribadiCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // --- 1. GAMBAR MASKOT ---
           Positioned(
             right: -4, 
             bottom: 0, 
@@ -49,13 +48,10 @@ class HapHapStatistikPribadiCard extends StatelessWidget {
             ),
           ),
           
-          // --- 2. TEKS ---
           Padding(
-            // KUNCI: Jarak Atas 24, Bawah 24, Kiri 24 (Kanan tetep dikasih jarak biar ga nabrak maskot)
             padding: const EdgeInsets.only(left: 24, top: 24, bottom: 24, right: 120),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              // KUNCI: spaceBetween bikin teks atas nempel atap padding (24), teks bawah nempel lantai padding (24)
               mainAxisAlignment: MainAxisAlignment.spaceBetween, 
               children: [
                 Text(
@@ -68,8 +64,6 @@ class HapHapStatistikPribadiCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
-                // SizedBox dihilangkan karena spaceBetween sudah otomatis ngatur jarak tengahnya
                 
                 RichText(
                   text: TextSpan(

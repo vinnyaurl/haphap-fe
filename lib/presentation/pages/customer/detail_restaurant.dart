@@ -5,9 +5,9 @@ import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/data/services/merchant_service.dart';
-import 'package:haphap_fe/presentation/pages/customer/checkout.dart';
 import 'package:haphap_fe/presentation/widgets/cards/menu_card.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
+import 'package:haphap_fe/presentation/pages/customer/checkout.dart';
 
 class DetailRestoranPage extends StatefulWidget {
   final String merchantId;
@@ -56,6 +56,9 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
 
   int get _cartTotalItems =>
       _cart.values.fold(0, (sum, qty) => sum + qty);
+
+  List<SurplusItemModel> get _activeSurplusItems =>
+      _merchant?.surplusItems.where((item) => item.isActive && item.stock > 0).toList() ?? [];
 
   int get _cartTotalPrice {
     if (_merchant == null) return 0;
@@ -107,7 +110,7 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
         merchantId: widget.merchantId,
         merchantName: _merchant!.merchantName,
         cart: Map<String, int>.from(_cart),
-        items: _merchant!.surplusItems,
+        items: _activeSurplusItems,
       ),
     );
   }
@@ -215,7 +218,7 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
           ),
         ),
         const SizedBox(height: 16),
-        if (merchant.surplusItems.isEmpty)
+        if (_activeSurplusItems.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: Text(
@@ -227,7 +230,7 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
-              children: merchant.surplusItems.map((item) {
+              children: _activeSurplusItems.map((item) {
                 final cartCount = _cart[item.surplusItemId] ?? 0;
                 return Column(
                   children: [

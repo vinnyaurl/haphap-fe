@@ -173,7 +173,7 @@ class _AkunPageState extends State<AkunPage> {
                       ),
                       _MenuItemData(
                         icon: Icons.notifications,
-                        title: 'Notifications',
+                        title: 'Notikasi',
                         onTap: () {
                           context.push(AppRoutes.notifikasi);
                         },

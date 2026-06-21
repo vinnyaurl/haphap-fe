@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart'; // Untuk switch gaya iOS yang mirip Figma
+import 'package:flutter/cupertino.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
-// --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart'; 
 
 class NotifikasiMerchantPage extends StatefulWidget {
@@ -13,21 +12,19 @@ class NotifikasiMerchantPage extends StatefulWidget {
 }
 
 class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
-  // State untuk menyimpan nilai on/off dari masing-masing notifikasi
   bool _isPesananOn = true;
   bool _isBeritaOn = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9), // Background abu-abu muda biar card menonjol
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            
-            // 1. HEADER MENGGUNAKAN KOMPONEN
+
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapPageHeader(
@@ -37,7 +34,6 @@ class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
             
             const SizedBox(height: 16),
 
-            // 2. CARD PENGATURAN NOTIFIKASI
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Container(
@@ -54,7 +50,6 @@ class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
                 ),
                 child: Column(
                   children: [
-                    // Baris 1: Pesanan
                     _buildNotificationTile(
                       icon: Icons.notifications,
                       title: 'Pesanan',
@@ -65,10 +60,9 @@ class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
                         });
                       },
                     ),
-                    
-                    // Baris 2: Berita HapHap
+
                     _buildNotificationTile(
-                      icon: Icons.campaign, // Icon toa/megaphone
+                      icon: Icons.campaign,
                       title: 'Berita HapHap',
                       value: _isBeritaOn,
                       onChanged: (newValue) {
@@ -87,9 +81,6 @@ class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
     );
   }
 
-  // ===========================================================================
-  // WIDGET HELPER UNTUK BARIS PENGATURAN
-  // ===========================================================================
   Widget _buildNotificationTile({
     required IconData icon,
     required String title,
@@ -112,10 +103,9 @@ class _NotifikasiMerchantPageState extends State<NotifikasiMerchantPage> {
               ),
             ),
           ),
-          // Switch gaya iOS biar persis kayak Figma
           CupertinoSwitch(
             value: value,
-            activeTrackColor: Colors.green, // Warna hijau saat ON
+            activeTrackColor: Colors.green, 
             onChanged: onChanged,
           ),
         ],

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_add_menu.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu_list.dart';
 import 'package:haphap_fe/presentation/widgets/dialog/merchant_delete_menu_dialog.dart';
 import 'package:haphap_fe/presentation/widgets/dialog/merchant_edit_menu_dialog.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
-// --- IMPORT KOMPONEN HEADER KITA ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
-import 'package:haphap_fe/data/services/surplus_service.dart';
+import 'package:haphap_fe/data/services/menu_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 
 class MenuMerchantPage extends StatefulWidget {
   const MenuMerchantPage({super.key});
@@ -19,9 +22,11 @@ class MenuMerchantPage extends StatefulWidget {
 }
 
 class _MenuMerchantPageState extends State<MenuMerchantPage> {
-  List<SurplusItemModel> _items = [];
+  List<MenuItemModel> _items = [];
   bool _isLoading = true;
   String? _errorMessage;
+  bool _isUnauthorized = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -30,18 +35,70 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
   }
 
   Future<void> _fetchItems() async {
+    if (!_isLoading) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    }
+
     try {
-      final items = await SurplusService.getMySurplus();
+      final items = await MenuService.getAllMenus();
+      if (!mounted) return;
+      final activeItems = items.where((m) => m.isActive).toList();
+      setState(() {
+        _items = activeItems;
+        _isLoading = false;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
-        _items = items;
         _isLoading = false;
+        if (e.statusCode == 401) {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        } else if (e.statusCode == 403) {
+          _errorMessage = 'Kamu tidak memiliki akses ke halaman ini.';
+        } else {
+          _errorMessage = e.message;
+        }
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = e.toString();
         _isLoading = false;
+        _errorMessage = 'Tidak dapat memuat data menu. Periksa koneksi internet kamu.';
+      });
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    try {
+      final items = await MenuService.getAllMenus();
+      if (!mounted) return;
+      final activeItems = items.where((m) => m.isActive).toList();
+      setState(() {
+        _items = activeItems;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        if (e.statusCode == 401) {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        } else {
+          _errorMessage = e.message;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Tidak dapat memuat data menu. Periksa koneksi internet kamu.';
       });
     }
   }
@@ -50,7 +107,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
     showDialog(
       context: context,
       builder: (context) => const HapHapAddMenuDialog(),
-    ).then((_) => _fetchItems()); // Refresh list after adding
+    ).then((_) => _fetchItems()); 
   }
 
   String _formatPrice(int price) {
@@ -58,6 +115,15 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (m) => '${m[1]}.',
         );
+  }
+
+  List<MenuItemModel> get _filteredItems {
+    if (_searchQuery.isEmpty) return _items;
+    final query = _searchQuery.toLowerCase();
+    return _items.where((item) {
+      return item.name.toLowerCase().contains(query) ||
+          (item.description?.toLowerCase().contains(query) ?? false);
+    }).toList();
   }
 
   @override
@@ -69,98 +135,195 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16), // Jarak 16px dari atas (status bar)
-            
-            // 1. HEADER MENGGUNAKAN KOMPONEN
+            const SizedBox(height: 16),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapPageHeader(
                 title: 'Menu',
-                showBackButton: false, // Karena ini halaman utama tab, matikan tombol back
-                fontSize: 24,          // Font dibesarkan sesuai desain
+                showBackButton: false,
+                fontSize: 24,  
               ),
             ),
             
-            const SizedBox(height: 16), // Jarak 16px dari header ke search bar
-            
-            // 2. SEARCH BAR 
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
+            const SizedBox(height: 16), 
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapSearchBar(
                 hintText: 'Cari menu...',
-                prefixIconPath: 'assets/icons/magnifying_glass.svg', 
+                prefixIconPath: 'assets/icons/magnifying_glass.svg',
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
               ),
             ),
             
-            const SizedBox(height: 20), // Jarak dari search bar ke list menu
+            const SizedBox(height: 20),
             
-            // 3. DAFTAR MENU
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-                  : _errorMessage != null
-                      ? Center(child: Text('Error: $_errorMessage'))
-                      : _items.isEmpty
-                          ? const Center(child: Text('Belum ada menu, tambahkan sekarang!'))
-                          : ListView.separated(
-                              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 100), 
-                              itemCount: _items.length, 
-                              
-                              separatorBuilder: (context, index) => const Divider(
-                                height: 32, 
-                                thickness: 1,
-                                color: Color(0xFFF1F1F1),
-                              ),
-                              
-                              itemBuilder: (context, index) {
-                                final item = _items[index];
-                                final menuTitle = item.name;
-                                final menuDesc = item.description ?? '';
-                                final menuPrice = 'Rp ${_formatPrice(item.discountPrice)}';
-
-                                return HapHapMerchantMenuItemCard(
-                                  title: menuTitle,
-                                  description: menuDesc,
-                                  price: menuPrice,
-                                  imageUrl: (item.image != null && item.image!.isNotEmpty)
-                                      ? item.image!
-                                      : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
-                                  
-                                  onEdit: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => HapHapEditMenuDialog(
-                                        surplusItemId: item.surplusItemId,
-                                        initialName: menuTitle,
-                                        initialPrice: menuPrice,
-                                        initialDesc: menuDesc,
-                                      ),
-                                    ).then((_) => _fetchItems()); // Refresh list after edit
-                                  },
-                                  
-                                  onDelete: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => HapHapDeleteMenuDialog(
-                                        menuName: menuTitle,
-                                      ),
-                                    ).then((_) => _fetchItems()); // Refresh list after delete
-                                  },
-                                );
-                              },
-                            ),
+              child: _buildContent(),
             ),
           ],
         ),
       ),
       
-      // 4. TOMBOL (+) MENGAMBANG
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddMenuDialog,
         backgroundColor: AppColors.primary, 
         shape: const CircleBorder(),
         elevation: 4,
         child: const Icon(Icons.add, color: AppColors.white, size: 32),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+
+    if (_errorMessage != null) {
+      return _buildErrorState();
+    }
+
+    if (_items.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    final filtered = _filteredItems;
+
+    if (filtered.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off, size: 48, color: AppColors.greyDark),
+            const SizedBox(height: 12),
+            Text(
+              'Tidak ditemukan menu "$_searchQuery"',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.greyDark, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: _onRefresh,
+      child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(left: 24, right: 24, bottom: 100), 
+        itemCount: filtered.length, 
+        
+        separatorBuilder: (context, index) => const Divider(
+          height: 32, 
+          thickness: 1,
+          color: Color(0xFFF1F1F1),
+        ),
+        
+        itemBuilder: (context, index) {
+          final item = filtered[index];
+          final menuTitle = item.name;
+          final menuDesc = item.description ?? '';
+          final menuPrice = 'Rp ${_formatPrice(item.originalPrice)}';
+
+          return HapHapMerchantMenuItemCard(
+            title: menuTitle,
+            description: menuDesc,
+            price: menuPrice,
+            imageUrl: (item.image != null && item.image!.isNotEmpty)
+                ? item.image!
+                : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+            
+            onEdit: () {
+              showDialog(
+                context: context,
+                builder: (context) => HapHapEditMenuDialog(
+                  menuItemId: item.menuItemId,
+                  initialName: menuTitle,
+                  initialPrice: menuPrice,
+                  initialDesc: menuDesc,
+                ),
+              ).then((_) => _fetchItems());
+            },
+            
+            onDelete: () {
+              showDialog(
+                context: context,
+                builder: (context) => HapHapDeleteMenuDialog(
+                  menuName: menuTitle,
+                  menuItemId: item.menuItemId,
+                ),
+              ).then((_) => _fetchItems());
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _isUnauthorized ? Icons.lock_outline : Icons.error_outline,
+              size: 48,
+              color: AppColors.greyDark,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage ?? 'Terjadi kesalahan.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.greyDark,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 160,
+              child: HapHapButton(
+                text: _isUnauthorized ? 'Login Ulang' : 'Coba Lagi',
+                onPressed: () {
+                  if (_isUnauthorized) {
+                    context.go(AppRoutes.login);
+                  } else {
+                    _fetchItems();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(
+            Icons.restaurant_menu_outlined,
+            size: 48,
+            color: AppColors.greyDark,
+          ),
+          SizedBox(height: 12),
+          Text(
+            'Belum ada menu.\nTambahkan menu pertamamu!',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.greyDark, fontSize: 14),
+          ),
+        ],
       ),
     );
   }

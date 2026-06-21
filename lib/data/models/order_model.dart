@@ -1,5 +1,3 @@
-/// Model untuk data merchant di dalam order response.
-/// Backend mengembalikan raw Prisma Merchant include, jadi field-nya pakai [id].
 class OrderMerchantInfo {
   final String merchantId;
   final String merchantName;
@@ -23,7 +21,6 @@ class OrderMerchantInfo {
   }
 }
 
-/// Model untuk item di dalam order.
 class OrderItemModel {
   final String orderItemId;
   final String surplusItemId;
@@ -53,11 +50,6 @@ class OrderItemModel {
   }
 }
 
-/// Model utama untuk order.
-/// Response dari GET /orders/me dan GET /orders/:orderId.
-///
-/// Backend mengembalikan raw Prisma Order dengan include merchant + orderItems.
-/// Field ID di backend adalah [id], bukan [orderId].
 class OrderModel {
   final String orderId;
   final String merchantId;
@@ -70,7 +62,8 @@ class OrderModel {
   final DateTime? paidAt;
   final DateTime? completedAt;
   final DateTime createdAt;
-  final OrderMerchantInfo merchant;
+  final OrderMerchantInfo? merchant;
+  final String? customerName;
   final List<OrderItemModel> orderItems;
 
   const OrderModel({
@@ -85,11 +78,24 @@ class OrderModel {
     this.paidAt,
     this.completedAt,
     required this.createdAt,
-    required this.merchant,
+    this.merchant,
+    this.customerName,
     required this.orderItems,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
+    OrderMerchantInfo? merchantInfo;
+    if (json['merchant'] != null) {
+      merchantInfo = OrderMerchantInfo.fromJson(
+          json['merchant'] as Map<String, dynamic>);
+    }
+
+    String? customerName;
+    if (json['user'] != null) {
+      final user = json['user'] as Map<String, dynamic>;
+      customerName = user['name'] as String?;
+    }
+
     return OrderModel(
       orderId: json['id'] as String,
       merchantId: json['merchantId'] as String,
@@ -106,8 +112,8 @@ class OrderModel {
           ? DateTime.parse(json['completedAt'] as String)
           : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      merchant: OrderMerchantInfo.fromJson(
-          json['merchant'] as Map<String, dynamic>),
+      merchant: merchantInfo,
+      customerName: customerName,
       orderItems: (json['orderItems'] as List<dynamic>?)
               ?.map(
                   (e) => OrderItemModel.fromJson(e as Map<String, dynamic>))
@@ -116,12 +122,12 @@ class OrderModel {
     );
   }
 
-  /// Apakah order sedang dalam proses (belum selesai/dibatalkan)
-  bool get isInProgress => status == 'PENDING' || status == 'PAID';
+  bool get isInProgress =>
+      status == 'PENDING' ||
+      status == 'PROCESSING' ||
+      status == 'READY';
 
-  /// Apakah order sudah selesai
   bool get isCompleted => status == 'COMPLETED';
 
-  /// Apakah order dibatalkan
   bool get isCancelled => status == 'CANCELLED';
 }

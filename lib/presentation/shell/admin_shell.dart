@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
 
-class MainShell extends StatelessWidget {
+class AdminShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const MainShell({
+  const AdminShell({
     super.key,
     required this.navigationShell,
   });
@@ -16,15 +16,11 @@ class MainShell extends StatelessWidget {
       body: navigationShell,
       bottomNavigationBar: HapHapNavBar(
         currentIndex: navigationShell.currentIndex,
-        type: NavBarType.user,
+        type: NavBarType.admin,
         onTap: (index) {
-          bool initialLocation = index == navigationShell.currentIndex;
-          if (index == 2 && navigationShell.currentIndex != 2) {
-            initialLocation = true;
-          }
           navigationShell.goBranch(
             index,
-            initialLocation: initialLocation,
+            initialLocation: index == navigationShell.currentIndex,
           );
         },
       ),

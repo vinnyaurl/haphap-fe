@@ -3,13 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/tab_bar.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart'; 
-
-// --- IMPORT KOMPONEN HEADER KITA ---
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/presentation/widgets/cards/merchant_order.dart';
 import 'package:haphap_fe/data/services/order_service.dart';
 import 'package:haphap_fe/data/models/order_model.dart';
-import 'package:haphap_fe/presentation/widgets/dialog/merchant_scan_qr_dialog.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
 
 class AktivitasMerchantPage extends StatefulWidget {
   const AktivitasMerchantPage({super.key});
@@ -23,6 +22,8 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
   List<OrderModel> _orders = [];
   bool _isLoading = true;
   String? _errorMessage;
+  bool _isUnauthorized = false;
+
 
   @override
   void initState() {
@@ -31,18 +32,68 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
   }
 
   Future<void> _fetchOrders() async {
+    if (!_isLoading) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    }
+
     try {
       final orders = await OrderService.fetchOrderMerchant();
       if (!mounted) return;
       setState(() {
         _orders = orders;
         _isLoading = false;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        if (e.statusCode == 401) {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        } else if (e.statusCode == 403) {
+          _errorMessage = 'Kamu tidak memiliki akses ke halaman ini.';
+        } else {
+          _errorMessage = e.message;
+        }
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = e.toString();
         _isLoading = false;
+        _errorMessage = 'Tidak dapat memuat data pesanan. Periksa koneksi internet kamu.';
+      });
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    try {
+      final orders = await OrderService.fetchOrderMerchant();
+      if (!mounted) return;
+      setState(() {
+        _orders = orders;
+        _errorMessage = null;
+        _isUnauthorized = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        if (e.statusCode == 401) {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        } else {
+          _errorMessage = e.message;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Tidak dapat memuat data pesanan. Periksa koneksi internet kamu.';
       });
     }
   }
@@ -63,22 +114,19 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16), // Jarak 16px dari atas
+            const SizedBox(height: 16),
             
-            // 1. HEADER (Menggunakan komponen & struktur yang sama dengan Customer)
             _buildHeader(context),
 
-            // KUNCI: Jarak presisi 16px langsung ke Tab Bar (tanpa Divider)
             const SizedBox(height: 16),
 
-            // 2. TAB BAR
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: HapHapTabBar(
                   currentIndex: _currentTabIndex,
-                  tabs: const ['Menunggu Bayar', 'Siap Diambil', 'Selesai', 'Dibatalkan'],
+                  tabs: const ['Baru', 'Sedang Disiapkan', 'Selesai'],
                   onTap: (index) {
                     setState(() {
                       _currentTabIndex = index;
@@ -88,9 +136,8 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
               ),
             ),
 
-            const SizedBox(height: 16), // Jarak 16px dari tab bar ke konten list
+            const SizedBox(height: 16),
 
-            // 3. KONTEN TAB
             Expanded(child: _buildTabContent()),
           ],
         ),
@@ -103,26 +150,15 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Row(
         children: [
-          // HapHapPageHeader dibungkus Expanded agar tombol di kanan nggak tergeser
           const Expanded(
             child: HapHapPageHeader(
               title: 'Aktivitas',
-              showBackButton: false, // Halaman utama tab, matikan tombol back
-              fontSize: 24,          // Font besar sesuai desain
+              showBackButton: false,
+              fontSize: 24,
             ),
           ),
           
-          GestureDetector(
-            // --- NAVIGASI KE LAPORAN TRANSAKSI ---
-            onTap: () {
-              context.push(AppRoutes.laporanTransaksi);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: Color(0xFF505050), shape: BoxShape.circle),
-              child: const Icon(Icons.arrow_downward, size: 16, color: AppColors.white),
-            ),
-          ),
+
         ],
       ),
     );
@@ -133,7 +169,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
     if (_errorMessage != null) {
-      return Center(child: Text('Error: $_errorMessage'));
+      return _buildErrorState();
     }
 
     List<OrderModel> filteredOrders;
@@ -141,241 +177,168 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
 
     switch (_currentTabIndex) {
       case 0:
-        filteredOrders = _orders.where((o) => o.status == 'PENDING').toList();
+        filteredOrders = _orders.where((o) => o.status == 'PROCESSING').toList();
         currentStatus = MerchantOrderStatus.baru;
         break;
       case 1:
-        filteredOrders = _orders.where((o) => o.status == 'PAID').toList();
-        currentStatus = MerchantOrderStatus.menunggu; // Siap Diambil
+        filteredOrders = _orders.where((o) => o.status == 'READY').toList();
+        currentStatus = MerchantOrderStatus.sedangDisiapkan;
         break;
       case 2:
-        filteredOrders = _orders.where((o) => o.status == 'COMPLETED').toList();
-        currentStatus = MerchantOrderStatus.selesai;
-        break;
-      case 3:
       default:
-        filteredOrders = _orders.where((o) => o.status == 'CANCELLED').toList();
-        currentStatus = MerchantOrderStatus.dibatalkan;
+        filteredOrders = _orders
+            .where((o) => o.status == 'COMPLETED' || o.status == 'CANCELLED')
+            .toList();
+        currentStatus = MerchantOrderStatus.selesai;
         break;
     }
 
     return _buildListPesanan(filteredOrders, currentStatus);
   }
 
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _isUnauthorized ? Icons.lock_outline : Icons.error_outline,
+              size: 48,
+              color: AppColors.greyDark,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage ?? 'Terjadi kesalahan.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.greyDark,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 160,
+              child: HapHapButton(
+                text: _isUnauthorized ? 'Login Ulang' : 'Coba Lagi',
+                onPressed: () {
+                  if (_isUnauthorized) {
+                    context.go(AppRoutes.login);
+                  } else {
+                    _fetchOrders();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildListPesanan(List<OrderModel> pesananList, MerchantOrderStatus status) {
     if (pesananList.isEmpty) {
-      return const Center(
-        child: Text(
-          'Belum ada pesanan.',
-          style: TextStyle(color: AppColors.greyDark, fontSize: 14),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.receipt_long_outlined,
+              size: 48,
+              color: AppColors.greyDark,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Belum ada pesanan.',
+              style: TextStyle(color: AppColors.greyDark, fontSize: 14),
+            ),
+          ],
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      itemCount: pesananList.length,
-      itemBuilder: (context, index) {
-        final order = pesananList[index];
-        final itemsList = order.orderItems.map((i) => '${i.quantity}x ${i.name}').toList();
-        
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: HapHapMerchantOrderCard(
-            status: status,
-            customerName: 'Customer', // User name is not included in backend OrderMerchantInfo sadly
-            orderId: order.orderId,
-            items: itemsList,
-            totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
-            onAccept: () {
-              if (status == MerchantOrderStatus.menunggu) {
-                showDialog(
-                  context: context,
-                  builder: (context) => HapHapScanQRDialog(orderId: order.orderId),
-                ).then((success) {
-                  if (success == true) {
-                    _fetchOrders(); // Refresh setelah berhasil scan
-                  }
-                });
-              }
-            },
-          ),
-        );
-      },
-    );
-  }
-}
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: _onRefresh,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        itemCount: pesananList.length,
+        itemBuilder: (context, index) {
+          final order = pesananList[index];
 
-// ============================================================================
-// KOMPONEN: KARTU ORDER MERCHANT
-// ============================================================================
-enum MerchantOrderStatus { baru, menunggu, selesai, dibatalkan }
+          final MerchantOrderStatus cardStatus;
+          if (order.status == 'READY') {
+            cardStatus = (order.qrCode != null && order.qrCode!.isNotEmpty)
+                ? MerchantOrderStatus.siapDiambil
+                : MerchantOrderStatus.sedangDisiapkan;
+          } else if (order.status == 'CANCELLED') {
+            cardStatus = MerchantOrderStatus.dibatalkan;
+          } else {
+            cardStatus = status;
+          }
 
-class HapHapMerchantOrderCard extends StatelessWidget {
-  final MerchantOrderStatus status;
-  final String customerName;
-  final String orderId;
-  final List<String> items;
-  final String totalPrice;
-  final VoidCallback? onAccept;
-  final VoidCallback? onReject;
-  final VoidCallback? onReady;
-
-  const HapHapMerchantOrderCard({
-    super.key,
-    required this.status,
-    required this.customerName,
-    required this.orderId,
-    required this.items,
-    required this.totalPrice,
-    this.onAccept,
-    this.onReject,
-    this.onReady,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    String badgeText = '';
-    Color badgeColor = Colors.transparent;
-    Color badgeBgColor = Colors.transparent;
-
-    switch (status) {
-      case MerchantOrderStatus.baru:
-        badgeText = 'MENUNGGU BAYAR';
-        badgeColor = const Color(0xFFF2994A);
-        badgeBgColor = const Color(0xFFFFF6ED);
-        break;
-      case MerchantOrderStatus.menunggu:
-        badgeText = 'SIAP DIAMBIL';
-        badgeColor = const Color(0xFFF2994A); 
-        badgeBgColor = const Color(0xFFFFF6ED);
-        break;
-      case MerchantOrderStatus.selesai:
-        badgeText = 'SELESAI';
-        badgeColor = Colors.green;
-        badgeBgColor = const Color(0xFFE8F5E9);
-        break;
-      case MerchantOrderStatus.dibatalkan:
-        badgeText = 'DIBATALKAN';
-        badgeColor = Colors.red;
-        badgeBgColor = const Color(0xFFFFEBEB);
-        break;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F1F1), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: badgeBgColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    badgeText,
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: badgeColor),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.person_outline, size: 16, color: AppColors.primary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        customerName,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      orderId,
-                      style: const TextStyle(fontSize: 12, color: AppColors.greyLight),
-                    ),
-                  ],
-                ),
-              ],
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: HapHapMerchantOrderCard(
+              status: cardStatus,
+              customerName: order.customerName ?? 'Customer',
+              orderId: order.orderId,
+              items: order.orderItems,
+              totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
+              onAccept: cardStatus == MerchantOrderStatus.baru
+                  ? () async {
+                      try {
+                        await OrderService.acceptOrder(order.orderId);
+                        if (!mounted) return;
+                        _fetchOrders();
+                      } catch (_) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Gagal menerima pesanan. Coba lagi.')),
+                        );
+                      }
+                    }
+                  : null,
+              onReject: cardStatus == MerchantOrderStatus.baru
+                  ? () async {
+                      try {
+                        await OrderService.rejectOrder(order.orderId);
+                        if (!mounted) return;
+                        _fetchOrders();
+                      } catch (_) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Gagal menolak pesanan. Coba lagi.')),
+                        );
+                      }
+                    }
+                  : null,
+              onReady: cardStatus == MerchantOrderStatus.sedangDisiapkan
+                  ? () async {
+                      try {
+                        await OrderService.readyOrder(order.orderId);
+                        if (!mounted) return;
+                        _fetchOrders();
+                      } catch (_) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Gagal menandai siap ambil. Coba lagi.')),
+                        );
+                      }
+                    }
+                  : null,
+              onScanQR: cardStatus == MerchantOrderStatus.siapDiambil
+                  ? () {
+                      context.push(AppRoutes.merchantScanQR).then((_) {
+                        _fetchOrders();
+                      });
+                    }
+                  : null,
             ),
-          ),
-          const SizedBox(height: 16),
-          const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: items.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  children: [
-                    const Text('1x', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(item, style: const TextStyle(fontSize: 12, color: AppColors.black)),
-                    ),
-                  ],
-                ),
-              )).toList(),
-            ),
-          ),
-          const SizedBox(height: 8), 
-          const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Total Pesanan', style: TextStyle(fontSize: 12, color: AppColors.greyDark)),
-                Text(totalPrice, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black)),
-              ],
-            ),
-          ),
-          if (status == MerchantOrderStatus.menunggu) ...[
-            const SizedBox(height: 16),
-            const Divider(color: Color(0xFFF1F1F1), height: 1, thickness: 1),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: HapHapButton(
-                      text: 'Tolak',
-                      isOutline: true, 
-                      onPressed: onReject ?? () {},
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: HapHapButton(
-                      text: 'Scan QR Pengambil',
-                      onPressed: onAccept ?? () {},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ]
-        ],
+          );
+        },
       ),
     );
   }

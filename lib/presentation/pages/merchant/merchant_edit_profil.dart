@@ -5,6 +5,8 @@ import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/data/services/merchant_service.dart';
+import 'package:haphap_fe/core/network/api_client.dart';
+import 'package:haphap_fe/core/router/app_routes.dart';
 
 class EditProfilMerchantPage extends StatefulWidget {
   const EditProfilMerchantPage({super.key});
@@ -24,6 +26,9 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
   bool _isLoading = true;
   bool _isSaving = false;
   String? _avatarUrl;
+  
+  String? _errorMessage;
+  bool _isUnauthorized = false;
 
   @override
   void initState() {
@@ -38,6 +43,12 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
   }
 
   Future<void> _fetchProfile() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _isUnauthorized = false;
+    });
+
     try {
       final merchant = await MerchantService.getMe();
       if (!mounted) return;
@@ -51,12 +62,23 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
         _avatarUrl = merchant.avatar;
         _isLoading = false;
       });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        if (e.statusCode == 401) {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        } else {
+          _errorMessage = e.message;
+        }
+      });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat profil toko: $e')),
-      );
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Gagal memuat profil toko. Periksa koneksi internet.';
+      });
     }
   }
 
@@ -80,11 +102,24 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
       );
       
       context.pop(); 
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      if (e.statusCode == 401) {
+        setState(() {
+          _isUnauthorized = true;
+          _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan profil: $e')),
+        const SnackBar(content: Text('Gagal menyimpan profil. Periksa koneksi internet.')),
       );
     }
   }
@@ -105,93 +140,145 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-            : SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 16),
-              
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: HapHapPageHeader(
-                  title: 'Edit Profil Toko',
-                ),
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: HapHapPageHeader(
+                title: 'Edit Profil Toko',
               ),
-              
-              const SizedBox(height: 24),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: _buildBodyContent(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-              _buildProfilePicture(),
+  Widget _buildBodyContent() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
 
-              const SizedBox(height: 24),
+    if (_errorMessage != null) {
+      return _buildErrorState();
+    }
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildProfilePicture(),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              children: [
+                HapHapTextField(
+                  labelText: 'Nama Toko',
+                  hintText: 'Masukkan nama toko',
+                  controller: _namaTokoController,
+                  isRequired: true,
+                ),
+                const SizedBox(height: 32),
+                HapHapTextField(
+                  labelText: 'Nomor Telepon',
+                  hintText: 'Masukkan nomor telepon',
+                  controller: _teleponController,
+                  isRequired: true,
+                ),
+                const SizedBox(height: 32),
+                HapHapTextField(
+                  labelText: 'Alamat',
+                  hintText: 'Masukkan alamat lengkap',
+                  controller: _alamatController,
+                ),
+                const SizedBox(height: 32),
+                HapHapTextField(
+                  labelText: 'Deskripsi',
+                  hintText: 'Deskripsi toko singkat',
+                  controller: _deskripsiController,
+                ),
+                const SizedBox(height: 32),
+                Row(
                   children: [
-                    HapHapTextField(
-                      labelText: 'Nama Toko',
-                      hintText: 'Masukkan nama toko',
-                      controller: _namaTokoController,
-                      isRequired: true,
-                    ),
-                    const SizedBox(height: 32),
-                    HapHapTextField(
-                      labelText: 'Nomor Telepon',
-                      hintText: 'Masukkan nomor telepon',
-                      controller: _teleponController,
-                      isRequired: true,
-                    ),
-                    const SizedBox(height: 32),
-                    HapHapTextField(
-                      labelText: 'Alamat',
-                      hintText: 'Masukkan alamat lengkap',
-                      controller: _alamatController,
-                    ),
-                    const SizedBox(height: 32),
-                    HapHapTextField(
-                      labelText: 'Deskripsi',
-                      hintText: 'Deskripsi toko singkat',
-                      controller: _deskripsiController,
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: HapHapTextField(
-                            labelText: 'Jam Buka',
-                            hintText: 'Contoh: 08:00',
-                            controller: _jamBukaController,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: HapHapTextField(
-                            labelText: 'Jam Tutup',
-                            hintText: 'Contoh: 20:00',
-                            controller: _jamTutupController,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 48),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: HapHapButton(
-                        text: 'Simpan',
-                        size: HapHapButtonSize.large,
-                        isLoading: _isSaving,
-                        onPressed: _saveProfile,
+                    Expanded(
+                      child: HapHapTextField(
+                        labelText: 'Jam Buka',
+                        hintText: 'Contoh: 08:00',
+                        controller: _jamBukaController,
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: HapHapTextField(
+                        labelText: 'Jam Tutup',
+                        hintText: 'Contoh: 20:00',
+                        controller: _jamTutupController,
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 48),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: HapHapButton(
+                    text: 'Simpan',
+                    size: HapHapButtonSize.large,
+                    isLoading: _isSaving,
+                    onPressed: _saveProfile,
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _isUnauthorized ? Icons.lock_outline : Icons.error_outline,
+              size: 48,
+              color: AppColors.greyDark,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage ?? 'Terjadi kesalahan.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.greyDark,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 160,
+              child: HapHapButton(
+                text: _isUnauthorized ? 'Login Ulang' : 'Coba Lagi',
+                onPressed: () {
+                  if (_isUnauthorized) {
+                    context.go(AppRoutes.login);
+                  } else {
+                    _fetchProfile();
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -20,6 +20,18 @@ class HapHapRiwayatCard extends StatelessWidget {
     required this.onButtonPressed,
   });
 
+  Widget _placeholder() {
+    return Container(
+      width: 128,
+      height: 128,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F1F1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Icon(Icons.storefront_outlined, size: 40, color: AppColors.greyDark),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -45,12 +57,15 @@ class HapHapRiwayatCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.network(
-              imageUrl,
-              width: 128,
-              height: 128,
-              fit: BoxFit.cover,
-            ),
+            child: imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
+                    width: 128,
+                    height: 128,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _placeholder(),
+                  )
+                : _placeholder(),
           ),
           
           const SizedBox(width: 16), 
