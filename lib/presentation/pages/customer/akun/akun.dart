@@ -56,31 +56,41 @@ class _AkunPageState extends State<AkunPage> {
   }
 
   Future<void> _handleJoinMerchant(BuildContext context) async {
-    // Check role first
-    if (_profile?.role == 'MERCHANT') {
-      context.push(AppRoutes.merchantBeranda);
-      return;
-    }
-
-    // Show loading
+    // Show loading on the root navigator so it overlays everything
     showDialog(
       context: context,
       barrierDismissible: false,
+      useRootNavigator: true,
       builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
     );
 
     try {
+      // Always re-fetch profile to get the latest role from server
+      final freshProfile = await UserService.getMe();
+      if (!mounted) return;
+
+      // Update local state with fresh data
+      setState(() {
+        _profile = freshProfile;
+      });
+
+      if (freshProfile.role == 'MERCHANT') {
+        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
+        context.go(AppRoutes.merchantBeranda);
+        return;
+      }
+
       final myApps = await ApplicationService.findMyApplications();
       
       if (!mounted) return;
-      Navigator.pop(context); // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
 
       final hasPending = myApps.any((app) => app.status == 'PENDING');
       final hasApproved = myApps.any((app) => app.status == 'APPROVED');
 
       if (hasApproved) {
-        // Fallback check, just in case user is merchant but role hasn't synced locally
-        context.push(AppRoutes.merchantBeranda);
+        // Role on server is MERCHANT but hadn't synced — go to merchant
+        context.go(AppRoutes.merchantBeranda);
       } else if (hasPending) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -94,7 +104,7 @@ class _AkunPageState extends State<AkunPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context); // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Terjadi kesalahan: $e'),

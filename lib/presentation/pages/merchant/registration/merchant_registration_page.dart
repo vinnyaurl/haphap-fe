@@ -224,7 +224,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
           HapHapStepperIndicator(
             currentStep: _currentStep,
             totalSteps: 3,
-            labels: const ['Business Details', 'Bank Details', 'Documents'],
+            labels: const ['Detail Bisnis', 'Detail Bank', 'Dokumen'],
           ),
           Expanded(
             child: PageView(
@@ -261,7 +261,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapTextField(
-              labelText: 'Owner Name',
+              labelText: 'Nama Pemilik',
               hintText: 'Nama lengkap pemilik',
               controller: _ownerNameCtrl,
               isRequired: true,
@@ -269,7 +269,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapTextField(
-              labelText: 'Business Name',
+              labelText: 'Nama Bisnis',
               hintText: 'Nama bisnis',
               controller: _businessNameCtrl,
               isRequired: true,
@@ -277,7 +277,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapTextField(
-              labelText: 'Business Phone',
+              labelText: 'Telepon Bisnis',
               hintText: 'Nomor telepon bisnis',
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
@@ -286,7 +286,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapTextField(
-              labelText: 'Business Email',
+              labelText: 'Email Bisnis',
               hintText: 'Email bisnis',
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
@@ -295,7 +295,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapTextField(
-              labelText: 'Business Address',
+              labelText: 'Alamat Bisnis',
               hintText: 'Alamat lengkap',
               controller: _addressCtrl,
               isRequired: true,
@@ -303,7 +303,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapTextField(
-              labelText: 'Description',
+              labelText: 'Deskripsi',
               hintText: 'Deskripsi bisnis (opsional)',
               controller: _descriptionCtrl,
             ),
@@ -373,7 +373,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapDropdownField(
-              labelText: 'Bank Name',
+              labelText: 'Nama Bank',
               hintText: 'Pilih Bank',
               value: _selectedBank,
               isRequired: true,
@@ -395,7 +395,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapTextField(
-              labelText: 'Account Number',
+              labelText: 'Nomor Rekening',
               hintText: 'Nomor rekening',
               controller: _accountNumberCtrl,
               keyboardType: TextInputType.number,
@@ -404,7 +404,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             ),
             const SizedBox(height: 16),
             HapHapTextField(
-              labelText: 'Account Holder Name',
+              labelText: 'Nama Pemilik Rekening',
               hintText: 'Nama pemilik rekening',
               controller: _accountHolderCtrl,
               isRequired: true,
@@ -440,7 +440,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
           ),
           const SizedBox(height: 24),
           HapHapFileUploadField(
-            labelText: 'Business Avatar / Logo (Optional)',
+            labelText: 'Avatar / Logo Bisnis (Opsional)',
             selectedFileName: _avatarFile?.name,
             onFileSelected: () => _pickFile(false),
             onClear: () {
@@ -451,7 +451,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
           ),
           const SizedBox(height: 24),
           HapHapFileUploadField(
-            labelText: 'Document (Proposal / Izin Bisnis)',
+            labelText: 'Dokumen (Proposal / Izin Bisnis)',
             isRequired: true,
             selectedFileName: _documentFile?.name,
             onFileSelected: () => _pickFile(true),
@@ -484,7 +484,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
           if (_currentStep > 0)
             Expanded(
               child: HapHapButton(
-                text: 'Back',
+                text: 'Kembali',
                 isOutline: true,
                 onPressed: () => _moveToStep(_currentStep - 1),
               ),
@@ -493,7 +493,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
           Expanded(
             flex: 2,
             child: HapHapButton(
-              text: _currentStep == 2 ? 'Submit Application' : 'Next Step',
+              text: _currentStep == 2 ? 'Kirim Pendaftaran' : 'Langkah Berikutnya',
               isLoading: _isLoading,
               onPressed: _currentStep == 2 ? _submitApplication : _nextStep,
             ),
