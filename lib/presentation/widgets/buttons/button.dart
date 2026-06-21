@@ -9,13 +9,7 @@ class HapHapButton extends StatelessWidget {
   final HapHapButtonSize size;
   final bool isOutline;
   final bool isLoading;
-
-  /// Tombol full-width dengan tinggi 52px. Digunakan di halaman auth,
-  /// checkout, dialog, dll. Mengabaikan nilai [size].
   final bool isExpanded;
-
-  /// Tombol warna merah untuk aksi berbahaya (hapus, tolak, dll).
-  /// Hanya berlaku untuk solid button (bukan outline).
   final bool isDanger;
 
   const HapHapButton({
@@ -79,7 +73,6 @@ class HapHapButton extends StatelessWidget {
       width: _buttonWidth,
       height: _buttonHeight,
       child: isOutline
-          // outline button
           ? OutlinedButton(
               onPressed: isLoading ? null : onPressed,
               style: OutlinedButton.styleFrom(
@@ -90,7 +83,6 @@ class HapHapButton extends StatelessWidget {
               ),
               child: child,
             )
-          // solid button
           : ElevatedButton(
               onPressed: isLoading ? null : onPressed,
               style: ElevatedButton.styleFrom(
@@ -105,4 +97,4 @@ class HapHapButton extends StatelessWidget {
             ),
     );
   }
-}
+}

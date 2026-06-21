@@ -12,27 +12,26 @@ void showMenuDetailBottomSheet(
 }) {
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true, // Wajib true agar tingginya bisa menyesuaikan isi konten
-    backgroundColor: Colors.transparent, // Background tembus pandang agar sudut membulatnya terlihat
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (context) {
       return Container(
-        padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 34), // Padding sesuai desain (ada 34 di bawah)
+        padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 34),
         decoration: const BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)), // Membulat di atas saja
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Agar tingginya nge-pas sama isi konten
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. GAMBAR BESAR
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.network(
                   imageUrl,
                   width: double.infinity,
-                  height: 300, // Tinggi gambar besar
+                  height: 300,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -40,7 +39,6 @@ void showMenuDetailBottomSheet(
             
             const SizedBox(height: 24),
             
-            // 2. JUDUL
             Text(
               title,
               style: const TextStyle(
@@ -52,7 +50,6 @@ void showMenuDetailBottomSheet(
             
             const SizedBox(height: 8),
             
-            // 3. DESKRIPSI
             Text(
               description,
               style: const TextStyle(
@@ -63,7 +60,6 @@ void showMenuDetailBottomSheet(
             
             const SizedBox(height: 16),
             
-            // 4. HARGA
             Text(
               price,
               style: const TextStyle(
@@ -75,7 +71,6 @@ void showMenuDetailBottomSheet(
             
             const SizedBox(height: 24),
             
-            // 5. TOMBOL TAMBAH KE KERANJANG
             HapHapButton(
               text: 'Tambahkan ke Keranjang - $price',
               isExpanded: true,

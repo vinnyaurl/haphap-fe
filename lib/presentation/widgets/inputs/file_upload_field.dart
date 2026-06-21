@@ -60,7 +60,6 @@ class HapHapFileUploadField extends StatelessWidget {
               border: Border.all(
                 color: AppColors.primary.withValues(alpha: 0.3),
                 width: 1,
-                // In a real app we'd use a dashed border package, but for now a solid border is fine
               ),
             ),
             child: selectedFileName != null

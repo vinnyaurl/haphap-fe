@@ -10,7 +10,6 @@ class HapHapTabBar extends StatelessWidget {
     super.key,
     required this.currentIndex,
     required this.onTap,
-    // Default tabs sesuai dengan desainmu
     this.tabs = const ['Proses', 'Riwayat', 'Lainnya'], 
   });
 
@@ -22,7 +21,6 @@ class HapHapTabBar extends StatelessWidget {
         return Row(
           children: [
             _buildTabItem(index, tabs[index]),
-            // Jarak antar tulisan adalah 32 (kecuali setelah item terakhir)
             if (index < tabs.length - 1) const SizedBox(width: 32),
           ],
         );
@@ -36,7 +34,6 @@ class HapHapTabBar extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
-      // IntrinsicWidth memaksa lebar garis bawah persis mengikuti lebar teks di atasnya
       child: IntrinsicWidth(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -52,15 +49,14 @@ class HapHapTabBar extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8), // Jarak dari teks ke garis oren
+            const SizedBox(height: 8),
             
-            // GARIS INDIKATOR OREN
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: 4,
               decoration: BoxDecoration(
                 color: isActive ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(4), // Ujung garis dibuat membulat
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
           ],
