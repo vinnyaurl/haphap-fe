@@ -185,6 +185,54 @@ class ApiClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Multipart POST (multiple files + text fields)
+  // ---------------------------------------------------------------------------
+
+  static Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    Map<String, String> files = const {},
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+
+    try {
+      final request = http.MultipartRequest('POST', uri);
+
+      // Auth header
+      final token = await TokenManager.getToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      // Text fields
+      request.fields.addAll(fields);
+
+      // File fields
+      for (final entry in files.entries) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            entry.key, 
+            entry.value,
+            contentType: _getMediaType(entry.value),
+          ),
+        );
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return _handleResponse(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException(
+        message:
+            'Tidak dapat mengirim data. Periksa koneksi internet kamu.',
+        statusCode: 0,
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Shared response handler
   // ---------------------------------------------------------------------------
 
@@ -202,6 +250,22 @@ class ApiClient {
       message: message.toString(),
       statusCode: response.statusCode,
     );
+  }
+
+  static MediaType _getMediaType(String filePath) {
+    final ext = filePath.split('.').last.toLowerCase();
+    if (ext == 'jpg' || ext == 'jpeg') {
+      return MediaType('image', 'jpeg');
+    } else if (ext == 'png') {
+      return MediaType('image', 'png');
+    } else if (ext == 'pdf') {
+      return MediaType('application', 'pdf');
+    } else if (ext == 'doc') {
+      return MediaType('application', 'msword');
+    } else if (ext == 'docx') {
+      return MediaType('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document');
+    }
+    return MediaType('application', 'octet-stream');
   }
 }
 
