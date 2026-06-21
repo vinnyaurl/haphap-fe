@@ -8,7 +8,6 @@ import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_order.dart';
 import 'package:haphap_fe/data/services/order_service.dart';
 import 'package:haphap_fe/data/models/order_model.dart';
-import 'package:haphap_fe/presentation/widgets/dialog/merchant_scan_qr_dialog.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 
 class AktivitasMerchantPage extends StatefulWidget {
@@ -341,13 +340,8 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
                   : null,
               onScanQR: cardStatus == MerchantOrderStatus.siapDiambil
                   ? () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => HapHapScanQRDialog(orderId: order.orderId),
-                      ).then((success) {
-                        if (success == true) {
-                          _fetchOrders();
-                        }
+                      context.push(AppRoutes.merchantScanQR).then((_) {
+                        _fetchOrders();
                       });
                     }
                   : null,

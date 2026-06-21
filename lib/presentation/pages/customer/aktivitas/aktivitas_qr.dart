@@ -1,13 +1,16 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
 class HapHapQRCodeCard extends StatelessWidget {
+  final String orderId;
   final String qrToken;
-  final String? qrImagePath; 
+  final String? qrImagePath;
 
   const HapHapQRCodeCard({
     super.key,
+    required this.orderId,
     required this.qrToken,
     this.qrImagePath,
   });
@@ -31,7 +34,7 @@ class HapHapQRCodeCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           QrImageView(
-            data: qrToken, 
+            data: jsonEncode({'orderId': orderId, 'qrCode': qrToken}),
             version: QrVersions.auto,
             size: 200,
             backgroundColor: Colors.white,
