@@ -126,7 +126,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
                 scrollDirection: Axis.horizontal,
                 child: HapHapTabBar(
                   currentIndex: _currentTabIndex,
-                  tabs: const ['Baru', 'Sedang Disiapkan', 'Selesai'],
+                  tabs: const ['Baru', 'Sedang Disiapkan', 'Siap Diambil', 'Selesai'],
                   onTap: (index) {
                     setState(() {
                       _currentTabIndex = index;
@@ -181,10 +181,20 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
         currentStatus = MerchantOrderStatus.baru;
         break;
       case 1:
-        filteredOrders = _orders.where((o) => o.status == 'READY').toList();
+        // READY orders without QR code (still being prepared / awaiting QR generation)
+        filteredOrders = _orders
+            .where((o) => o.status == 'READY' && (o.qrCode == null || o.qrCode!.isEmpty))
+            .toList();
         currentStatus = MerchantOrderStatus.sedangDisiapkan;
         break;
       case 2:
+        // READY orders with QR code (ready for customer pickup)
+        filteredOrders = _orders
+            .where((o) => o.status == 'READY' && o.qrCode != null && o.qrCode!.isNotEmpty)
+            .toList();
+        currentStatus = MerchantOrderStatus.siapDiambil;
+        break;
+      case 3:
       default:
         filteredOrders = _orders
             .where((o) => o.status == 'COMPLETED' || o.status == 'CANCELLED')
