@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
+import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
 
@@ -57,6 +57,7 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
   Future<void> _onSave() async {
     final name = _nameController.text.trim();
     final price = int.tryParse(_priceController.text.trim());
+    final description = _descController.text.trim();
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -74,21 +75,13 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
     setState(() => _isSaving = true);
 
     try {
-      final json = await ApiClient.post('/menus', {
-        'name': name,
-        'originalPrice': price,
-        if (_descController.text.trim().isNotEmpty) 
-          'description': _descController.text.trim(),
-      });
-
-      final menuItemId = json['data']?['menuItemId'] as String?;
-
-      if (_selectedImage != null && menuItemId != null) {
-        try {
-          await MenuService.uploadImage(menuItemId, _selectedImage!.path);
-        } catch (_) {
-        }
-      }
+      // Satu request multipart/form-data: kirim data + gambar sekaligus
+      await MenuService.createMenu(
+        name: name,
+        originalPrice: price,
+        description: description.isNotEmpty ? description : null,
+        imagePath: _selectedImage?.path,
+      );
 
       if (!mounted) return;
       setState(() => _isSaving = false);
