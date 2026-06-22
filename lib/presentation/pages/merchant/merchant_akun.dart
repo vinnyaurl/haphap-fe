@@ -255,9 +255,11 @@ class _AkunMerchantPageState extends State<AkunMerchantPage>
 
                     const SizedBox(height: 32),
 
-                    Center(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: HapHapButton(
                         text: 'Keluar',
+                        isExpanded: true,
                         size: HapHapButtonSize.large,
                         onPressed: _handleLogout,
                       ),
@@ -324,10 +326,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage>
                         ),
                       ),
                     ),
-                    if (item.badge != null) ...[
-                      item.badge!,
-                      const SizedBox(width: 8),
-                    ],
+
                     const Icon(Icons.chevron_right, size: 24, color: AppColors.greyDark),
                   ],
                 ),
@@ -343,13 +342,11 @@ class _AkunMerchantPageState extends State<AkunMerchantPage>
 class _MenuItemData {
   final IconData icon;
   final String title;
-  final Widget? badge;
   final VoidCallback onTap;
 
   _MenuItemData({
     required this.icon,
     required this.title,
-    this.badge,
     required this.onTap,
   });
 }

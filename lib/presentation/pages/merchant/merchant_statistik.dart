@@ -23,7 +23,7 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
 
   int _totalRevenue = 0;
   int _totalPortion = 0;
-  String _createdAtLabel = '';
+
 
   List<double> _weeklySales = List.filled(7, 0.0);
   int _weeklyGross = 0;
@@ -48,9 +48,7 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
       _totalRevenue = merchant.totalRevenue;
       _totalPortion = merchant.totalPortion;
 
-      if (merchant.createdAt != null) {
-        _createdAtLabel = 'Terdaftar sejak ${merchant.createdAt!.year}';
-      }
+
 
       _processOrders(orders);
 
@@ -332,7 +330,7 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                             description: 'Menu favorit pelanggan',
                             price: 'Rp ${_formatPrice(_bestSellingItem!.discountPrice)}',
                             stockText: '$_bestSellingSoldCount Terjual', 
-                            imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                            imageUrl: '',
                           )
                         : const Text(
                             'Belum ada data pesanan.',

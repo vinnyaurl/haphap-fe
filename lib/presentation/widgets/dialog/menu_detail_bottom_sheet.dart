@@ -28,12 +28,27 @@ void showMenuDetailBottomSheet(
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  height: 300,
-                  fit: BoxFit.cover,
-                ),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        height: 300,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: double.infinity,
+                            height: 300,
+                            color: const Color(0xFFF1F1F1),
+                            child: const Icon(Icons.fastfood, color: AppColors.greyDark, size: 64),
+                          );
+                        },
+                      )
+                    : Container(
+                        width: double.infinity,
+                        height: 300,
+                        color: const Color(0xFFF1F1F1),
+                        child: const Icon(Icons.fastfood, color: AppColors.greyDark, size: 64),
+                      ),
               ),
             ),
             

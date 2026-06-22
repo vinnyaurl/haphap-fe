@@ -66,7 +66,7 @@ class _AdminRejectDialogState extends State<AdminRejectDialog> {
 
             HapHapTextField(
               labelText: 'Catatan Penolakan',
-              hintText: 'Tuliskan alasan penolakan...',
+              hintText: 'Masukkan alasan penolakan',
               controller: _controller,
               maxLines: 4,
             ),

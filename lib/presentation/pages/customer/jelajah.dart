@@ -155,7 +155,7 @@ class _JelajahPageState extends State<JelajahPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapSearchBar(
-                hintText: 'Mau makan apa hari ini?',
+                hintText: 'Masukkan pencarian',
                 prefixIconPath: AppIcons.magnifying_glass,
                 controller: _searchController,
               ),

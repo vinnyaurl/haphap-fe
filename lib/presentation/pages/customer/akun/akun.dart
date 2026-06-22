@@ -229,9 +229,11 @@ class _AkunPageState extends State<AkunPage> {
 
                     const SizedBox(height: 32),
 
-                    Center(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: HapHapButton(
                         text: 'Keluar',
+                        isExpanded: true,
                         size: HapHapButtonSize.large,
                         onPressed: () {
                           context.go(AppRoutes.login);

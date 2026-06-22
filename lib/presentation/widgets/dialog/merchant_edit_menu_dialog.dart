@@ -87,9 +87,9 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
               ),
               const SizedBox(height: 24),
 
-              _buildInputField(label: 'Nama Menu', hint: 'Masukkan nama...', controller: _nameController),
-              _buildInputField(label: 'Harga', hint: '0', controller: _priceController, keyboardType: TextInputType.number),
-              _buildInputField(label: 'Deskripsi', hint: 'Masukkan deskripsi...', controller: _descController),
+              _buildInputField(label: 'Nama Menu', hint: 'Masukkan nama menu', controller: _nameController),
+              _buildInputField(label: 'Harga', hint: 'Masukkan harga', controller: _priceController, keyboardType: TextInputType.number),
+              _buildInputField(label: 'Deskripsi', hint: 'Masukkan deskripsi (opsional)', controller: _descController),
 
               const SizedBox(height: 16),
               Center(

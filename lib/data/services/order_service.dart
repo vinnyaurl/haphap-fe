@@ -42,12 +42,12 @@ class OrderService {
 
 
   static Future<OrderModel> acceptOrder(String orderId) async {
-    final json = await ApiClient.patch('/orders/$orderId/accept', {});
+    final json = await ApiClient.patch('/orders/$orderId/status', {'status': 'ACCEPT'});
     return OrderModel.fromJson(json['data'] as Map<String, dynamic>);
   }
 
   static Future<OrderModel> rejectOrder(String orderId) async {
-    final json = await ApiClient.patch('/orders/$orderId/reject', {});
+    final json = await ApiClient.patch('/orders/$orderId/status', {'status': 'REJECT'});
     return OrderModel.fromJson(json['data'] as Map<String, dynamic>);
   }
 
@@ -60,7 +60,7 @@ class OrderService {
 
 
   static Future<OrderModel> readyOrder(String orderId) async {
-    final json = await ApiClient.patch('/orders/$orderId/ready', {});
+    final json = await ApiClient.patch('/orders/$orderId/status', {'status': 'READY'});
     return OrderModel.fromJson(json['data'] as Map<String, dynamic>);
   }
 }

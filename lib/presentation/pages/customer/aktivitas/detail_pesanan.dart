@@ -169,7 +169,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
 
     final avatar = (order.merchant?.avatar != null && order.merchant!.avatar!.isNotEmpty) 
         ? order.merchant!.avatar! 
-        : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=100';
+        : '';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),

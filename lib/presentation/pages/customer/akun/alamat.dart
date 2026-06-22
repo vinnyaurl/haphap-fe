@@ -42,7 +42,7 @@ class _AlamatPageState extends State<AlamatPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: HapHapSearchBar(
-                hintText: 'Dimana lokasimu sekarang?',
+                hintText: 'Masukkan alamat',
                 prefixIconPath: AppIcons.location,
                 suffixIconPath: _searchController.text.isNotEmpty ? AppIcons.circle_xmark : null,
                 controller: _searchController,

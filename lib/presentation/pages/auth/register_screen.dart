@@ -210,7 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         children: [
                           HapHapTextField(
                             labelText: 'Nama Lengkap',
-                            hintText: 'John Doe',
+                            hintText: 'Masukkan nama',
                             controller: _nameController,
                             isPassword: false,
                             isRequired: true,
@@ -221,7 +221,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           HapHapTextField(
                             labelText: 'Nomor HP',
-                            hintText: '08123456789',
+                            hintText: 'Masukkan nomor telepon',
                             controller: _phoneController,
                             isPassword: false,
                             isRequired: true,
@@ -233,7 +233,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           HapHapTextField(
                             labelText: 'Email',
-                            hintText: 'puypuy@gmail.com',
+                            hintText: 'Masukkan email',
                             controller: _emailController,
                             isPassword: false,
                             isRequired: true,
@@ -244,7 +244,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           HapHapTextField(
                             labelText: 'Password',
-                            hintText: 'password',
+                            hintText: 'Masukkan password',
                             controller: _passwordController,
                             isPassword: true,
                             isRequired: true,
@@ -255,7 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           HapHapTextField(
                             labelText: 'Konfirmasi Password',
-                            hintText: 'password',
+                            hintText: 'Masukkan konfirmasi password',
                             controller: _confirmPasswordController,
                             isPassword: true,
                             isRequired: true,

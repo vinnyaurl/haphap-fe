@@ -150,7 +150,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapSearchBar(
-                hintText: 'Cari menu...',
+                hintText: 'Masukkan nama menu',
                 prefixIconPath: 'assets/icons/magnifying_glass.svg',
                 onChanged: (value) {
                   setState(() {
@@ -237,7 +237,7 @@ class _MenuMerchantPageState extends State<MenuMerchantPage> {
             price: menuPrice,
             imageUrl: (item.image != null && item.image!.isNotEmpty)
                 ? item.image!
-                : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                : '',
             
             onEdit: () {
               showDialog(

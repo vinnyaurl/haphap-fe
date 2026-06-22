@@ -199,18 +199,18 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
 
               _buildInputField(
                 label: 'Nama Menu',
-                hint: 'Szechuan Chicken Bowl',
+                hint: 'Masukkan nama menu',
                 controller: _nameController,
               ),
               _buildInputField(
                 label: 'Harga',
-                hint: '25000',
+                hint: 'Masukkan harga',
                 controller: _priceController,
                 keyboardType: TextInputType.number,
               ),
               _buildInputField(
                 label: 'Deskripsi',
-                hint: 'Nasi + Ayam + Saus Szechuan',
+                hint: 'Masukkan deskripsi (opsional)',
                 controller: _descController,
               ),
               _buildImagePicker(),

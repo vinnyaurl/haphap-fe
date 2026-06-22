@@ -1,7 +1,6 @@
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/data/models/application_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 import 'package:haphap_fe/core/network/token_manager.dart';
 import 'dart:convert';
 
@@ -33,7 +32,7 @@ class ApplicationService {
       'status': status,
       if (rejectNote != null && rejectNote.isNotEmpty) 'rejectNote': rejectNote,
     };
-    await ApiClient.patch('/applications/$applicationId', body);
+    await ApiClient.patch('/applications/$applicationId/status', body);
   }
 
   static Future<Map<String, dynamic>> createApplication({

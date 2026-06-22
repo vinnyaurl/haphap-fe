@@ -144,9 +144,11 @@ class _AkunAdminPageState extends State<AkunAdminPage> {
 
                     const SizedBox(height: 32),
 
-                    Center(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: HapHapButton(
                         text: 'Keluar',
+                        isExpanded: true,
                         size: HapHapButtonSize.large,
                         onPressed: _logout,
                       ),

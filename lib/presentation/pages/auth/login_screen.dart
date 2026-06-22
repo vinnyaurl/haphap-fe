@@ -207,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           HapHapTextField(
                             labelText: 'Email',
-                            hintText: 'puypuy@gmail.com',
+                            hintText: 'Masukkan email',
                             controller: _emailController,
                             isPassword: false,
                             isRequired: true,
@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           HapHapTextField(
                             labelText: 'Password',
-                            hintText: 'password',
+                            hintText: 'Masukkan password',
                             controller: _passwordController,
                             isPassword: true,
                             isRequired: true,

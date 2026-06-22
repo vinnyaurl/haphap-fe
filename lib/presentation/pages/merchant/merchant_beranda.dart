@@ -55,7 +55,6 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
 
   int _totalRevenue = 0;
   int _totalPortion = 0;
-  String _createdAtLabel = '';
 
   @override
   void initState() {
@@ -80,13 +79,7 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
       _totalRevenue = (merchantData['totalRevenue'] as num?)?.toInt() ?? 0;
       _totalPortion = (merchantData['totalPortion'] as num?)?.toInt() ?? 0;
 
-      final createdAtRaw = merchantData['createdAt'] as String?;
-      if (createdAtRaw != null) {
-        final createdAt = DateTime.tryParse(createdAtRaw);
-        if (createdAt != null) {
-          _createdAtLabel = 'Sejak ${_formatDate(createdAt)}';
-        }
-      }
+
 
       final surplusItems = await SurplusService.getMySurplus();
 
@@ -505,7 +498,7 @@ class _MenuAktifSection extends StatelessWidget {
                       isSoldOut: isSoldOut,
                       imageUrl: (item.image != null && item.image!.isNotEmpty)
                           ? item.image!
-                          : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                          : '',
                       onDeactivate: onDeactivate != null
                           ? () => onDeactivate!(item)
                           : null,

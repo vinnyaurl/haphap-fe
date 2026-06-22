@@ -30,12 +30,27 @@ class HapHapMerchantMenuItemCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.network(
-              imageUrl,
-              width: 112,
-              height: 112,
-              fit: BoxFit.cover,
-            ),
+            child: imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
+                    width: 112,
+                    height: 112,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 112,
+                        height: 112,
+                        color: const Color(0xFFF5F5F5),
+                        child: const Icon(Icons.restaurant, color: AppColors.greyDark, size: 36),
+                      );
+                    },
+                  )
+                : Container(
+                    width: 112,
+                    height: 112,
+                    color: const Color(0xFFF5F5F5),
+                    child: const Icon(Icons.restaurant, color: AppColors.greyDark, size: 36),
+                  ),
           ),
           
           const SizedBox(width: 16),

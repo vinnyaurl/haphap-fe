@@ -50,13 +50,29 @@ class HapHapMerchantMenuCard extends StatelessWidget {
                 : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network( 
-                imageUrl,
-                width: 90,
-                height: 90,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
+              child: imageUrl.isNotEmpty 
+                ? Image.network( 
+                    imageUrl,
+                    width: 90,
+                    height: 90,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.restaurant,
+                          color: AppColors.greyDark,
+                          size: 36,
+                        ),
+                      );
+                    },
+                  )
+                : Container(
                     width: 90,
                     height: 90,
                     decoration: BoxDecoration(
@@ -68,9 +84,7 @@ class HapHapMerchantMenuCard extends StatelessWidget {
                       color: AppColors.greyDark,
                       size: 36,
                     ),
-                  );
-                },
-              ),
+                  ),
             ),
           ),
           const SizedBox(width: 16),

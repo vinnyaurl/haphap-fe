@@ -248,7 +248,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapTextField(
               labelText: 'Nama Pemilik',
-              hintText: 'Nama lengkap pemilik',
+              hintText: 'Masukkan nama lengkap pemilik',
               controller: _ownerNameCtrl,
               isRequired: true,
               validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,
@@ -256,7 +256,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapTextField(
               labelText: 'Nama Bisnis',
-              hintText: 'Nama bisnis',
+              hintText: 'Masukkan nama bisnis',
               controller: _businessNameCtrl,
               isRequired: true,
               validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,
@@ -264,7 +264,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapTextField(
               labelText: 'Telepon Bisnis',
-              hintText: 'Nomor telepon bisnis',
+              hintText: 'Masukkan nomor telepon bisnis',
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
               isRequired: true,
@@ -273,7 +273,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapTextField(
               labelText: 'Email Bisnis',
-              hintText: 'Email bisnis',
+              hintText: 'Masukkan email bisnis',
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               isRequired: true,
@@ -282,7 +282,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapTextField(
               labelText: 'Alamat Bisnis',
-              hintText: 'Alamat lengkap',
+              hintText: 'Masukkan alamat lengkap',
               controller: _addressCtrl,
               isRequired: true,
               validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,
@@ -290,13 +290,13 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapTextField(
               labelText: 'Deskripsi',
-              hintText: 'Deskripsi bisnis (opsional)',
+              hintText: 'Masukkan deskripsi bisnis (opsional)',
               controller: _descriptionCtrl,
             ),
             const SizedBox(height: 16),
             HapHapDropdownField(
               labelText: 'Kategori Merchant',
-              hintText: 'Pilih Kategori',
+              hintText: 'Masukkan kategori',
               value: _selectedCategory,
               isRequired: true,
               options: const [
@@ -331,7 +331,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
                     child: IgnorePointer(
                       child: HapHapTextField(
                         labelText: 'Buka',
-                        hintText: 'HH:mm',
+                        hintText: 'Masukkan jam buka',
                         controller: _openTimeCtrl,
                         isRequired: true,
                       ),
@@ -345,7 +345,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
                     child: IgnorePointer(
                       child: HapHapTextField(
                         labelText: 'Tutup',
-                        hintText: 'HH:mm',
+                        hintText: 'Masukkan jam tutup',
                         controller: _closeTimeCtrl,
                         isRequired: true,
                       ),
@@ -380,7 +380,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapDropdownField(
               labelText: 'Nama Bank',
-              hintText: 'Pilih Bank',
+              hintText: 'Masukkan bank',
               value: _selectedBank,
               isRequired: true,
               options: const [
@@ -402,7 +402,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapTextField(
               labelText: 'Nomor Rekening',
-              hintText: 'Nomor rekening',
+              hintText: 'Masukkan nomor rekening',
               controller: _accountNumberCtrl,
               keyboardType: TextInputType.number,
               isRequired: true,
@@ -411,7 +411,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
             const SizedBox(height: 16),
             HapHapTextField(
               labelText: 'Nama Pemilik Rekening',
-              hintText: 'Nama pemilik rekening',
+              hintText: 'Masukkan nama pemilik rekening',
               controller: _accountHolderCtrl,
               isRequired: true,
               validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,

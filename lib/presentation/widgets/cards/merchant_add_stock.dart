@@ -310,9 +310,7 @@ class _AddStockDialogState extends State<_AddStockDialog> {
 
         HapHapTextField(
           labelText: 'Harga Diskon',
-          hintText: _selectedMenuItem != null
-              ? '${_selectedMenuItem!.originalPrice}'
-              : '0',
+          hintText: 'Masukkan harga diskon',
           controller: _discountPriceController,
           keyboardType: TextInputType.number,
         ),
@@ -321,7 +319,7 @@ class _AddStockDialogState extends State<_AddStockDialog> {
 
         HapHapTextField(
           labelText: 'Tambahkan Stok',
-          hintText: '10',
+          hintText: 'Masukkan jumlah stok',
           controller: _stockController,
           keyboardType: TextInputType.number,
         ),

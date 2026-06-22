@@ -74,7 +74,7 @@ class _HapHapScanQRDialogState extends State<HapHapScanQRDialog> {
             const SizedBox(height: 24),
             HapHapTextField(
               labelText: 'Kode QR',
-              hintText: 'Kode QR...',
+              hintText: 'Masukkan kode QR',
               controller: _qrController,
             ),
             const SizedBox(height: 24),

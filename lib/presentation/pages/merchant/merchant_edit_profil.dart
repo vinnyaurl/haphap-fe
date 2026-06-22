@@ -247,7 +247,7 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
                   const SizedBox(height: 16),
                   HapHapTextField(
                     labelText: 'Telepon Bisnis',
-                    hintText: 'Nomor telepon bisnis',
+                    hintText: 'Masukkan nomor telepon bisnis',
                     controller: _teleponController,
                     keyboardType: TextInputType.phone,
                     isRequired: true,
@@ -255,20 +255,20 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
                   const SizedBox(height: 16),
                   HapHapTextField(
                     labelText: 'Alamat Bisnis',
-                    hintText: 'Alamat lengkap',
+                    hintText: 'Masukkan alamat lengkap',
                     controller: _alamatController,
                     isRequired: true,
                   ),
                   const SizedBox(height: 16),
                   HapHapTextField(
                     labelText: 'Deskripsi',
-                    hintText: 'Deskripsi bisnis (opsional)',
+                    hintText: 'Masukkan deskripsi bisnis (opsional)',
                     controller: _deskripsiController,
                   ),
                   const SizedBox(height: 16),
                   HapHapDropdownField(
                     labelText: 'Kategori Merchant',
-                    hintText: 'Pilih Kategori',
+                    hintText: 'Masukkan kategori',
                     value: _selectedCategory,
                     isRequired: true,
                     options: const [
@@ -304,7 +304,7 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
                           child: IgnorePointer(
                             child: HapHapTextField(
                               labelText: 'Buka',
-                              hintText: 'HH:mm',
+                              hintText: 'Masukkan jam buka',
                               controller: _jamBukaController,
                               isRequired: true,
                             ),
@@ -318,7 +318,7 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
                           child: IgnorePointer(
                             child: HapHapTextField(
                               labelText: 'Tutup',
-                              hintText: 'HH:mm',
+                              hintText: 'Masukkan jam tutup',
                               controller: _jamTutupController,
                               isRequired: true,
                             ),

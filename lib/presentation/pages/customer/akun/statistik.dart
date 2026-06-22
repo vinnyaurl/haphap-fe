@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/widgets/cards/akun_gelar_card.dart';
 import 'package:haphap_fe/presentation/widgets/cards/akun_statistik_pribadi.dart';
 
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
@@ -96,39 +95,6 @@ class _StatistikPageState extends State<StatistikPage> {
                   ),
                 ),
               ],
-
-              const SizedBox(height: 16),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: HapHapGelarCard(
-                  gelar: 'Pejuang Hemat',
-                  imagePath: 'assets/images/gelar_pejuang_hemat.png', // Pastikan asset ini ada
-                  onShare: () {
-                    print("Share ke IG Story!");
-                  },
-                  description: RichText(
-                    text: const TextSpan(
-                      style: TextStyle(fontSize: 12, color: AppColors.greyDark, height: 1.4),
-                      children: [
-                        TextSpan(text: 'Sikat '),
-                        TextSpan(
-                          text: '67', 
-                          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)
-                        ),
-                        TextSpan(text: ' porsi lagi!\nJadilah "'),
-                        TextSpan(
-                          text: 'Aktivis Perut', 
-                          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)
-                        ),
-                        TextSpan(text: '"\nCus! Pesan Lagi!'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 40),
             ],
           ),
         ),
