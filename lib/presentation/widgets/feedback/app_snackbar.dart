@@ -12,13 +12,16 @@ class AppSnackbar {
     _show(context, message: message, backgroundColor: AppColors.success);
   }
 
+  static void showInfo(BuildContext context, String message) {
+    _show(context, message: message, backgroundColor: AppColors.primary);
+  }
+
   static void _show(
     BuildContext context, {
     required String message,
     required Color backgroundColor,
   }) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -26,7 +29,7 @@ class AppSnackbar {
           style: const TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 14,
-            color: Colors.white,
+            color: AppColors.white,
           ),
         ),
         backgroundColor: backgroundColor,

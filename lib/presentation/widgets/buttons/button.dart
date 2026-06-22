@@ -8,6 +8,7 @@ class HapHapButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final HapHapButtonSize size;
   final bool isOutline;
+  final bool isText;
   final bool isLoading;
   final bool isExpanded;
   final bool isDanger;
@@ -18,6 +19,7 @@ class HapHapButton extends StatelessWidget {
     required this.onPressed,
     this.size = HapHapButtonSize.tiny,
     this.isOutline = false,
+    this.isText = false,
     this.isLoading = false,
     this.isExpanded = false,
     this.isDanger = false,
@@ -44,7 +46,7 @@ class HapHapButton extends StatelessWidget {
     return 12.0;
   }
 
-  Color get _solidColor => isDanger ? Colors.red : AppColors.primary;
+  Color get _solidColor => isDanger ? AppColors.error : AppColors.primary;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +70,18 @@ class HapHapButton extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           );
+
+    if (isText) {
+      return TextButton(
+        onPressed: isLoading ? null : onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: _solidColor,
+          padding: EdgeInsets.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: child,
+      );
+    }
 
     return SizedBox(
       width: _buttonWidth,

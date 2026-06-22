@@ -108,10 +108,29 @@ class ApiClient {
     String? filePath,
     String fileFieldName = 'image',
   }) async {
+    return _multipartRequest('POST', path, fields: fields, filePath: filePath, fileFieldName: fileFieldName);
+  }
+
+  static Future<Map<String, dynamic>> multipartPatch(
+    String path, {
+    required Map<String, String> fields,
+    String? filePath,
+    String fileFieldName = 'avatar',
+  }) async {
+    return _multipartRequest('PATCH', path, fields: fields, filePath: filePath, fileFieldName: fileFieldName);
+  }
+
+  static Future<Map<String, dynamic>> _multipartRequest(
+    String method,
+    String path, {
+    required Map<String, String> fields,
+    String? filePath,
+    String fileFieldName = 'image',
+  }) async {
     final uri = Uri.parse('$baseUrl$path');
 
     try {
-      final request = http.MultipartRequest('POST', uri);
+      final request = http.MultipartRequest(method, uri);
 
       final token = await TokenManager.getToken();
       if (token != null && token.isNotEmpty) {
@@ -121,12 +140,11 @@ class ApiClient {
       request.fields.addAll(fields);
 
       if (filePath != null && filePath.isNotEmpty) {
-        final mimeType = _mimeTypeFromPath(filePath);
         request.files.add(
           await http.MultipartFile.fromPath(
             fileFieldName,
             filePath,
-            contentType: MediaType.parse(mimeType),
+            contentType: getMediaTypeFromPath(filePath),
           ),
         );
       }
@@ -144,9 +162,9 @@ class ApiClient {
     }
   }
 
-  static String _mimeTypeFromPath(String filePath) {
+  static MediaType getMediaTypeFromPath(String filePath) {
     final ext = filePath.split('.').last.toLowerCase();
-    const map = <String, String>{
+    const mimeMap = <String, String>{
       'jpg': 'image/jpeg',
       'jpeg': 'image/jpeg',
       'png': 'image/png',
@@ -154,49 +172,11 @@ class ApiClient {
       'gif': 'image/gif',
       'heic': 'image/heic',
       'heif': 'image/heif',
+      'pdf': 'application/pdf',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     };
-    return map[ext] ?? 'image/jpeg';
-  }
-
-  static Future<Map<String, dynamic>> postMultipart(
-    String path, {
-    required Map<String, String> fields,
-    Map<String, String> files = const {},
-  }) async {
-    final uri = Uri.parse('$baseUrl$path');
-
-    try {
-      final request = http.MultipartRequest('POST', uri);
-
-      final token = await TokenManager.getToken();
-      if (token != null && token.isNotEmpty) {
-        request.headers['Authorization'] = 'Bearer $token';
-      }
-
-      request.fields.addAll(fields);
-
-      for (final entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key, 
-            entry.value,
-            contentType: _getMediaType(entry.value),
-          ),
-        );
-      }
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      return _handleResponse(response);
-    } on ApiException {
-      rethrow;
-    } catch (e) {
-      throw ApiException(
-        message:
-            'Tidak dapat mengirim data. Periksa koneksi internet kamu.',
-        statusCode: 0,
-      );
-    }
+    return MediaType.parse(mimeMap[ext] ?? 'image/jpeg');
   }
 
   static Map<String, dynamic> _handleResponse(http.Response response) {
@@ -215,21 +195,6 @@ class ApiClient {
     );
   }
 
-  static MediaType _getMediaType(String filePath) {
-    final ext = filePath.split('.').last.toLowerCase();
-    if (ext == 'jpg' || ext == 'jpeg') {
-      return MediaType('image', 'jpeg');
-    } else if (ext == 'png') {
-      return MediaType('image', 'png');
-    } else if (ext == 'pdf') {
-      return MediaType('application', 'pdf');
-    } else if (ext == 'doc') {
-      return MediaType('application', 'msword');
-    } else if (ext == 'docx') {
-      return MediaType('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document');
-    }
-    return MediaType('application', 'octet-stream');
-  }
 }
 
 class ApiException implements Exception {

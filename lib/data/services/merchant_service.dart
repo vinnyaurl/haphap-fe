@@ -22,8 +22,16 @@ class MerchantService {
     return MerchantDetailModel.fromJson(json['data'] as Map<String, dynamic>);
   }
 
-  static Future<MerchantDetailModel> updateMe(Map<String, dynamic> data) async {
-    final json = await ApiClient.patch('/merchants/me', data);
-    return MerchantDetailModel.fromJson(json['data'] as Map<String, dynamic>);
+  static Future<Map<String, dynamic>> updateMe({
+    Map<String, String>? fields,
+    String? avatarPath,
+  }) async {
+    final json = await ApiClient.multipartPatch(
+      '/merchants/me',
+      fields: fields ?? {},
+      filePath: avatarPath,
+      fileFieldName: 'avatar',
+    );
+    return json['data'] as Map<String, dynamic>? ?? {};
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
 
 class HapHapEditMenuDialog extends StatefulWidget {
@@ -55,32 +57,11 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.black),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 48,
-          child: TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            textAlignVertical: TextAlignVertical.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.black),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(color: AppColors.greyLight, fontSize: 14),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-              ),
-            ),
-          ),
+        HapHapTextField(
+          labelText: label,
+          hintText: hint,
+          controller: controller,
+          keyboardType: keyboardType,
         ),
         const SizedBox(height: 16),
       ],
@@ -136,19 +117,12 @@ class _HapHapEditMenuDialogState extends State<HapHapEditMenuDialog> {
                       if (!mounted) return;
                       setState(() => _isSaving = false);
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Menu berhasil diperbarui!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
+                      AppSnackbar.showSuccess(context, 'Menu berhasil diperbarui!');
                       Navigator.pop(context, true);
                     } catch (e) {
                       if (!mounted) return;
                       setState(() => _isSaving = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Gagal edit menu: $e')),
-                      );
+                      AppSnackbar.showError(context, 'Gagal edit menu: $e');
                     }
                   },
                 ),

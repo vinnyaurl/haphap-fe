@@ -8,6 +8,7 @@ import 'package:haphap_fe/presentation/widgets/inputs/dropdown_field.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/file_upload_field.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/stepper_indicator.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:image_picker/image_picker.dart';
 
 class MerchantRegistrationPage extends StatefulWidget {
@@ -137,12 +138,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    AppSnackbar.showError(context, message);
   }
 
   Future<void> _submitApplication() async {
@@ -175,24 +171,14 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
         fields['description'] = _descriptionCtrl.text;
       }
 
-      final files = <String, String>{};
-      files['document'] = _documentFile!.path;
-      if (_avatarFile != null) {
-        files['avatar'] = _avatarFile!.path;
-      }
-
       await ApplicationService.createApplication(
         fields: fields,
-        files: files,
+        documentPath: _documentFile!.path,
+        avatarPath: _avatarFile?.path,
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pendaftaran berhasil dikirim!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppSnackbar.showSuccess(context, 'Pendaftaran berhasil dikirim!');
         context.pop();
       }
     } catch (e) {

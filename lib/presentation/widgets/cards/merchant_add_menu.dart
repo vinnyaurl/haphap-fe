@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
 
 class HapHapAddMenuDialog extends StatefulWidget {
@@ -45,12 +47,7 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tidak dapat mengakses galeri. Periksa izin aplikasi di pengaturan.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.showError(context, 'Tidak dapat mengakses galeri. Periksa izin aplikasi di pengaturan.');
     }
   }
 
@@ -60,15 +57,11 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
     final description = _descController.text.trim();
 
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nama menu tidak boleh kosong.')),
-      );
+      AppSnackbar.showError(context, 'Nama menu tidak boleh kosong.');
       return;
     }
     if (price == null || price < 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan harga yang valid (minimal 1).')),
-      );
+      AppSnackbar.showError(context, 'Masukkan harga yang valid (minimal 1).');
       return;
     }
 
@@ -86,28 +79,16 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
       if (!mounted) return;
       setState(() => _isSaving = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('"$name" berhasil ditambahkan!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackbar.showSuccess(context, '"$name" berhasil ditambahkan!');
       Navigator.pop(context, true);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
-      );
+      AppSnackbar.showError(context, e.message);
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal tambah menu. Coba lagi.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.showError(context, 'Gagal tambah menu. Coba lagi.');
     }
   }
 
@@ -120,36 +101,11 @@ class _HapHapAddMenuDialogState extends State<HapHapAddMenuDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.black,
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 48,
-          child: TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            textAlignVertical: TextAlignVertical.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.black),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(color: AppColors.greyLight, fontSize: 14),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-              ),
-            ),
-          ),
+        HapHapTextField(
+          labelText: label,
+          hintText: hint,
+          controller: controller,
+          keyboardType: keyboardType,
         ),
         const SizedBox(height: 16),
       ],

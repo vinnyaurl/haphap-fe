@@ -1,5 +1,9 @@
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/data/models/application_model.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:haphap_fe/core/network/token_manager.dart';
+import 'dart:convert';
 
 class ApplicationService {
   ApplicationService._();
@@ -32,15 +36,46 @@ class ApplicationService {
     await ApiClient.patch('/applications/$applicationId', body);
   }
 
-  // POST /api/applications (multipart)
   static Future<Map<String, dynamic>> createApplication({
     required Map<String, String> fields,
-    required Map<String, String> files,
+    required String documentPath,
+    String? avatarPath,
   }) async {
-    return await ApiClient.postMultipart(
-      '/applications',
-      fields: fields,
-      files: files,
+    final uri = Uri.parse('${ApiClient.baseUrl}/applications');
+    final request = http.MultipartRequest('POST', uri);
+
+    final token = await TokenManager.getToken();
+    if (token != null && token.isNotEmpty) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+
+    request.fields.addAll(fields);
+
+    request.files.add(await http.MultipartFile.fromPath(
+      'document',
+      documentPath,
+      contentType: ApiClient.getMediaTypeFromPath(documentPath),
+    ));
+
+    if (avatarPath != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'avatar',
+        avatarPath,
+        contentType: ApiClient.getMediaTypeFromPath(avatarPath),
+      ));
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return decoded['data'] as Map<String, dynamic>? ?? {};
+    }
+
+    throw ApiException(
+      message: (decoded['message'] ?? 'Terjadi kesalahan').toString(),
+      statusCode: response.statusCode,
     );
   }
 }

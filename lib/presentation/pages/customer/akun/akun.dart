@@ -7,8 +7,9 @@ import 'package:haphap_fe/data/services/user_service.dart';
 import 'package:haphap_fe/data/services/application_service.dart';
 import 'package:haphap_fe/data/models/user_profile_model.dart';
 
-import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart'; 
+import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun/edit_profil.dart';
 
@@ -65,7 +66,6 @@ class _AkunPageState extends State<AkunPage> {
       final freshProfile = await UserService.getMe();
       if (!mounted) return;
 
-      // Update local state with fresh data
       setState(() {
         _profile = freshProfile;
       });
@@ -77,7 +77,7 @@ class _AkunPageState extends State<AkunPage> {
       }
 
       final myApps = await ApplicationService.findMyApplications();
-      
+
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
 
@@ -87,40 +87,30 @@ class _AkunPageState extends State<AkunPage> {
       if (hasApproved) {
         context.go(AppRoutes.merchantBeranda);
       } else if (hasPending) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pengajuan pendaftaran merchant Anda sedang diproses oleh Admin.'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
+        AppSnackbar.showInfo(context, 'Pengajuan pendaftaran merchant Anda sedang diproses oleh Admin.');
       } else {
         context.push(AppRoutes.merchantRegister);
       }
     } catch (e) {
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Terjadi kesalahan: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.showError(context, 'Terjadi kesalahan: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary, 
+      backgroundColor: AppColors.primary,
       body: SafeArea(
         bottom: false,
-        child: _isLoading 
+        child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: AppColors.white))
             : _errorMessage != null
                 ? Center(
                     child: Text(
-                      'Error: $_errorMessage', 
-                      style: const TextStyle(color: Colors.white),
+                      'Error: $_errorMessage',
+                      style: const TextStyle(color: AppColors.white),
                     ),
                   )
                 : _buildContent(context),
@@ -133,17 +123,17 @@ class _AkunPageState extends State<AkunPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        
+
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.0),
           child: HapHapPageHeader(
             title: 'Profil',
-            showBackButton: false, 
-            titleColor: AppColors.white, 
+            showBackButton: false,
+            titleColor: AppColors.white,
             fontSize: 24,
           ),
         ),
-        
+
         const SizedBox(height: 16),
 
         Padding(
@@ -152,7 +142,7 @@ class _AkunPageState extends State<AkunPage> {
             name: _profile?.name ?? 'User',
             email: _profile?.email ?? '-',
             phoneNumber: _profile?.phone ?? '-',
-            imageUrl: _profile?.avatar, 
+            imageUrl: _profile?.avatar,
           ),
         ),
 
@@ -162,15 +152,15 @@ class _AkunPageState extends State<AkunPage> {
           child: Container(
             width: double.infinity,
             decoration: const BoxDecoration(
-              color: Color(0xFFF9F9F9), 
+              color: AppColors.background,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(32), 
-                topRight: Radius.circular(32), 
+                topLeft: Radius.circular(32),
+                topRight: Radius.circular(32),
               ),
             ),
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.only(top: 24.0), 
+                padding: const EdgeInsets.only(top: 24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -191,12 +181,12 @@ class _AkunPageState extends State<AkunPage> {
                         },
                       ),
                       _MenuItemData(
-                        icon: Icons.info, 
+                        icon: Icons.info,
                         title: 'Statistik',
                         badge: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: AppColors.success,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
@@ -212,38 +202,11 @@ class _AkunPageState extends State<AkunPage> {
 
                     const SizedBox(height: 32),
 
-                    _buildSectionTitle('Preferensi'),
-                    _buildMenuCard([
-                      _MenuItemData(
-                        icon: Icons.bookmark,
-                        title: 'Alamat',
-                        onTap: () {
-                          context.push(AppRoutes.alamat);
-                        }
-                      ),
-                      _MenuItemData(
-                        icon: Icons.language, 
-                        title: 'Bahasa',
-                        onTap: () {
-                          context.push(AppRoutes.bahasa);
-                        },
-                      ),
-                      _MenuItemData(
-                        icon: Icons.notifications,
-                        title: 'Notikasi',
-                        onTap: () {
-                          context.push(AppRoutes.notifikasi);
-                        },
-                      ),
-                    ]),
-
-                    const SizedBox(height: 32),
-
                     _buildSectionTitle('Selebihnya dari HapHap'),
                     _buildMenuCard([
                       _MenuItemData(
                         icon: Icons.store,
-                        title: 'Bergabung sebagai Merchant', 
+                        title: 'Bergabung sebagai Merchant',
                         onTap: () => _handleJoinMerchant(context),
                       ),
                     ]),
@@ -255,12 +218,12 @@ class _AkunPageState extends State<AkunPage> {
                       _MenuItemData(
                         icon: Icons.help,
                         title: 'Bantuan & Dukungan',
-                        onTap: () => print('Ke Bantuan'),
+                        onTap: () {},
                       ),
                       _MenuItemData(
-                        icon: Icons.description, 
+                        icon: Icons.description,
                         title: 'Syarat & Ketentuan',
-                        onTap: () => print('Ke S&K'),
+                        onTap: () {},
                       ),
                     ]),
 
@@ -269,14 +232,14 @@ class _AkunPageState extends State<AkunPage> {
                     Center(
                       child: HapHapButton(
                         text: 'Keluar',
-                        size: HapHapButtonSize.large, 
+                        size: HapHapButtonSize.large,
                         onPressed: () {
                           context.go(AppRoutes.login);
                         },
                       ),
                     ),
 
-                    const SizedBox(height: 100), 
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -310,7 +273,7 @@ class _AkunPageState extends State<AkunPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: AppColors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -320,12 +283,12 @@ class _AkunPageState extends State<AkunPage> {
           children: items.map((item) {
             return InkWell(
               onTap: item.onTap,
-              borderRadius: BorderRadius.circular(16), 
+              borderRadius: BorderRadius.circular(16),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                 child: Row(
                   children: [
-                    Icon(item.icon, size: 20, color: const Color(0xFF505050)), 
+                    Icon(item.icon, size: 20, color: AppColors.greyDark),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
@@ -356,7 +319,7 @@ class _AkunPageState extends State<AkunPage> {
 class _MenuItemData {
   final IconData icon;
   final String title;
-  final Widget? badge; 
+  final Widget? badge;
   final VoidCallback onTap;
 
   _MenuItemData({

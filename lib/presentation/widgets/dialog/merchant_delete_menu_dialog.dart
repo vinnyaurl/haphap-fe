@@ -3,6 +3,7 @@ import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 
 class HapHapDeleteMenuDialog extends StatefulWidget {
   final String menuName;
@@ -28,28 +29,16 @@ class _HapHapDeleteMenuDialogState extends State<HapHapDeleteMenuDialog> {
       await MenuService.deleteMenu(widget.menuItemId);
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('"${widget.menuName}" berhasil dihapus.'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackbar.showSuccess(context, '"${widget.menuName}" berhasil dihapus.');
       Navigator.pop(context, true);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _isDeleting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
-      );
+      AppSnackbar.showError(context, e.message);
     } catch (e) {
       if (!mounted) return;
       setState(() => _isDeleting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal menghapus menu. Coba lagi.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.showError(context, 'Gagal menghapus menu. Coba lagi.');
     }
   }
 
@@ -64,7 +53,7 @@ class _HapHapDeleteMenuDialogState extends State<HapHapDeleteMenuDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 48),
+            const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 48),
             const SizedBox(height: 16),
             const Text(
               'Hapus Menu?',
@@ -94,7 +83,7 @@ class _HapHapDeleteMenuDialogState extends State<HapHapDeleteMenuDialog> {
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
-                              color: Colors.red,
+                              color: AppColors.error,
                               strokeWidth: 2.5,
                             ),
                           ),

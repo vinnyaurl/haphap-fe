@@ -5,6 +5,7 @@ import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/data/services/merchant_service.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/dropdown_field.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
@@ -29,8 +30,8 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
 
   bool _isLoading = true;
   bool _isSaving = false;
-  bool _isUploadingAvatar = false;
   String? _avatarUrl;
+  String? _selectedAvatarPath;
   String? _selectedCategory;
 
   String? _errorMessage;
@@ -107,99 +108,51 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
   }
 
   Future<void> _pickAvatar() async {
-    try {
-      final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-      );
-      if (pickedFile == null) return;
-
-      final length = await pickedFile.length();
-      if (length > 5 * 1024 * 1024) {
-        _showErrorSnackBar('Ukuran file maksimal 5 MB');
-        return;
-      }
-
-      setState(() => _isUploadingAvatar = true);
-
-      // Upload avatar via user avatar endpoint
-      final result = await ApiClient.multipartPost(
-        '/users/me/avatar',
-        fields: {},
-        filePath: pickedFile.path,
-        fileFieldName: 'file',
-      );
-
-      final newAvatarUrl = result['data']?['avatar'] as String?;
-      if (newAvatarUrl != null && newAvatarUrl.isNotEmpty) {
-        // Also update merchant avatar
-        await MerchantService.updateMe({'avatar': newAvatarUrl});
-        setState(() {
-          _avatarUrl = newAvatarUrl;
-        });
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Avatar berhasil diperbarui!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      _showErrorSnackBar('Gagal mengunggah avatar: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isUploadingAvatar = false);
-      }
-    }
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
     );
+    if (pickedFile == null) return;
+
+    final length = await pickedFile.length();
+    if (length > 5 * 1024 * 1024) {
+      if (mounted) AppSnackbar.showError(context, 'Ukuran file maksimal 5 MB');
+      return;
+    }
+
+    setState(() {
+      _selectedAvatarPath = pickedFile.path;
+      _avatarUrl = pickedFile.path;
+    });
   }
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_jamBukaController.text.isEmpty || _jamTutupController.text.isEmpty) {
-      _showErrorSnackBar('Waktu operasional harus diisi');
+      AppSnackbar.showError(context, 'Waktu operasional harus diisi');
       return;
     }
 
     setState(() => _isSaving = true);
     try {
-      final data = <String, dynamic>{
+      final fields = <String, String>{
         'merchantName': _namaTokoController.text,
         'phone': _teleponController.text,
         'address': _alamatController.text,
         'description': _deskripsiController.text,
         'openTime': _jamBukaController.text,
         'closeTime': _jamTutupController.text,
+        if (_selectedCategory != null) 'categories': _selectedCategory!,
       };
 
-      if (_selectedCategory != null) {
-        data['categories'] = [_selectedCategory!];
-      }
-
-      await MerchantService.updateMe(data);
-
-      if (!mounted) return;
-      setState(() => _isSaving = false);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profil toko berhasil diperbarui!'),
-          backgroundColor: Colors.green,
-        ),
+      await MerchantService.updateMe(
+        fields: fields,
+        avatarPath: _selectedAvatarPath,
       );
 
+      if (!mounted) return;
+      AppSnackbar.showSuccess(context, 'Profil toko berhasil diperbarui!');
       Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -210,18 +163,12 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
           _errorMessage = 'Sesi kamu telah berakhir. Silakan login kembali.';
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
+        AppSnackbar.showError(context, e.message);
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Gagal menyimpan profil. Periksa koneksi internet.')),
-      );
+      AppSnackbar.showError(context, 'Gagal menyimpan profil. Periksa koneksi internet.');
     }
   }
 
@@ -279,11 +226,9 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar section at the top
                   Center(child: _buildProfilePicture()),
                   const SizedBox(height: 24),
 
-                  // Informasi Bisnis header
                   const Text(
                     'Informasi Bisnis',
                     style: TextStyle(
@@ -342,7 +287,6 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Waktu Operasional header
                   const Text(
                     'Waktu Operasional',
                     style: TextStyle(
@@ -390,7 +334,6 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
           ),
         ),
 
-        // Bottom save button
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           decoration: BoxDecoration(
@@ -403,14 +346,11 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
               ),
             ],
           ),
-          child: SizedBox(
-            width: double.infinity,
-            child: HapHapButton(
-              text: 'Simpan',
-              size: HapHapButtonSize.large,
-              isLoading: _isSaving,
-              onPressed: _saveProfile,
-            ),
+          child: HapHapButton(
+            text: 'Simpan',
+            isExpanded: true,
+            isLoading: _isSaving,
+            onPressed: _saveProfile,
           ),
         ),
       ],
@@ -439,18 +379,15 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
               ),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: 160,
-              child: HapHapButton(
-                text: _isUnauthorized ? 'Login Ulang' : 'Coba Lagi',
-                onPressed: () {
-                  if (_isUnauthorized) {
-                    context.go(AppRoutes.login);
-                  } else {
-                    _fetchProfile();
-                  }
-                },
-              ),
+            HapHapButton(
+              text: _isUnauthorized ? 'Login Ulang' : 'Coba Lagi',
+              onPressed: () {
+                if (_isUnauthorized) {
+                  context.go(AppRoutes.login);
+                } else {
+                  _fetchProfile();
+                }
+              },
             ),
           ],
         ),
@@ -459,8 +396,10 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
   }
 
   Widget _buildProfilePicture() {
+    final isLocalPath = _selectedAvatarPath != null;
+
     return GestureDetector(
-      onTap: _isUploadingAvatar ? null : _pickAvatar,
+      onTap: _isSaving ? null : _pickAvatar,
       child: Stack(
         children: [
           Container(
@@ -479,25 +418,16 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
               ],
               image: _avatarUrl != null && _avatarUrl!.isNotEmpty
                   ? DecorationImage(
-                      image: NetworkImage(_avatarUrl!),
+                      image: isLocalPath
+                          ? NetworkImage(_avatarUrl!) as ImageProvider
+                          : NetworkImage(_avatarUrl!),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child: _isUploadingAvatar
-                ? const Center(
-                    child: SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                        strokeWidth: 3,
-                      ),
-                    ),
-                  )
-                : (_avatarUrl == null || _avatarUrl!.isEmpty
-                    ? const Icon(Icons.store, size: 50, color: Colors.grey)
-                    : null),
+            child: _avatarUrl == null || _avatarUrl!.isEmpty
+                ? const Icon(Icons.store, size: 50, color: Colors.grey)
+                : null,
           ),
           Positioned(
             bottom: 0,

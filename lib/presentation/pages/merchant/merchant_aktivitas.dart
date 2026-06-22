@@ -9,6 +9,7 @@ import 'package:haphap_fe/presentation/widgets/cards/merchant_order.dart';
 import 'package:haphap_fe/data/services/order_service.dart';
 import 'package:haphap_fe/data/models/order_model.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 
 class AktivitasMerchantPage extends StatefulWidget {
   const AktivitasMerchantPage({super.key});
@@ -295,9 +296,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
                         _fetchOrders();
                       } catch (_) {
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Gagal menerima pesanan. Coba lagi.')),
-                        );
+                        AppSnackbar.showError(context, 'Gagal menerima pesanan. Coba lagi.');
                       }
                     }
                   : null,
@@ -309,9 +308,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
                         _fetchOrders();
                       } catch (_) {
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Gagal menolak pesanan. Coba lagi.')),
-                        );
+                        AppSnackbar.showError(context, 'Gagal menolak pesanan. Coba lagi.');
                       }
                     }
                   : null,
@@ -323,9 +320,7 @@ class _AktivitasMerchantPageState extends State<AktivitasMerchantPage> {
                         _fetchOrders();
                       } catch (_) {
                         if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Gagal menandai siap ambil. Coba lagi.')),
-                        );
+                        AppSnackbar.showError(context, 'Gagal menandai siap ambil. Coba lagi.');
                       }
                     }
                   : null,

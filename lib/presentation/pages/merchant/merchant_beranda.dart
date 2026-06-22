@@ -8,6 +8,7 @@ import 'package:haphap_fe/presentation/widgets/cards/merchant_add_stock.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/data/services/surplus_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
@@ -130,19 +131,16 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
           'Apakah kamu yakin ingin menonaktifkan "${item.name}" dari daftar surplus aktif?',
         ),
         actions: [
-          TextButton(
+          HapHapButton(
+            text: 'Batal',
+            isText: true,
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
-              'Batal',
-              style: TextStyle(color: AppColors.greyDark),
-            ),
           ),
-          TextButton(
+          HapHapButton(
+            text: 'Nonaktifkan',
+            isText: true,
+            isDanger: true,
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Nonaktifkan',
-              style: TextStyle(color: Colors.red),
-            ),
           ),
         ],
       ),
@@ -153,26 +151,14 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
     try {
       await SurplusService.update(item.surplusItemId, {'isActive': false});
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('"${item.name}" berhasil dinonaktifkan.'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackbar.showSuccess(context, '"${item.name}" berhasil dinonaktifkan.');
       _fetchData();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
-      );
+      AppSnackbar.showError(context, e.message);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal menonaktifkan menu. Coba lagi.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.showError(context, 'Gagal menonaktifkan menu. Coba lagi.');
     }
   }
 
@@ -396,7 +382,7 @@ class _StatsRow extends StatelessWidget {
             title: _BerandaMerchantContent.statsIncomeTitle,
             prefixText: _BerandaMerchantContent.statsIncomePrefix,
             mainValue: totalRevenue,
-            valueColor: Colors.green,
+            valueColor: AppColors.success,
             subtitle: _BerandaMerchantContent.statsIncomeSubtitle,
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:haphap_fe/presentation/pages/customer/akun/statistik.dart';
 import 'package:haphap_fe/presentation/shell/merchant_shell.dart';
 import 'package:haphap_fe/presentation/shell/user_shell.dart';
 import 'package:haphap_fe/presentation/shell/admin_shell.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
 import 'package:haphap_fe/presentation/pages/splash/onboarding_screen.dart';
@@ -86,9 +87,10 @@ final appRouter = GoRouter(
   initialLocation: AppRoutes.splash,
   errorBuilder: (context, state) => Scaffold(
     body: Center(
-      child: TextButton(
+      child: HapHapButton(
+        text: 'Kembali ke Beranda',
+        isText: true,
         onPressed: () => context.go(AppRoutes.splash),
-        child: const Text('Kembali ke Beranda'),
       ),
     ),
   ),

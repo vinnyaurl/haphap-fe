@@ -8,6 +8,7 @@ import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/data/services/merchant_service.dart';
 
 import 'package:haphap_fe/presentation/widgets/inputs/search_bar.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/beranda_category.dart';
 import 'package:haphap_fe/presentation/widgets/cards/restaurant_card.dart';
 
@@ -216,7 +217,9 @@ class _JelajahPageState extends State<JelajahPage> {
                 style: const TextStyle(color: AppColors.greyDark, fontSize: 14),
               ),
               const SizedBox(height: 16),
-              TextButton(
+              HapHapButton(
+                text: 'Coba Lagi',
+                isText: true,
                 onPressed: () {
                   setState(() {
                     _isLoading = true;
@@ -224,10 +227,6 @@ class _JelajahPageState extends State<JelajahPage> {
                   });
                   _fetchMerchants();
                 },
-                child: const Text(
-                  'Coba Lagi',
-                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
-                ),
               ),
             ],
           ),

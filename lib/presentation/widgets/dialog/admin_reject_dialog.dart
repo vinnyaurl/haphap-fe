@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 
 class AdminRejectDialog extends StatefulWidget {
   final Future<void> Function(String rejectNote) onSubmit;
@@ -63,42 +64,11 @@ class _AdminRejectDialogState extends State<AdminRejectDialog> {
 
             const SizedBox(height: 20),
 
-            const Text(
-              'Catatan Penolakan',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.black,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            TextField(
+            HapHapTextField(
+              labelText: 'Catatan Penolakan',
+              hintText: 'Tuliskan alasan penolakan...',
               controller: _controller,
               maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'Tuliskan alasan penolakan...',
-                hintStyle: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.greyLight,
-                ),
-                contentPadding: const EdgeInsets.all(16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.primary),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      const BorderSide(color: AppColors.primary, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: AppColors.greyLight.withValues(alpha: 0.6)),
-                ),
-              ),
             ),
 
             const SizedBox(height: 24),

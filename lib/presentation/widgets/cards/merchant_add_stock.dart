@@ -5,6 +5,8 @@ import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/data/services/menu_service.dart';
 import 'package:haphap_fe/data/services/surplus_service.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 
 class HapHapMerchantAddStockCard extends StatelessWidget {
   final String imagePath;
@@ -139,16 +141,12 @@ class _AddStockDialogState extends State<_AddStockDialog> {
     final discountPrice = int.tryParse(_discountPriceController.text.trim());
 
     if (stock == null || stock < 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan jumlah stok yang valid (minimal 1).')),
-      );
+      AppSnackbar.showError(context, 'Masukkan jumlah stok yang valid (minimal 1).');
       return;
     }
 
     if (discountPrice == null || discountPrice < 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan harga diskon yang valid (minimal 1).')),
-      );
+      AppSnackbar.showError(context, 'Masukkan harga diskon yang valid (minimal 1).');
       return;
     }
 
@@ -164,28 +162,16 @@ class _AddStockDialogState extends State<_AddStockDialog> {
       if (!mounted) return;
       Navigator.pop(context);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${_selectedMenuItem!.name} berhasil diaktifkan!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackbar.showSuccess(context, '${_selectedMenuItem!.name} berhasil diaktifkan!');
       widget.onStockAdded?.call();
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
-      );
+      AppSnackbar.showError(context, e.message);
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal menyimpan. Coba lagi.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.showError(context, 'Gagal menyimpan. Coba lagi.');
     }
   }
 
@@ -322,76 +308,22 @@ class _AddStockDialogState extends State<_AddStockDialog> {
 
         const SizedBox(height: 16),
 
-        const Text(
-          'Harga Diskon',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.black,
-          ),
-        ),
-        const SizedBox(height: 8),
-        
-        SizedBox(
-          height: 48,
-          child: TextField(
-            controller: _discountPriceController,
-            keyboardType: TextInputType.number,
-            textAlignVertical: TextAlignVertical.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.black),
-            decoration: InputDecoration(
-              hintText: _selectedMenuItem != null
-                  ? '${_selectedMenuItem!.originalPrice}'
-                  : '0',
-              hintStyle: const TextStyle(color: AppColors.greyLight, fontSize: 14),
-              prefixText: 'Rp ',
-              prefixStyle: const TextStyle(fontSize: 14, color: AppColors.black),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-              ),
-            ),
-          ),
+        HapHapTextField(
+          labelText: 'Harga Diskon',
+          hintText: _selectedMenuItem != null
+              ? '${_selectedMenuItem!.originalPrice}'
+              : '0',
+          controller: _discountPriceController,
+          keyboardType: TextInputType.number,
         ),
 
         const SizedBox(height: 16),
 
-        const Text(
-          'Tambahkan Stok',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.black,
-          ),
-        ),
-        const SizedBox(height: 8),
-        
-        SizedBox(
-          height: 48,
-          child: TextField(
-            controller: _stockController,
-            keyboardType: TextInputType.number, 
-            textAlignVertical: TextAlignVertical.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.black),
-            decoration: InputDecoration(
-              hintText: '10',
-              hintStyle: const TextStyle(color: AppColors.greyLight, fontSize: 14),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-              ),
-            ),
-          ),
+        HapHapTextField(
+          labelText: 'Tambahkan Stok',
+          hintText: '10',
+          controller: _stockController,
+          keyboardType: TextInputType.number,
         ),
 
         const SizedBox(height: 32),

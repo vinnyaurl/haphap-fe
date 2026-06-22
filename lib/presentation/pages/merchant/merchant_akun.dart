@@ -223,27 +223,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage>
                       ),
                     ]),
 
-                    const SizedBox(height: 32), 
-
-                    _buildSectionTitle('Preferensi'),
-                    _buildMenuCard([
-                      _MenuItemData(
-                        icon: Icons.language, 
-                        title: 'Bahasa',
-                        onTap: () {
-                          context.push(AppRoutes.bahasa);
-                        },
-                      ),
-                      _MenuItemData(
-                        icon: Icons.notifications,
-                        title: 'Notifikasi',
-                        onTap: () {
-                          context.push(AppRoutes.merchantNotifikasi);
-                        },
-                      ),
-                    ]),
-
-                    const SizedBox(height: 32), 
+                    const SizedBox(height: 32),
 
                     _buildSectionTitle('Selebihnya dari HapHap'),
                     _buildMenuCard([
