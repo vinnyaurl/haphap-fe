@@ -212,7 +212,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Profil berhasil diperbarui')),
                     );
-                    context.pop();
+                    Navigator.of(context).pop();
                   } catch (e) {
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(

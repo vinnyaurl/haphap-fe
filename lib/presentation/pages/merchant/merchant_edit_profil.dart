@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
-import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
-import 'package:haphap_fe/data/services/merchant_service.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
+import 'package:haphap_fe/data/services/merchant_service.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/presentation/widgets/inputs/dropdown_field.dart';
+import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditProfilMerchantPage extends StatefulWidget {
   const EditProfilMerchantPage({super.key});
@@ -16,6 +18,8 @@ class EditProfilMerchantPage extends StatefulWidget {
 }
 
 class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
+  final _formKey = GlobalKey<FormState>();
+
   late TextEditingController _namaTokoController;
   late TextEditingController _teleponController;
   late TextEditingController _alamatController;
@@ -25,10 +29,14 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isUploadingAvatar = false;
   String? _avatarUrl;
-  
+  String? _selectedCategory;
+
   String? _errorMessage;
   bool _isUnauthorized = false;
+
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -60,6 +68,8 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
         _jamBukaController.text = merchant.openTime ?? '';
         _jamTutupController.text = merchant.closeTime ?? '';
         _avatarUrl = merchant.avatar;
+        _selectedCategory =
+            merchant.categories.isNotEmpty ? merchant.categories.first : null;
         _isLoading = false;
       });
     } on ApiException catch (e) {
@@ -82,26 +92,115 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
     }
   }
 
+  Future<void> _selectTime(TextEditingController controller) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      final hour = picked.hour.toString().padLeft(2, '0');
+      final minute = picked.minute.toString().padLeft(2, '0');
+      setState(() {
+        controller.text = '$hour:$minute';
+      });
+    }
+  }
+
+  Future<void> _pickAvatar() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (pickedFile == null) return;
+
+      final length = await pickedFile.length();
+      if (length > 5 * 1024 * 1024) {
+        _showErrorSnackBar('Ukuran file maksimal 5 MB');
+        return;
+      }
+
+      setState(() => _isUploadingAvatar = true);
+
+      // Upload avatar via user avatar endpoint
+      final result = await ApiClient.multipartPost(
+        '/users/me/avatar',
+        fields: {},
+        filePath: pickedFile.path,
+        fileFieldName: 'file',
+      );
+
+      final newAvatarUrl = result['data']?['avatar'] as String?;
+      if (newAvatarUrl != null && newAvatarUrl.isNotEmpty) {
+        // Also update merchant avatar
+        await MerchantService.updateMe({'avatar': newAvatarUrl});
+        setState(() {
+          _avatarUrl = newAvatarUrl;
+        });
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Avatar berhasil diperbarui!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      _showErrorSnackBar('Gagal mengunggah avatar: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingAvatar = false);
+      }
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_jamBukaController.text.isEmpty || _jamTutupController.text.isEmpty) {
+      _showErrorSnackBar('Waktu operasional harus diisi');
+      return;
+    }
+
     setState(() => _isSaving = true);
     try {
-      await MerchantService.updateMe({
+      final data = <String, dynamic>{
         'merchantName': _namaTokoController.text,
         'phone': _teleponController.text,
         'address': _alamatController.text,
         'description': _deskripsiController.text,
         'openTime': _jamBukaController.text,
         'closeTime': _jamTutupController.text,
-      });
+      };
+
+      if (_selectedCategory != null) {
+        data['categories'] = [_selectedCategory!];
+      }
+
+      await MerchantService.updateMe(data);
 
       if (!mounted) return;
       setState(() => _isSaving = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profil toko berhasil diperbarui!')),
+        const SnackBar(
+          content: Text('Profil toko berhasil diperbarui!'),
+          backgroundColor: Colors.green,
+        ),
       );
-      
-      context.pop(); 
+
+      Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
@@ -119,7 +218,9 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal menyimpan profil. Periksa koneksi internet.')),
+        const SnackBar(
+            content:
+                Text('Gagal menyimpan profil. Periksa koneksi internet.')),
       );
     }
   }
@@ -138,7 +239,7 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -149,7 +250,6 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
                 title: 'Edit Profil Toko',
               ),
             ),
-            const SizedBox(height: 24),
             Expanded(
               child: _buildBodyContent(),
             ),
@@ -161,85 +261,159 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
 
   Widget _buildBodyContent() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (_errorMessage != null) {
       return _buildErrorState();
     }
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildProfilePicture(),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              children: [
-                HapHapTextField(
-                  labelText: 'Nama Toko',
-                  hintText: 'Masukkan nama toko',
-                  controller: _namaTokoController,
-                  isRequired: true,
-                ),
-                const SizedBox(height: 32),
-                HapHapTextField(
-                  labelText: 'Nomor Telepon',
-                  hintText: 'Masukkan nomor telepon',
-                  controller: _teleponController,
-                  isRequired: true,
-                ),
-                const SizedBox(height: 32),
-                HapHapTextField(
-                  labelText: 'Alamat',
-                  hintText: 'Masukkan alamat lengkap',
-                  controller: _alamatController,
-                ),
-                const SizedBox(height: 32),
-                HapHapTextField(
-                  labelText: 'Deskripsi',
-                  hintText: 'Deskripsi toko singkat',
-                  controller: _deskripsiController,
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: HapHapTextField(
-                        labelText: 'Jam Buka',
-                        hintText: 'Contoh: 08:00',
-                        controller: _jamBukaController,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: HapHapTextField(
-                        labelText: 'Jam Tutup',
-                        hintText: 'Contoh: 20:00',
-                        controller: _jamTutupController,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 48),
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Avatar section at the top
+                  Center(child: _buildProfilePicture()),
+                  const SizedBox(height: 24),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: HapHapButton(
-                    text: 'Simpan',
-                    size: HapHapButtonSize.large,
-                    isLoading: _isSaving,
-                    onPressed: _saveProfile,
+                  // Informasi Bisnis header
+                  const Text(
+                    'Informasi Bisnis',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 40),
-              ],
+                  const SizedBox(height: 16),
+                  HapHapTextField(
+                    labelText: 'Nama Toko',
+                    hintText: 'Masukkan nama toko',
+                    controller: _namaTokoController,
+                    isRequired: true,
+                  ),
+                  const SizedBox(height: 16),
+                  HapHapTextField(
+                    labelText: 'Telepon Bisnis',
+                    hintText: 'Nomor telepon bisnis',
+                    controller: _teleponController,
+                    keyboardType: TextInputType.phone,
+                    isRequired: true,
+                  ),
+                  const SizedBox(height: 16),
+                  HapHapTextField(
+                    labelText: 'Alamat Bisnis',
+                    hintText: 'Alamat lengkap',
+                    controller: _alamatController,
+                    isRequired: true,
+                  ),
+                  const SizedBox(height: 16),
+                  HapHapTextField(
+                    labelText: 'Deskripsi',
+                    hintText: 'Deskripsi bisnis (opsional)',
+                    controller: _deskripsiController,
+                  ),
+                  const SizedBox(height: 16),
+                  HapHapDropdownField(
+                    labelText: 'Kategori Merchant',
+                    hintText: 'Pilih Kategori',
+                    value: _selectedCategory,
+                    isRequired: true,
+                    options: const [
+                      'ROTI',
+                      'RESTORAN',
+                      'KAFE',
+                      'KEBUTUHAN',
+                      'JAJANAN',
+                      'PENUTUP',
+                    ],
+                    onSelected: (val) {
+                      setState(() {
+                        _selectedCategory = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Waktu Operasional header
+                  const Text(
+                    'Waktu Operasional',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => _selectTime(_jamBukaController),
+                          child: IgnorePointer(
+                            child: HapHapTextField(
+                              labelText: 'Buka',
+                              hintText: 'HH:mm',
+                              controller: _jamBukaController,
+                              isRequired: true,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => _selectTime(_jamTutupController),
+                          child: IgnorePointer(
+                            child: HapHapTextField(
+                              labelText: 'Tutup',
+                              hintText: 'HH:mm',
+                              controller: _jamTutupController,
+                              isRequired: true,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+
+        // Bottom save button
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: HapHapButton(
+              text: 'Simpan',
+              size: HapHapButtonSize.large,
+              isLoading: _isSaving,
+              onPressed: _saveProfile,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -285,53 +459,66 @@ class _EditProfilMerchantPageState extends State<EditProfilMerchantPage> {
   }
 
   Widget _buildProfilePicture() {
-    return Stack(
-      children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFFD9D9D9), 
-            border: Border.all(color: AppColors.white, width: 4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            image: _avatarUrl != null && _avatarUrl!.isNotEmpty
-                ? DecorationImage(
-                    image: NetworkImage(_avatarUrl!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: _avatarUrl == null || _avatarUrl!.isEmpty
-              ? const Icon(Icons.store, size: 50, color: Colors.grey)
-              : null,
-        ),
-        
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Container(
-            width: 32,
-            height: 32,
+    return GestureDetector(
+      onTap: _isUploadingAvatar ? null : _pickAvatar,
+      child: Stack(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
-              color: AppColors.primary,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.white, width: 2),
+              color: const Color(0xFFD9D9D9),
+              border: Border.all(color: AppColors.white, width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              image: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(_avatarUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: const Icon(
-              Icons.camera_alt,
-              size: 16,
-              color: AppColors.white,
+            child: _isUploadingAvatar
+                ? const Center(
+                    child: SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                        strokeWidth: 3,
+                      ),
+                    ),
+                  )
+                : (_avatarUrl == null || _avatarUrl!.isEmpty
+                    ? const Icon(Icons.store, size: 50, color: Colors.grey)
+                    : null),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.white, width: 2),
+              ),
+              child: const Icon(
+                Icons.camera_alt,
+                size: 16,
+                color: AppColors.white,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

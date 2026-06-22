@@ -10,6 +10,7 @@ import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/network/token_manager.dart';
+import 'package:haphap_fe/presentation/pages/merchant/merchant_edit_profil.dart';
 
 class AkunMerchantPage extends StatefulWidget {
   const AkunMerchantPage({super.key});
@@ -18,16 +19,33 @@ class AkunMerchantPage extends StatefulWidget {
   State<AkunMerchantPage> createState() => _AkunMerchantPageState();
 }
 
-class _AkunMerchantPageState extends State<AkunMerchantPage> {
+class _AkunMerchantPageState extends State<AkunMerchantPage>
+    with WidgetsBindingObserver {
   MerchantDetailModel? _merchant;
   bool _isLoading = true;
   String? _errorMessage;
   bool _isUnauthorized = false;
+  bool _needsRefresh = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchProfile();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _needsRefresh) {
+      _needsRefresh = false;
+      _fetchProfile();
+    }
   }
 
   Future<void> _fetchProfile() async {
@@ -183,11 +201,17 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                       _MenuItemData(
                         icon: Icons.edit,
                         title: 'Edit Detail',
-                        onTap: () {
-                          context.push(AppRoutes.editProfil).then((_) {
-                            setState(() => _isLoading = true);
-                            _fetchProfile();
-                          });
+                        onTap: () async {
+                          _needsRefresh = true;
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const EditProfilMerchantPage(),
+                            ),
+                          );
+                          if (!mounted) return;
+                          _needsRefresh = false;
+                          setState(() => _isLoading = true);
+                          _fetchProfile();
                         },
                       ),
                       _MenuItemData(

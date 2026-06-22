@@ -32,6 +32,7 @@ import 'package:haphap_fe/presentation/pages/merchant/merchant_statistik.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_notifikasi.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_scan_qr.dart';
 import 'package:haphap_fe/presentation/pages/merchant/registration/merchant_registration_page.dart';
+import 'package:haphap_fe/presentation/pages/merchant/merchant_edit_profil.dart';
 
 import 'package:haphap_fe/presentation/pages/admin/admin_beranda.dart';
 import 'package:haphap_fe/presentation/pages/admin/admin_pengajuan.dart';
@@ -182,10 +183,10 @@ final appRouter = GoRouter(
       path: AppRoutes.merchantNotifikasi,
       builder: (context, state) => const NotifikasiMerchantPage(),
     ),
-    // GoRoute(
-    //   path: AppRoutes.merchantEditProfil,
-    //   builder: (context, state) => const EditProfilMerchantPage(),
-    // ),
+    GoRoute(
+      path: AppRoutes.merchantEditProfil,
+      builder: (context, state) => const EditProfilMerchantPage(),
+    ),
     GoRoute(
       path: '/finish',
       redirect: (context, state) {

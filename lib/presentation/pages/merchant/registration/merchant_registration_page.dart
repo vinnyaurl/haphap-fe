@@ -35,6 +35,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
   final _openTimeCtrl = TextEditingController();
   final _closeTimeCtrl = TextEditingController();
 
+  String? _selectedCategory;
   String? _selectedBank;
   final _accountNumberCtrl = TextEditingController();
   final _accountHolderCtrl = TextEditingController();
@@ -63,6 +64,10 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
   void _nextStep() {
     if (_currentStep == 0) {
       if (_step1FormKey.currentState!.validate()) {
+        if (_selectedCategory == null) {
+          _showErrorSnackBar('Pilih kategori merchant terlebih dahulu');
+          return;
+        }
         if (_openTimeCtrl.text.isEmpty || _closeTimeCtrl.text.isEmpty) {
           _showErrorSnackBar('Waktu operasional harus diisi');
           return;
@@ -160,7 +165,7 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
         'openTime': _openTimeCtrl.text,
         'closeTime': _closeTimeCtrl.text,
         'phone': _phoneCtrl.text,
-        'categories': 'RESTORAN',
+        'categories': _selectedCategory!,
         'bankType': _selectedBank!,
         'bankAccount': _accountNumberCtrl.text,
         'bankHolder': _accountHolderCtrl.text,
@@ -301,6 +306,26 @@ class _MerchantRegistrationPageState extends State<MerchantRegistrationPage> {
               labelText: 'Deskripsi',
               hintText: 'Deskripsi bisnis (opsional)',
               controller: _descriptionCtrl,
+            ),
+            const SizedBox(height: 16),
+            HapHapDropdownField(
+              labelText: 'Kategori Merchant',
+              hintText: 'Pilih Kategori',
+              value: _selectedCategory,
+              isRequired: true,
+              options: const [
+                'ROTI',
+                'RESTORAN',
+                'KAFE',
+                'KEBUTUHAN',
+                'JAJANAN',
+                'PENUTUP',
+              ],
+              onSelected: (val) {
+                setState(() {
+                  _selectedCategory = val;
+                });
+              },
             ),
             const SizedBox(height: 24),
             const Text(

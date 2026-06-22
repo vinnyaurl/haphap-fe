@@ -10,6 +10,7 @@ import 'package:haphap_fe/data/models/user_profile_model.dart';
 import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart'; 
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
+import 'package:haphap_fe/presentation/pages/customer/akun/edit_profil.dart';
 
 class AkunPage extends StatefulWidget {
   const AkunPage({super.key});
@@ -178,8 +179,15 @@ class _AkunPageState extends State<AkunPage> {
                       _MenuItemData(
                         icon: Icons.edit,
                         title: 'Edit Profil',
-                        onTap: () {
-                          context.push(AppRoutes.editProfil); 
+                        onTap: () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const EditProfilPage(),
+                            ),
+                          );
+                          if (!mounted) return;
+                          setState(() => _isLoading = true);
+                          _fetchProfile();
                         },
                       ),
                       _MenuItemData(
