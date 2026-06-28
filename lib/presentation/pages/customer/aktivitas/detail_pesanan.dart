@@ -136,17 +136,17 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
         dateStatus = '${_formatDate(order.createdAt)} · Menunggu';
         break;
       case 'PROCESSING':
-        mainTitle = 'Pesanan Dikonfirmasi Merchant';
+        mainTitle = 'Menunggu Dikonfirmasi';
         imagePath = 'assets/images/on_process.png';
-        dateStatus = '${_formatDate(order.createdAt)} · Dikonfirmasi';
+        dateStatus = '${_formatDate(order.createdAt)} · Menunggu Dikonfirmasi';
         break;
       case 'READY':
         if (order.qrCode != null) {
-          mainTitle = 'Pesanan Siap Diambil';
+          mainTitle = 'Siap Diambil';
           imagePath = 'assets/images/done.png';
           dateStatus = '${_formatDate(order.createdAt)} · Siap Diambil';
         } else {
-          mainTitle = 'Pesanan Sedang Disiapkan';
+          mainTitle = 'Sedang Disiapkan';
           imagePath = 'assets/images/on_process.png';
           dateStatus = '${_formatDate(order.createdAt)} · Disiapkan';
         }

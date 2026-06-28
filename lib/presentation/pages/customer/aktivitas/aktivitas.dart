@@ -152,9 +152,9 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
   String _mainText(_OrderItem order) {
     switch (order.status) {
       case 'PENDING':    return 'Bayar Sekarang!';
-      case 'PROCESSING': return 'Tunggu merchant konfirmasi ya!';
+      case 'PROCESSING': return 'Menunggu Konfirmasi!';
       case 'READY':
-        return order.hasQrCode ? 'Tunjukkin QRmu!' : 'Sabar ya, lagi disiapkan!';
+        return order.hasQrCode ? 'Tunjukkan QRmu!' : 'Sedang disiapkan!';
       case 'COMPLETED':  return 'Selamat Menikmati!';
       default:           return '-';
     }

@@ -102,7 +102,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
@@ -212,7 +212,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
         top: 16,
         bottom: bottomSafeArea > 0 ? bottomSafeArea : 24,
       ),
-      color: const Color(0xFFF9F9F9),
+      color: AppColors.white,
       child: HapHapButton(
         text: 'Simpan',
         isExpanded: true,

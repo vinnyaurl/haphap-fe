@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haphap_fe/presentation/widgets/navigations/navigation_bar.dart';
+import 'package:haphap_fe/core/theme/app_colors.dart';
 
 class MainShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -13,7 +14,7 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: AppColors.white,
       body: navigationShell,
       bottomNavigationBar: HapHapNavBar(
         currentIndex: navigationShell.currentIndex,

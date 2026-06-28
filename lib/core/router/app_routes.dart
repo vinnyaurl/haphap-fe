@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:haphap_fe/presentation/pages/customer/akun/bahasa.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun/edit_profil.dart';
-import 'package:haphap_fe/presentation/pages/customer/akun/notifikasi.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun/statistik.dart';
 import 'package:haphap_fe/presentation/shell/merchant_shell.dart';
 import 'package:haphap_fe/presentation/shell/user_shell.dart';
@@ -62,8 +60,6 @@ class AppRoutes {
   static const String editProfil = '/edit-profil';
   static const String statistik = '/statistik';
 
-  static const String bahasa = '/bahasa';
-  static const String notifikasi = '/notifikasi';
 
   static const String detailRestoran = '/detail-restoran';
   static const String checkout = '/checkout';
@@ -180,14 +176,6 @@ final appRouter = GoRouter(
       builder: (context, state) => const StatistikPage(),
     ),
 
-    GoRoute(
-      path: AppRoutes.bahasa,
-      builder: (context, state) => const BahasaPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.notifikasi,
-      builder: (context, state) => const NotifikasiPage(),
-    ),
     GoRoute(
       path: AppRoutes.merchantStatistik,
       builder: (context, state) => const StatistikMerchantPage(),
