@@ -203,11 +203,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage>
                         title: 'Edit Detail',
                         onTap: () async {
                           _needsRefresh = true;
-                          await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const EditProfilMerchantPage(),
-                            ),
-                          );
+                          await context.push(AppRoutes.merchantEditProfil);
                           if (!mounted) return;
                           _needsRefresh = false;
                           setState(() => _isLoading = true);

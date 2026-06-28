@@ -19,6 +19,7 @@ import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/pages/customer/jelajah.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/aktivitas.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.dart';
+import 'package:haphap_fe/presentation/pages/customer/aktivitas/beri_rating.dart';
 
 import 'package:haphap_fe/presentation/pages/customer/akun/akun.dart';
 
@@ -56,6 +57,7 @@ class AppRoutes {
   static const String aktivitas = '/aktivitas';
   static const String akun = '/akun';
   static const String detailPesanan = '/detail';
+  static const String beriRating = '/beri-rating';
 
   static const String editProfil = '/edit-profil';
   static const String statistik = '/statistik';
@@ -133,6 +135,18 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final orderId = state.extra as String?;
         return DetailPesananPage(orderId: orderId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.beriRating,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return BeriRatingPage(
+          orderId: extra['orderId'] as String,
+          merchantId: extra['merchantId'] as String,
+          merchantName: extra['merchantName'] as String,
+          merchantAvatar: extra['merchantAvatar'] as String,
+        );
       },
     ),
 
