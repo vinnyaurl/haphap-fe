@@ -169,7 +169,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
 
     final avatar = (order.merchant?.avatar != null && order.merchant!.avatar!.isNotEmpty) 
         ? order.merchant!.avatar! 
-        : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=100';
+        : '';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
@@ -227,13 +227,11 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
           const SizedBox(height: 16),
 
           HapHapRincianPembayaran(
-            paymentMethod: 'Tunai di Kasir',
+            paymentMethod: order.isOnlinePayment ? 'QRIS' : 'Tunai di Kasir',
             totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
             orderNumber: order.orderId,
             paymentTime: order.paidAt != null ? _formatDate(order.paidAt!) : '-',
             completionTime: order.completedAt != null ? _formatDate(order.completedAt!) : '-',
-            onReceiptPressed: () {
-            },
           ),
           
           const SizedBox(height: 32),

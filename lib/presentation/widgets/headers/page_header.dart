@@ -19,10 +19,9 @@ class HapHapPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // KUNCI: Bungkus pakai Container dan set minHeight 44px
     return Container(
       constraints: const BoxConstraints(minHeight: 44), 
-      alignment: Alignment.centerLeft, // Pastikan isinya rata kiri
+      alignment: Alignment.centerLeft,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

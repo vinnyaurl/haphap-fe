@@ -10,6 +10,7 @@ import 'package:haphap_fe/presentation/widgets/cards/akun_profile_card.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
 import 'package:haphap_fe/core/network/token_manager.dart';
+import 'package:haphap_fe/presentation/pages/merchant/merchant_edit_profil.dart';
 
 class AkunMerchantPage extends StatefulWidget {
   const AkunMerchantPage({super.key});
@@ -18,16 +19,33 @@ class AkunMerchantPage extends StatefulWidget {
   State<AkunMerchantPage> createState() => _AkunMerchantPageState();
 }
 
-class _AkunMerchantPageState extends State<AkunMerchantPage> {
+class _AkunMerchantPageState extends State<AkunMerchantPage>
+    with WidgetsBindingObserver {
   MerchantDetailModel? _merchant;
   bool _isLoading = true;
   String? _errorMessage;
   bool _isUnauthorized = false;
+  bool _needsRefresh = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchProfile();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _needsRefresh) {
+      _needsRefresh = false;
+      _fetchProfile();
+    }
   }
 
   Future<void> _fetchProfile() async {
@@ -183,11 +201,13 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                       _MenuItemData(
                         icon: Icons.edit,
                         title: 'Edit Detail',
-                        onTap: () {
-                          context.push(AppRoutes.editProfil).then((_) {
-                            setState(() => _isLoading = true);
-                            _fetchProfile();
-                          });
+                        onTap: () async {
+                          _needsRefresh = true;
+                          await context.push(AppRoutes.merchantEditProfil);
+                          if (!mounted) return;
+                          _needsRefresh = false;
+                          setState(() => _isLoading = true);
+                          _fetchProfile();
                         },
                       ),
                       _MenuItemData(
@@ -199,27 +219,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                       ),
                     ]),
 
-                    const SizedBox(height: 32), 
-
-                    _buildSectionTitle('Preferensi'),
-                    _buildMenuCard([
-                      _MenuItemData(
-                        icon: Icons.language, 
-                        title: 'Bahasa',
-                        onTap: () {
-                          context.push(AppRoutes.bahasa);
-                        },
-                      ),
-                      _MenuItemData(
-                        icon: Icons.notifications,
-                        title: 'Notifikasi',
-                        onTap: () {
-                          context.push(AppRoutes.merchantNotifikasi);
-                        },
-                      ),
-                    ]),
-
-                    const SizedBox(height: 32), 
+                    const SizedBox(height: 32),
 
                     _buildSectionTitle('Selebihnya dari HapHap'),
                     _buildMenuCard([
@@ -233,27 +233,15 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                       ),
                     ]),
 
-                    const SizedBox(height: 32), 
 
-                    _buildSectionTitle('Lainnya'),
-                    _buildMenuCard([
-                      _MenuItemData(
-                        icon: Icons.help,
-                        title: 'Bantuan & Dukungan',
-                        onTap: () => debugPrint('Ke Bantuan'),
-                      ),
-                      _MenuItemData(
-                        icon: Icons.description, 
-                        title: 'Syarat & Ketentuan',
-                        onTap: () => debugPrint('Ke S&K'),
-                      ),
-                    ]),
 
                     const SizedBox(height: 32),
 
-                    Center(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: HapHapButton(
                         text: 'Keluar',
+                        isExpanded: true,
                         size: HapHapButtonSize.large,
                         onPressed: _handleLogout,
                       ),
@@ -320,10 +308,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
                         ),
                       ),
                     ),
-                    if (item.badge != null) ...[
-                      item.badge!,
-                      const SizedBox(width: 8),
-                    ],
+
                     const Icon(Icons.chevron_right, size: 24, color: AppColors.greyDark),
                   ],
                 ),
@@ -339,13 +324,11 @@ class _AkunMerchantPageState extends State<AkunMerchantPage> {
 class _MenuItemData {
   final IconData icon;
   final String title;
-  final Widget? badge;
   final VoidCallback onTap;
 
   _MenuItemData({
     required this.icon,
     required this.title,
-    this.badge,
     required this.onTap,
   });
 }

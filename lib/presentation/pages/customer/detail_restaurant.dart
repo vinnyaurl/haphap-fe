@@ -209,7 +209,7 @@ class _DetailRestoranPageState extends State<DetailRestoranPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
-            merchant.merchantName,
+            'Menu ${merchant.merchantName}',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,

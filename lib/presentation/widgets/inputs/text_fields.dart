@@ -9,6 +9,7 @@ class HapHapTextField extends StatefulWidget {
   final bool isRequired; 
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
+  final int maxLines;
 
   const HapHapTextField({
     super.key,
@@ -19,6 +20,7 @@ class HapHapTextField extends StatefulWidget {
     this.isRequired = false, 
     this.validator,
     this.keyboardType,
+    this.maxLines = 1,
   });
 
   @override
@@ -47,7 +49,7 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
                 const TextSpan(
                   text: ' *',
                   style: TextStyle(
-                    color: Colors.red, 
+                    color: AppColors.error, 
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -60,6 +62,7 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
           obscureText: widget.isPassword ? _isObscured : false,
           validator: widget.validator,
           keyboardType: widget.keyboardType,
+          maxLines: widget.maxLines,
           style: const TextStyle(
             fontSize: 16, 
             fontWeight: FontWeight.w600, 
@@ -81,10 +84,10 @@ class _HapHapTextFieldState extends State<HapHapTextField> {
               borderSide: BorderSide(color: AppColors.greyDark, width: 1.5), 
             ),
             errorBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.red, width: 1),
+              borderSide: BorderSide(color: AppColors.error, width: 1),
             ),
             focusedErrorBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.red, width: 1.5),
+              borderSide: BorderSide(color: AppColors.error, width: 1.5),
             ),
             suffixIconConstraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             suffixIcon: widget.isPassword

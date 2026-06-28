@@ -55,12 +55,27 @@ class HapHapDetailPesananCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ClipOval(
-                child: Image.network(
-                  restaurantLogoUrl,
-                  width: 32,
-                  height: 32,
-                  fit: BoxFit.cover,
-                ),
+                child: restaurantLogoUrl.isNotEmpty
+                    ? Image.network(
+                        restaurantLogoUrl,
+                        width: 32,
+                        height: 32,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 32,
+                            height: 32,
+                            color: const Color(0xFFF5F5F5),
+                            child: const Icon(Icons.storefront, color: AppColors.greyDark, size: 16),
+                          );
+                        },
+                      )
+                    : Container(
+                        width: 32,
+                        height: 32,
+                        color: const Color(0xFFF5F5F5),
+                        child: const Icon(Icons.storefront, color: AppColors.greyDark, size: 16),
+                      ),
               ),
               const SizedBox(width: 12),
               Text(

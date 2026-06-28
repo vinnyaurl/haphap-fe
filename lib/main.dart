@@ -16,7 +16,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: appRouter,
-      // routerConfig: _debugRouter,
       debugShowCheckedModeBanner: false,
       title: 'HapHap',
       theme: ThemeData(
@@ -26,17 +25,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-final _debugRouter = GoRouter(
-  initialLocation: AppRoutes.splash,
-  routes: appRouter.configuration.routes,
-);
-// final _debugRouter = GoRouter(
-//   initialLocation: AppRoutes.splash,
-//   routes: appRouter.configuration.routes,
-// );
-
-// final _debugRouter = GoRouter(
-//   initialLocation: AppRoutes.beranda,
-//   routes: appRouter.configuration.routes,
-// );

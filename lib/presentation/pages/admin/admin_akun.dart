@@ -126,27 +126,15 @@ class _AkunAdminPageState extends State<AkunAdminPage> {
                       ),
                     ]),
 
-                    const SizedBox(height: 32),
 
-                    _buildSectionTitle('Lainnya'),
-                    _buildMenuCard([
-                      _MenuItemData(
-                        icon: Icons.help,
-                        title: 'Bantuan & Dukungan',
-                        onTap: () => debugPrint('Ke Bantuan'),
-                      ),
-                      _MenuItemData(
-                        icon: Icons.description,
-                        title: 'Syarat & Ketentuan',
-                        onTap: () => debugPrint('Ke S&K'),
-                      ),
-                    ]),
 
                     const SizedBox(height: 32),
 
-                    Center(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: HapHapButton(
                         text: 'Keluar',
+                        isExpanded: true,
                         size: HapHapButtonSize.large,
                         onPressed: _logout,
                       ),

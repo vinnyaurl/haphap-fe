@@ -5,6 +5,7 @@ import 'package:haphap_fe/core/network/token_manager.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/auth_service.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 
@@ -23,7 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  bool _isAgreed = false;
+
   bool _isLoading = false;
 
   @override
@@ -70,10 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _handleRegister() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    if (!_isAgreed) {
-      AppSnackbar.showError(context, 'Kamu harus menyetujui Syarat & Ketentuan terlebih dahulu.');
-      return;
-    }
+
 
     setState(() => _isLoading = true);
 
@@ -209,7 +207,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         children: [
                           HapHapTextField(
                             labelText: 'Nama Lengkap',
-                            hintText: 'John Doe',
+                            hintText: 'Masukkan nama',
                             controller: _nameController,
                             isPassword: false,
                             isRequired: true,
@@ -220,7 +218,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           HapHapTextField(
                             labelText: 'Nomor HP',
-                            hintText: '08123456789',
+                            hintText: 'Masukkan nomor telepon',
                             controller: _phoneController,
                             isPassword: false,
                             isRequired: true,
@@ -232,7 +230,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           HapHapTextField(
                             labelText: 'Email',
-                            hintText: 'puypuy@gmail.com',
+                            hintText: 'Masukkan email',
                             controller: _emailController,
                             isPassword: false,
                             isRequired: true,
@@ -243,7 +241,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           HapHapTextField(
                             labelText: 'Password',
-                            hintText: 'password',
+                            hintText: 'Masukkan password',
                             controller: _passwordController,
                             isPassword: true,
                             isRequired: true,
@@ -254,95 +252,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           HapHapTextField(
                             labelText: 'Konfirmasi Password',
-                            hintText: 'password',
+                            hintText: 'Masukkan konfirmasi password',
                             controller: _confirmPasswordController,
                             isPassword: true,
                             isRequired: true,
                             validator: _validateConfirmPassword,
                           ),
 
-                          const SizedBox(height: 16),
-
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Checkbox(
-                                  value: _isAgreed,
-                                  onChanged: (value) {
-                                    setState(() => _isAgreed = value ?? false);
-                                  },
-                                  activeColor: AppColors.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  side: const BorderSide(color: Colors.grey),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: RichText(
-                                    text: const TextSpan(
-                                      text: 'Saya telah membaca dan menyetujui ',
-                                      style: TextStyle(
-                                        fontFamily: 'Plus Jakarta Sans',
-                                        fontSize: 14,
-                                        color: AppColors.black,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text: 'Syarat & Ketentuan',
-                                          style: TextStyle(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
                           const SizedBox(height: 32),
 
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleRegister,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.white,
-                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(26),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: AppColors.white,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Daftar',
-                                      style: TextStyle(
-                                        fontFamily: 'Plus Jakarta Sans',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
+                          HapHapButton(
+                            text: 'Daftar',
+                            isExpanded: true,
+                            isLoading: _isLoading,
+                            onPressed: _handleRegister,
                           ),
 
                           const Spacer(),

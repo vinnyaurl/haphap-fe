@@ -15,18 +15,22 @@ class _OrderItem {
   final String status;
   final int totalAmount;
   final String merchantName;
+  final String merchantId;
   final String? merchantAvatar;
   final String createdAt;
   final String? qrCode;
+  final bool hasReview;
 
   const _OrderItem({
     required this.orderId,
     required this.status,
     required this.totalAmount,
     required this.merchantName,
+    required this.merchantId,
     this.merchantAvatar,
     required this.createdAt,
     this.qrCode,
+    this.hasReview = false,
   });
 
   bool get hasQrCode => qrCode != null && qrCode!.isNotEmpty;
@@ -38,9 +42,11 @@ class _OrderItem {
       status: json['status'] as String? ?? 'PENDING',
       totalAmount: json['totalAmount'] as int? ?? 0,
       merchantName: merchant['merchantName'] as String? ?? '-',
+      merchantId: merchant['id'] as String? ?? '',
       merchantAvatar: merchant['avatar'] as String?,
       createdAt: json['createdAt'] as String? ?? '',
       qrCode: json['qrCode'] as String?,
+      hasReview: json['review'] != null,
     );
   }
 }
@@ -303,18 +309,35 @@ class _AktivitasPageState extends State<AktivitasPage> with WidgetsBindingObserv
         separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (_, i) {
           final order = _historyOrders[i];
+          final showRatingButton = order.status == 'COMPLETED' && !order.hasReview;
+          final buttonText = showRatingButton ? 'Beri Rating' : (order.status == 'CANCELLED' ? 'Pesan Lagi' : null);
+          
           return GestureDetector(
             onTap: () => context.push(AppRoutes.detailPesanan, extra: order.orderId),
             child: HapHapRiwayatCard(
-              imageUrl: '',
+              imageUrl: order.merchantAvatar ?? '',
               dateStatusText:
                   '${order.createdAt.substring(0, 10)} · ${order.status == 'COMPLETED' ? 'Selesai' : 'Dibatalkan'}',
               restaurantName: order.merchantName,
               price: _formatPrice(order.totalAmount),
-              buttonText: order.status == 'COMPLETED' ? 'Beri Rating' : 'Pesan Lagi',
-              onButtonPressed: () {
-                // TODO: implement rating / reorder
-              },
+              buttonText: buttonText,
+              onButtonPressed: buttonText != null 
+                ? () {
+                    if (showRatingButton) {
+                      context.push(
+                        AppRoutes.beriRating,
+                        extra: {
+                          'orderId': order.orderId,
+                          'merchantId': order.merchantId,
+                          'merchantName': order.merchantName,
+                          'merchantAvatar': order.merchantAvatar ?? '',
+                        },
+                      );
+                    } else {
+                      // TODO: implement reorder
+                    }
+                  } 
+                : null,
             ),
           );
         },

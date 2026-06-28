@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:haphap_fe/presentation/pages/customer/akun/alamat.dart';
+
 import 'package:haphap_fe/presentation/pages/customer/akun/bahasa.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun/edit_profil.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun/notifikasi.dart';
@@ -8,6 +8,7 @@ import 'package:haphap_fe/presentation/pages/customer/akun/statistik.dart';
 import 'package:haphap_fe/presentation/shell/merchant_shell.dart';
 import 'package:haphap_fe/presentation/shell/user_shell.dart';
 import 'package:haphap_fe/presentation/shell/admin_shell.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 import 'package:haphap_fe/presentation/pages/splash/splash_screen.dart';
 import 'package:haphap_fe/presentation/pages/splash/onboarding_screen.dart';
@@ -18,6 +19,7 @@ import 'package:haphap_fe/presentation/pages/customer/beranda.dart';
 import 'package:haphap_fe/presentation/pages/customer/jelajah.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/aktivitas.dart';
 import 'package:haphap_fe/presentation/pages/customer/aktivitas/detail_pesanan.dart';
+import 'package:haphap_fe/presentation/pages/customer/aktivitas/beri_rating.dart';
 
 import 'package:haphap_fe/presentation/pages/customer/akun/akun.dart';
 
@@ -31,6 +33,8 @@ import 'package:haphap_fe/presentation/pages/merchant/merchant_akun.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_statistik.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_notifikasi.dart';
 import 'package:haphap_fe/presentation/pages/merchant/merchant_scan_qr.dart';
+import 'package:haphap_fe/presentation/pages/merchant/registration/merchant_registration_page.dart';
+import 'package:haphap_fe/presentation/pages/merchant/merchant_edit_profil.dart';
 
 import 'package:haphap_fe/presentation/pages/admin/admin_beranda.dart';
 import 'package:haphap_fe/presentation/pages/admin/admin_pengajuan.dart';
@@ -53,10 +57,11 @@ class AppRoutes {
   static const String aktivitas = '/aktivitas';
   static const String akun = '/akun';
   static const String detailPesanan = '/detail';
+  static const String beriRating = '/beri-rating';
 
   static const String editProfil = '/edit-profil';
   static const String statistik = '/statistik';
-  static const String alamat = '/alamat';
+
   static const String bahasa = '/bahasa';
   static const String notifikasi = '/notifikasi';
 
@@ -71,11 +76,12 @@ class AppRoutes {
   static const String merchantNotifikasi = '/merchant/notifikasi';
   static const String merchantEditProfil = '/merchant/edit-profil';
 
-  static const String adminBeranda         = '/admin/beranda';
-  static const String adminPengajuan       = '/admin/pengajuan';
-  static const String adminAkun            = '/admin/akun';
+  static const String adminBeranda = '/admin/beranda';
+  static const String adminPengajuan = '/admin/pengajuan';
+  static const String adminAkun = '/admin/akun';
   static const String adminDetailPengajuan = '/admin/detail-pengajuan';
   static const String merchantScanQR = '/merchant/scan-qr';
+  static const String merchantRegister = '/merchant/register';
 }
 
 final appRouter = GoRouter(
@@ -83,9 +89,10 @@ final appRouter = GoRouter(
   initialLocation: AppRoutes.splash,
   errorBuilder: (context, state) => Scaffold(
     body: Center(
-      child: TextButton(
+      child: HapHapButton(
+        text: 'Kembali ke Beranda',
+        isText: true,
         onPressed: () => context.go(AppRoutes.splash),
-        child: const Text('Kembali ke Beranda'),
       ),
     ),
   ),
@@ -102,6 +109,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.merchantScanQR,
       builder: (_, __) => const MerchantScanQRPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.merchantRegister,
+      builder: (_, __) => const MerchantRegistrationPage(),
     ),
     GoRoute(
       path: AppRoutes.splash,
@@ -124,6 +135,18 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final orderId = state.extra as String?;
         return DetailPesananPage(orderId: orderId);
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.beriRating,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return BeriRatingPage(
+          orderId: extra['orderId'] as String,
+          merchantId: extra['merchantId'] as String,
+          merchantName: extra['merchantName'] as String,
+          merchantAvatar: extra['merchantAvatar'] as String,
+        );
       },
     ),
 
@@ -156,10 +179,7 @@ final appRouter = GoRouter(
       path: AppRoutes.statistik,
       builder: (context, state) => const StatistikPage(),
     ),
-    GoRoute(
-      path: AppRoutes.alamat,
-      builder: (context, state) => const AlamatPage(),
-    ),
+
     GoRoute(
       path: AppRoutes.bahasa,
       builder: (context, state) => const BahasaPage(),
@@ -180,7 +200,6 @@ final appRouter = GoRouter(
       path: AppRoutes.merchantEditProfil,
       builder: (context, state) => const EditProfilMerchantPage(),
     ),
-
     GoRoute(
       path: '/finish',
       redirect: (context, state) {
@@ -219,7 +238,10 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.jelajah,
-              builder: (context, state) => const JelajahPage(),
+              builder: (context, state) {
+                final category = state.uri.queryParameters['category'];
+                return JelajahPage(initialCategory: category);
+              },
             ),
           ],
         ),
@@ -229,7 +251,9 @@ final appRouter = GoRouter(
               path: AppRoutes.aktivitas,
               builder: (context, state) {
                 final tabStr = state.uri.queryParameters['tab'];
-                final initialTab = tabStr != null ? int.tryParse(tabStr) ?? 0 : 0;
+                final initialTab = tabStr != null
+                    ? int.tryParse(tabStr) ?? 0
+                    : 0;
                 return AktivitasPage(initialTab: initialTab);
               },
             ),
@@ -289,24 +313,30 @@ final appRouter = GoRouter(
       builder: (context, state, navigationShell) =>
           AdminShell(navigationShell: navigationShell),
       branches: [
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.adminBeranda,
-            builder: (context, state) => const BerandaAdminPage(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.adminPengajuan,
-            builder: (context, state) => const PengajuanAdminPage(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.adminAkun,
-            builder: (context, state) => const AkunAdminPage(),
-          ),
-        ]),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.adminBeranda,
+              builder: (context, state) => const BerandaAdminPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.adminPengajuan,
+              builder: (context, state) => const PengajuanAdminPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.adminAkun,
+              builder: (context, state) => const AkunAdminPage(),
+            ),
+          ],
+        ),
       ],
     ),
   ],

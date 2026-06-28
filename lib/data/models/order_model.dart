@@ -64,6 +64,7 @@ class OrderModel {
   final DateTime createdAt;
   final OrderMerchantInfo? merchant;
   final String? customerName;
+  final bool isOnlinePayment;
   final List<OrderItemModel> orderItems;
 
   const OrderModel({
@@ -80,6 +81,7 @@ class OrderModel {
     required this.createdAt,
     this.merchant,
     this.customerName,
+    this.isOnlinePayment = false,
     required this.orderItems,
   });
 
@@ -114,6 +116,7 @@ class OrderModel {
       createdAt: DateTime.parse(json['createdAt'] as String),
       merchant: merchantInfo,
       customerName: customerName,
+      isOnlinePayment: json['payment'] != null,
       orderItems: (json['orderItems'] as List<dynamic>?)
               ?.map(
                   (e) => OrderItemModel.fromJson(e as Map<String, dynamic>))

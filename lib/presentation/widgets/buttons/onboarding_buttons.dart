@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart'; 
 
-// Onboarding Next Button
-// Onboarding Next Button
 class HapHapOnboardingNextButton extends StatelessWidget {
-  final double? progress; // 1. Tambahkan tanda tanya (?) agar bisa menerima null
+  final double? progress;
   final VoidCallback onPressed;
   final double size; 
 
@@ -31,10 +29,9 @@ class HapHapOnboardingNextButton extends StatelessWidget {
             width: size,
             height: size,
             child: CircularProgressIndicator(
-              value: progress, // Jika null, ini akan otomatis berputar
+              value: progress,
               strokeWidth: strokeThickness,
-              backgroundColor: Colors.grey.shade300, 
-              // 2. Logika warna: Kalau null (muter), warnanya abu-abu tua. Kalau tidak, oranye.
+              backgroundColor: Colors.grey.shade300,
               valueColor: AlwaysStoppedAnimation<Color>(
                 progress == null ? Colors.grey.shade500 : AppColors.primary,
               ),

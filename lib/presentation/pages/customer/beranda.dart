@@ -496,7 +496,7 @@ class _BerandaLayout {
 }
 
 class _BerandaContent {
-  static const String searchHint = 'Mau makan apa hari ini?';
+  static const String searchHint = 'Masukkan pencarian';
   static const String tagline = 'Selalu hemat beli\nmakanan pakai HapHap.';
   static const String discountCta = 'Lihat promo selengkapnya disini';
   static const String mascotPath = 'assets/images/puy_beranda1.png';

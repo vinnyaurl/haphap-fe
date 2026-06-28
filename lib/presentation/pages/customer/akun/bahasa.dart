@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 
-// --- IMPORT KOMPONEN HEADER ---
 import 'package:haphap_fe/presentation/widgets/headers/page_header.dart';
 
 class BahasaPage extends StatefulWidget {
@@ -25,7 +24,6 @@ class _BahasaPageState extends State<BahasaPage> {
           children: [
             const SizedBox(height: 16),
             
-            // 1. HEADER
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapPageHeader(
@@ -35,7 +33,6 @@ class _BahasaPageState extends State<BahasaPage> {
             
             const SizedBox(height: 16),
 
-            // 2. KARTU PILIHAN BAHASA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Container(
@@ -70,10 +67,6 @@ class _BahasaPageState extends State<BahasaPage> {
     );
   }
 
-  // ===========================================================================
-  // WIDGET HELPERS
-  // ===========================================================================
-
   Widget _buildLanguageItem({required String code, required String label}) {
     final isSelected = _selectedLanguage == code;
 
@@ -86,26 +79,21 @@ class _BahasaPageState extends State<BahasaPage> {
       },
       borderRadius: BorderRadius.circular(16), 
       child: Padding(
-        // KUNCI: Padding 16px di setiap sisi.
-        // Ini bikin pinggiran luar berjarak 16px, 
-        // dan jarak antar-item di tengah jadi 32px (16 bawah + 16 atas).
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            // Icon checkmark
             Icon(
               Icons.check,
-              size: 24, // Disesuaikan agar tebal & jelas
-              // Kalau nggak dipilih, dibikin transparan biar teks tetap sejajar
+              size: 24,
               color: isSelected ? Colors.green : Colors.transparent, 
             ),
             
-            const SizedBox(width: 12), // Jarak icon ke teks
+            const SizedBox(width: 12),
             
             Text(
               label,
               style: const TextStyle(
-                fontSize: 16, // Font size dinaikkan ke 16 sesuai standar
+                fontSize: 16,
                 color: AppColors.black,
               ),
             ),

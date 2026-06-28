@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:haphap_fe/core/network/token_manager.dart';
 
 class ApiClient {
@@ -19,10 +20,6 @@ class ApiClient {
     };
   }
 
-  // ---------------------------------------------------------------------------
-  // GET
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> get(String path) async {
     final uri = Uri.parse('$baseUrl$path');
 
@@ -39,10 +36,6 @@ class ApiClient {
       );
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // POST
-  // ---------------------------------------------------------------------------
 
   static Future<Map<String, dynamic>> post(
     String path,
@@ -68,10 +61,6 @@ class ApiClient {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // PATCH
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> patch(
     String path,
     Map<String, dynamic> body,
@@ -96,10 +85,6 @@ class ApiClient {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // DELETE
-  // ---------------------------------------------------------------------------
-
   static Future<Map<String, dynamic>> delete(String path) async {
     final uri = Uri.parse('$baseUrl$path');
 
@@ -117,29 +102,53 @@ class ApiClient {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Multipart File Upload
-  // ---------------------------------------------------------------------------
+  static Future<Map<String, dynamic>> multipartPost(
+    String path, {
+    required Map<String, String> fields,
+    String? filePath,
+    String fileFieldName = 'image',
+  }) async {
+    return _multipartRequest('POST', path, fields: fields, filePath: filePath, fileFieldName: fileFieldName);
+  }
 
-  static Future<Map<String, dynamic>> uploadFile(
-    String path,
-    String filePath,
-    String fieldName,
-  ) async {
+  static Future<Map<String, dynamic>> multipartPatch(
+    String path, {
+    required Map<String, String> fields,
+    String? filePath,
+    String fileFieldName = 'avatar',
+  }) async {
+    return _multipartRequest('PATCH', path, fields: fields, filePath: filePath, fileFieldName: fileFieldName);
+  }
+
+  static Future<Map<String, dynamic>> _multipartRequest(
+    String method,
+    String path, {
+    required Map<String, String> fields,
+    String? filePath,
+    String fileFieldName = 'image',
+  }) async {
     final uri = Uri.parse('$baseUrl$path');
 
     try {
-      final request = http.MultipartRequest('POST', uri);
-      
-      // Add auth header
+      final request = http.MultipartRequest(method, uri);
+
       final token = await TokenManager.getToken();
       if (token != null && token.isNotEmpty) {
         request.headers['Authorization'] = 'Bearer $token';
       }
-      
-      // Add file
-      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
-      
+
+      request.fields.addAll(fields);
+
+      if (filePath != null && filePath.isNotEmpty) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            fileFieldName,
+            filePath,
+            contentType: getMediaTypeFromPath(filePath),
+          ),
+        );
+      }
+
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       return _handleResponse(response);
@@ -147,16 +156,28 @@ class ApiClient {
       rethrow;
     } catch (e) {
       throw ApiException(
-        message:
-            'Tidak dapat mengunggah file. Periksa koneksi internet kamu.',
+        message: 'Tidak dapat mengirim data. Periksa koneksi internet kamu.',
         statusCode: 0,
       );
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Shared response handler
-  // ---------------------------------------------------------------------------
+  static MediaType getMediaTypeFromPath(String filePath) {
+    final ext = filePath.split('.').last.toLowerCase();
+    const mimeMap = <String, String>{
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'webp': 'image/webp',
+      'gif': 'image/gif',
+      'heic': 'image/heic',
+      'heif': 'image/heif',
+      'pdf': 'application/pdf',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    };
+    return MediaType.parse(mimeMap[ext] ?? 'image/jpeg');
+  }
 
   static Map<String, dynamic> _handleResponse(http.Response response) {
     debugPrint('RAW RESPONSE: ${response.body}');
@@ -173,6 +194,7 @@ class ApiClient {
       statusCode: response.statusCode,
     );
   }
+
 }
 
 class ApiException implements Exception {

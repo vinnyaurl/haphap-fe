@@ -5,6 +5,7 @@ import 'package:haphap_fe/core/network/token_manager.dart';
 import 'package:haphap_fe/core/router/app_routes.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/auth_service.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/presentation/widgets/inputs/text_fields.dart';
 
@@ -206,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           HapHapTextField(
                             labelText: 'Email',
-                            hintText: 'puypuy@gmail.com',
+                            hintText: 'Masukkan email',
                             controller: _emailController,
                             isPassword: false,
                             isRequired: true,
@@ -217,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           HapHapTextField(
                             labelText: 'Password',
-                            hintText: 'password',
+                            hintText: 'Masukkan password',
                             controller: _passwordController,
                             isPassword: true,
                             isRequired: true,
@@ -257,39 +258,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 32),
 
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.white,
-                                disabledBackgroundColor:
-                                    AppColors.primary.withOpacity(0.6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(26),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: AppColors.white,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Masuk',
-                                      style: TextStyle(
-                                        fontFamily: 'Plus Jakarta Sans',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
+                          HapHapButton(
+                            text: 'Masuk',
+                            isExpanded: true,
+                            isLoading: _isLoading,
+                            onPressed: _handleLogin,
                           ),
 
                           const SizedBox(height: 32),

@@ -8,6 +8,7 @@ import 'package:haphap_fe/presentation/widgets/cards/merchant_add_stock.dart';
 import 'package:haphap_fe/presentation/widgets/cards/merchant_menu.dart';
 import 'package:haphap_fe/presentation/widgets/cards/beranda_stats.dart';
 import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+import 'package:haphap_fe/presentation/widgets/feedback/app_snackbar.dart';
 import 'package:haphap_fe/data/services/surplus_service.dart';
 import 'package:haphap_fe/data/models/merchant_model.dart';
 import 'package:haphap_fe/core/network/api_client.dart';
@@ -54,7 +55,6 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
 
   int _totalRevenue = 0;
   int _totalPortion = 0;
-  String _createdAtLabel = '';
 
   @override
   void initState() {
@@ -79,13 +79,7 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
       _totalRevenue = (merchantData['totalRevenue'] as num?)?.toInt() ?? 0;
       _totalPortion = (merchantData['totalPortion'] as num?)?.toInt() ?? 0;
 
-      final createdAtRaw = merchantData['createdAt'] as String?;
-      if (createdAtRaw != null) {
-        final createdAt = DateTime.tryParse(createdAtRaw);
-        if (createdAt != null) {
-          _createdAtLabel = 'Sejak ${_formatDate(createdAt)}';
-        }
-      }
+
 
       final surplusItems = await SurplusService.getMySurplus();
 
@@ -130,19 +124,16 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
           'Apakah kamu yakin ingin menonaktifkan "${item.name}" dari daftar surplus aktif?',
         ),
         actions: [
-          TextButton(
+          HapHapButton(
+            text: 'Batal',
+            isText: true,
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
-              'Batal',
-              style: TextStyle(color: AppColors.greyDark),
-            ),
           ),
-          TextButton(
+          HapHapButton(
+            text: 'Nonaktifkan',
+            isText: true,
+            isDanger: true,
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Nonaktifkan',
-              style: TextStyle(color: Colors.red),
-            ),
           ),
         ],
       ),
@@ -153,26 +144,14 @@ class _BerandaMerchantPageState extends State<BerandaMerchantPage> {
     try {
       await SurplusService.update(item.surplusItemId, {'isActive': false});
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('"${item.name}" berhasil dinonaktifkan.'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackbar.showSuccess(context, '"${item.name}" berhasil dinonaktifkan.');
       _fetchData();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
-      );
+      AppSnackbar.showError(context, e.message);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal menonaktifkan menu. Coba lagi.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackbar.showError(context, 'Gagal menonaktifkan menu. Coba lagi.');
     }
   }
 
@@ -396,7 +375,7 @@ class _StatsRow extends StatelessWidget {
             title: _BerandaMerchantContent.statsIncomeTitle,
             prefixText: _BerandaMerchantContent.statsIncomePrefix,
             mainValue: totalRevenue,
-            valueColor: Colors.green,
+            valueColor: AppColors.success,
             subtitle: _BerandaMerchantContent.statsIncomeSubtitle,
           ),
         ),
@@ -519,7 +498,7 @@ class _MenuAktifSection extends StatelessWidget {
                       isSoldOut: isSoldOut,
                       imageUrl: (item.image != null && item.image!.isNotEmpty)
                           ? item.image!
-                          : 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400',
+                          : '',
                       onDeactivate: onDeactivate != null
                           ? () => onDeactivate!(item)
                           : null,

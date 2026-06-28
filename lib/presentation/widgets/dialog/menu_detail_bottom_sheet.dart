@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 void showMenuDetailBottomSheet(
   BuildContext context, {
@@ -11,35 +12,48 @@ void showMenuDetailBottomSheet(
 }) {
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true, // Wajib true agar tingginya bisa menyesuaikan isi konten
-    backgroundColor: Colors.transparent, // Background tembus pandang agar sudut membulatnya terlihat
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (context) {
       return Container(
-        padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 34), // Padding sesuai desain (ada 34 di bawah)
+        padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 34),
         decoration: const BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)), // Membulat di atas saja
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Agar tingginya nge-pas sama isi konten
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. GAMBAR BESAR
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  height: 300, // Tinggi gambar besar
-                  fit: BoxFit.cover,
-                ),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        height: 300,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: double.infinity,
+                            height: 300,
+                            color: const Color(0xFFF1F1F1),
+                            child: const Icon(Icons.fastfood, color: AppColors.greyDark, size: 64),
+                          );
+                        },
+                      )
+                    : Container(
+                        width: double.infinity,
+                        height: 300,
+                        color: const Color(0xFFF1F1F1),
+                        child: const Icon(Icons.fastfood, color: AppColors.greyDark, size: 64),
+                      ),
               ),
             ),
             
             const SizedBox(height: 24),
             
-            // 2. JUDUL
             Text(
               title,
               style: const TextStyle(
@@ -51,7 +65,6 @@ void showMenuDetailBottomSheet(
             
             const SizedBox(height: 8),
             
-            // 3. DESKRIPSI
             Text(
               description,
               style: const TextStyle(
@@ -62,7 +75,6 @@ void showMenuDetailBottomSheet(
             
             const SizedBox(height: 16),
             
-            // 4. HARGA
             Text(
               price,
               style: const TextStyle(
@@ -74,31 +86,13 @@ void showMenuDetailBottomSheet(
             
             const SizedBox(height: 24),
             
-            // 5. TOMBOL TAMBAH KE KERANJANG
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  onAddToCart();
-                  Navigator.pop(context); // Tutup bottom sheet setelah diklik
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary, // Warna Oren HapHap
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 0, // Dibuat flat
-                ),
-                child: Text(
-                  'Tambahkan ke Keranjang - $price',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
+            HapHapButton(
+              text: 'Tambahkan ke Keranjang - $price',
+              isExpanded: true,
+              onPressed: () {
+                onAddToCart();
+                Navigator.pop(context);
+              },
             ),
           ],
         ),

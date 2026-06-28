@@ -7,8 +7,8 @@ class HapHapRiwayatCard extends StatelessWidget {
   final String dateStatusText;
   final String restaurantName;
   final String price;
-  final String buttonText;
-  final VoidCallback onButtonPressed;
+  final String? buttonText;
+  final VoidCallback? onButtonPressed;
 
   const HapHapRiwayatCard({
     super.key,
@@ -16,8 +16,8 @@ class HapHapRiwayatCard extends StatelessWidget {
     required this.dateStatusText,
     required this.restaurantName,
     required this.price,
-    required this.buttonText,
-    required this.onButtonPressed,
+    this.buttonText,
+    this.onButtonPressed,
   });
 
   Widget _placeholder() {
@@ -111,11 +111,12 @@ class HapHapRiwayatCard extends StatelessWidget {
                       ),
                     ),
                     
-                    HapHapButton(
-                      text: buttonText,
-                      onPressed: onButtonPressed,
-                      size: HapHapButtonSize.tiny, 
-                    ),
+                    if (buttonText != null && onButtonPressed != null)
+                      HapHapButton(
+                        text: buttonText!,
+                        onPressed: onButtonPressed,
+                        size: HapHapButtonSize.tiny, 
+                      ),
                   ],
                 ),
               ],

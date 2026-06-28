@@ -4,6 +4,7 @@ class UserProfileModel {
   final String email;
   final String? phone;
   final String? avatar;
+  final String role;
   final int totalSaved;
   final int totalPortion;
 
@@ -13,6 +14,7 @@ class UserProfileModel {
     required this.email,
     this.phone,
     this.avatar,
+    this.role = 'CUSTOMER',
     this.totalSaved = 0,
     this.totalPortion = 0,
   });
@@ -24,6 +26,7 @@ class UserProfileModel {
       email: json['email'] ?? '',
       phone: json['phone'],
       avatar: json['avatar'],
+      role: json['role'] ?? 'CUSTOMER',
       totalSaved: json['totalSaved'] ?? 0,
       totalPortion: json['totalPortion'] ?? 0,
     );

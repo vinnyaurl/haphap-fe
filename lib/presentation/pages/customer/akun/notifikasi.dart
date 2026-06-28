@@ -13,14 +13,13 @@ class NotifikasiPage extends StatefulWidget {
 }
 
 class _NotifikasiPageState extends State<NotifikasiPage> {
-  // State untuk menyimpan nilai on/off dari masing-masing notifikasi
   bool _statusPesanan = true;
   bool _promoDiskon = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9), // Background abu-abu muda biar card menonjol
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -28,7 +27,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
           children: [
             const SizedBox(height: 16),
             
-            // 1. HEADER MENGGUNAKAN KOMPONEN
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: HapHapPageHeader(
@@ -36,10 +34,8 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
               ),
             ),
             
-            // Menyamakan jarak seperti di kode referensimu
             const SizedBox(height: 16),
 
-            // 2. CARD PENGATURAN NOTIFIKASI
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Container(
@@ -56,7 +52,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                 ),
                 child: Column(
                   children: [
-                    // Baris 1: Status Pesanan
                     _buildNotificationTile(
                       icon: Icons.notifications,
                       title: 'Status Pesanan',
@@ -68,7 +63,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                       },
                     ),
                     
-                    // Baris 2: Promo & Diskon
                     _buildNotificationTile(
                       icon: Icons.campaign, 
                       title: 'Promo & Diskon',
@@ -89,9 +83,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
     );
   }
 
-  // ===========================================================================
-  // WIDGET HELPER UNTUK BARIS PENGATURAN
-  // ===========================================================================
   Widget _buildNotificationTile({
     required IconData icon,
     required String title,
@@ -114,10 +105,9 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
               ),
             ),
           ),
-          // Switch gaya iOS biar persis kayak Figma
           CupertinoSwitch(
             value: value,
-            activeTrackColor: Colors.green, // Warna hijau saat ON
+            activeTrackColor: Colors.green,
             onChanged: onChanged,
           ),
         ],

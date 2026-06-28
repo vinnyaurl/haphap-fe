@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
 import 'package:haphap_fe/data/services/order_service.dart';
+import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
 
 class MerchantScanQRPage extends StatefulWidget {
   const MerchantScanQRPage({super.key});
@@ -44,7 +45,9 @@ class _MerchantScanQRPageState extends State<MerchantScanQRPage> {
           success ? 'Pesanan $orderId berhasil dikonfirmasi.' : 'Gagal: $error',
         ),
         actions: [
-          TextButton(
+          HapHapButton(
+            text: success ? 'Selesai' : 'Coba Lagi',
+            isText: true,
             onPressed: () {
               Navigator.pop(context); 
               if (success) {
@@ -53,7 +56,6 @@ class _MerchantScanQRPageState extends State<MerchantScanQRPage> {
                 setState(() => _isProcessing = false); 
               }
             },
-            child: Text(success ? 'Selesai' : 'Coba Lagi'),
           ),
         ],
       ),
@@ -63,10 +65,10 @@ class _MerchantScanQRPageState extends State<MerchantScanQRPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.black,
+        foregroundColor: AppColors.white,
         title: const Text('Scan QR Pesanan'),
       ),
       body: Stack(
@@ -86,7 +88,7 @@ class _MerchantScanQRPageState extends State<MerchantScanQRPage> {
 
           if (_isProcessing)
             Container(
-              color: Colors.black45,
+              color: AppColors.black.withValues(alpha: 0.45),
               child: const Center(
                 child: CircularProgressIndicator(color: AppColors.primary),
               ),

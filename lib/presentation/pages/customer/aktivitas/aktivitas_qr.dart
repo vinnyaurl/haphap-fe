@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:haphap_fe/core/theme/app_colors.dart';
 
 class HapHapQRCodeCard extends StatelessWidget {
   final String orderId;
