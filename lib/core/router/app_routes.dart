@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:haphap_fe/presentation/pages/customer/akun/alamat.dart';
+
 import 'package:haphap_fe/presentation/pages/customer/akun/bahasa.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun/edit_profil.dart';
 import 'package:haphap_fe/presentation/pages/customer/akun/notifikasi.dart';
@@ -59,7 +59,7 @@ class AppRoutes {
 
   static const String editProfil = '/edit-profil';
   static const String statistik = '/statistik';
-  static const String alamat = '/alamat';
+
   static const String bahasa = '/bahasa';
   static const String notifikasi = '/notifikasi';
 
@@ -165,10 +165,7 @@ final appRouter = GoRouter(
       path: AppRoutes.statistik,
       builder: (context, state) => const StatistikPage(),
     ),
-    GoRoute(
-      path: AppRoutes.alamat,
-      builder: (context, state) => const AlamatPage(),
-    ),
+
     GoRoute(
       path: AppRoutes.bahasa,
       builder: (context, state) => const BahasaPage(),
@@ -227,7 +224,10 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.jelajah,
-              builder: (context, state) => const JelajahPage(),
+              builder: (context, state) {
+                final category = state.uri.queryParameters['category'];
+                return JelajahPage(initialCategory: category);
+              },
             ),
           ],
         ),

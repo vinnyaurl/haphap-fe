@@ -211,21 +211,7 @@ class _AkunPageState extends State<AkunPage> {
                       ),
                     ]),
 
-                    const SizedBox(height: 32),
 
-                    _buildSectionTitle('Lainnya'),
-                    _buildMenuCard([
-                      _MenuItemData(
-                        icon: Icons.help,
-                        title: 'Bantuan & Dukungan',
-                        onTap: () {},
-                      ),
-                      _MenuItemData(
-                        icon: Icons.description,
-                        title: 'Syarat & Ketentuan',
-                        onTap: () {},
-                      ),
-                    ]),
 
                     const SizedBox(height: 32),
 

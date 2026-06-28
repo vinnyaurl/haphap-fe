@@ -232,8 +232,6 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
             orderNumber: order.orderId,
             paymentTime: order.paidAt != null ? _formatDate(order.paidAt!) : '-',
             completionTime: order.completedAt != null ? _formatDate(order.completedAt!) : '-',
-            onReceiptPressed: () {
-            },
           ),
           
           const SizedBox(height: 32),

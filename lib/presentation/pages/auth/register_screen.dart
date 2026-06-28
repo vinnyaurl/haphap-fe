@@ -24,7 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  bool _isAgreed = false;
+
   bool _isLoading = false;
 
   @override
@@ -71,10 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _handleRegister() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    if (!_isAgreed) {
-      AppSnackbar.showError(context, 'Kamu harus menyetujui Syarat & Ketentuan terlebih dahulu.');
-      return;
-    }
+
 
     setState(() => _isLoading = true);
 
@@ -260,54 +257,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             isPassword: true,
                             isRequired: true,
                             validator: _validateConfirmPassword,
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Checkbox(
-                                  value: _isAgreed,
-                                  onChanged: (value) {
-                                    setState(() => _isAgreed = value ?? false);
-                                  },
-                                  activeColor: AppColors.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  side: const BorderSide(color: Colors.grey),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: RichText(
-                                    text: const TextSpan(
-                                      text: 'Saya telah membaca dan menyetujui ',
-                                      style: TextStyle(
-                                        fontFamily: 'Plus Jakarta Sans',
-                                        fontSize: 14,
-                                        color: AppColors.black,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text: 'Syarat & Ketentuan',
-                                          style: TextStyle(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
 
                           const SizedBox(height: 32),

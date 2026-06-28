@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:haphap_fe/core/theme/app_colors.dart';
-import 'package:haphap_fe/presentation/widgets/buttons/button.dart';
+
 
 class HapHapRincianPembayaran extends StatelessWidget {
   final String paymentMethod;
@@ -8,7 +8,7 @@ class HapHapRincianPembayaran extends StatelessWidget {
   final String orderNumber;
   final String paymentTime;
   final String completionTime;
-  final VoidCallback onReceiptPressed;
+
 
   const HapHapRincianPembayaran({
     super.key,
@@ -17,7 +17,7 @@ class HapHapRincianPembayaran extends StatelessWidget {
     required this.orderNumber,
     required this.paymentTime,
     required this.completionTime,
-    required this.onReceiptPressed,
+
   });
 
   @override
@@ -44,7 +44,6 @@ class HapHapRincianPembayaran extends StatelessWidget {
 
         Container(
           width: 354,
-          height: 145,
           padding: const EdgeInsets.all(16),
           decoration: _cardDecoration(),
           child: Column(
@@ -54,15 +53,6 @@ class HapHapRincianPembayaran extends StatelessWidget {
               _buildRowItem('Waktu Pembayaran', paymentTime),
               const SizedBox(height: 8),
               _buildRowItem('Waktu Pesanan Selesai', completionTime),
-              
-              const Spacer(),
-              
-              HapHapButton(
-                text: 'Lihat E-Receipt',
-                onPressed: onReceiptPressed,
-                size: HapHapButtonSize.medium,
-                isOutline: true,
-              ),
             ],
           ),
         ),
