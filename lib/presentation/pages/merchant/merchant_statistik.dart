@@ -306,38 +306,6 @@ class _StatistikMerchantPageState extends State<StatistikMerchantPage> {
                 ),
               ),
 
-              const SizedBox(height: 32),
-
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  'Menu Paling Laris',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: _isLoading
-                    ? const SizedBox()
-                    : _bestSellingItem != null
-                        ? HapHapMerchantMenuCard(
-                            title: _bestSellingItem!.name,
-                            description: 'Menu favorit pelanggan',
-                            price: 'Rp ${_formatPrice(_bestSellingItem!.discountPrice)}',
-                            stockText: '$_bestSellingSoldCount Terjual', 
-                            imageUrl: '',
-                          )
-                        : const Text(
-                            'Belum ada data pesanan.',
-                            style: TextStyle(color: AppColors.greyDark),
-                          ),
-              ),
-
               const SizedBox(height: 40),
             ],
           ),

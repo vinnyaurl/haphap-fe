@@ -227,7 +227,7 @@ class _DetailPesananPageState extends State<DetailPesananPage> {
           const SizedBox(height: 16),
 
           HapHapRincianPembayaran(
-            paymentMethod: 'Tunai di Kasir',
+            paymentMethod: order.isOnlinePayment ? 'QRIS' : 'Tunai di Kasir',
             totalPrice: 'Rp ${_formatPrice(order.totalAmount)}',
             orderNumber: order.orderId,
             paymentTime: order.paidAt != null ? _formatDate(order.paidAt!) : '-',
