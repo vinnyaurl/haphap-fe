@@ -184,7 +184,7 @@ class _AkunMerchantPageState extends State<AkunMerchantPage>
           child: Container(
             width: double.infinity,
             decoration: const BoxDecoration(
-              color: Color(0xFFF9F9F9), 
+              color: AppColors.white, 
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(32), 
                 topRight: Radius.circular(32), 

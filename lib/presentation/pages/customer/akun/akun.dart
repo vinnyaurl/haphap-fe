@@ -152,7 +152,7 @@ class _AkunPageState extends State<AkunPage> {
           child: Container(
             width: double.infinity,
             decoration: const BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.white,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(32),
                 topRight: Radius.circular(32),

@@ -273,7 +273,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Widget build(BuildContext context) {
     if (_isLoadingOrder) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF9F9F9),
+        backgroundColor: AppColors.white,
         body: const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
@@ -281,7 +281,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
