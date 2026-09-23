@@ -6,24 +6,19 @@ import 'package:haphap_fe/core/theme/app_colors.dart';
 class MerchantShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const MerchantShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const MerchantShell({super.key, required this.navigationShell});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: AppColors.white,
       body: navigationShell,
       bottomNavigationBar: HapHapNavBar(
         currentIndex: navigationShell.currentIndex,
         type: NavBarType.merchant,
         onTap: (index) {
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
+          navigationShell.goBranch(index);
         },
       ),
     );

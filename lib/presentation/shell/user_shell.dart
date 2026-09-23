@@ -6,28 +6,19 @@ import 'package:haphap_fe/core/theme/app_colors.dart';
 class MainShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const MainShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const MainShell({super.key, required this.navigationShell});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: AppColors.white,
       body: navigationShell,
       bottomNavigationBar: HapHapNavBar(
         currentIndex: navigationShell.currentIndex,
         type: NavBarType.user,
         onTap: (index) {
-          bool initialLocation = index == navigationShell.currentIndex;
-          if (index == 2 && navigationShell.currentIndex != 2) {
-            initialLocation = true;
-          }
-          navigationShell.goBranch(
-            index,
-            initialLocation: initialLocation,
-          );
+          navigationShell.goBranch(index);
         },
       ),
     );

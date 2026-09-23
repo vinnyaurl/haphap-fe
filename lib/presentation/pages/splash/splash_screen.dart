@@ -27,7 +27,12 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Center(child: SvgPicture.asset('assets/images/logo-haphap.svg', width: 150)),
+      body: Center(
+        child: SvgPicture.asset(
+          'assets/images/logo-haphap.svg',
+          width: AppSizes.logoWidth,
+        ),
+      ),
     );
   }
 }
