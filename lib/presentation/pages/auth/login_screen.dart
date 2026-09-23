@@ -70,13 +70,17 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      await TokenManager.saveToken(token);
+      final role = response.data?.role ?? 'USER';
+      await TokenManager.saveSession(
+        token: token,
+        role: role,
+        remember: _rememberMe,
+      );
 
       if (!mounted) return;
 
       AppSnackbar.showSuccess(context, 'Login berhasil! Selamat datang.');
 
-      final role = response.data?.role;
       if (role == 'ADMIN') {
         context.go(AppRoutes.adminBeranda);
       } else if (role == 'MERCHANT') {
@@ -125,7 +129,12 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      await TokenManager.saveToken(accessToken);
+      final role = response['data']?['role'] as String? ?? 'USER';
+      await TokenManager.saveSession(
+        token: accessToken,
+        role: role,
+        remember: _rememberMe,
+      );
 
       if (!mounted) return;
 
@@ -134,7 +143,6 @@ class _LoginScreenState extends State<LoginScreen> {
         'Login Google berhasil! Selamat datang.',
       );
 
-      final role = response['data']?['role'] as String?;
       if (role == 'ADMIN') {
         context.go(AppRoutes.adminBeranda);
       } else if (role == 'MERCHANT') {
@@ -143,6 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
         context.go(AppRoutes.beranda);
       }
     } on ApiException catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(context, e.message);
+    } on GoogleAuthException catch (e) {
       if (!mounted) return;
       AppSnackbar.showError(context, e.message);
     } catch (e) {

@@ -141,7 +141,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
-      await TokenManager.saveToken(accessToken);
+      final role = response['data']?['role'] as String? ?? 'USER';
+      await TokenManager.saveSession(
+        token: accessToken,
+        role: role,
+        remember: true,
+      );
 
       if (!mounted) return;
 
@@ -151,6 +156,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       context.go(AppRoutes.beranda);
     } on ApiException catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(context, e.message);
+    } on GoogleAuthException catch (e) {
       if (!mounted) return;
       AppSnackbar.showError(context, e.message);
     } catch (e) {

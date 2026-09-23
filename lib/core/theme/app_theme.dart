@@ -278,6 +278,14 @@ abstract final class AppLayout {
     return width < compactPhone ? AppSpacing.lg : AppSpacing.xxl;
   }
 
+  static double floatingNavBarClearance(BuildContext context) {
+    final systemBottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final navBarBottomInset = systemBottomInset > AppSpacing.md
+        ? systemBottomInset
+        : AppSpacing.md;
+    return AppSizes.navBarItemHeight + navBarBottomInset;
+  }
+
   static double responsiveExtent(
     double availableWidth, {
     required double fraction,

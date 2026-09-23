@@ -5,7 +5,49 @@ import 'package:haphap_fe/core/constants/app_icons.dart';
 
 enum NavBarType { user, merchant, admin }
 
+class HapHapNavigationScaffold extends StatelessWidget {
+  final Widget body;
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final NavBarType type;
+
+  const HapHapNavigationScaffold({
+    super.key,
+    required this.body,
+    required this.currentIndex,
+    required this.onTap,
+    this.type = NavBarType.user,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBody: true,
+      // The tab content has an interaction-safe viewport, while this white
+      // underlay lets rounded sheet surfaces continue behind the floating bar.
+      backgroundColor: AppColors.white,
+      body: Padding(
+        padding: EdgeInsets.only(
+          bottom: AppLayout.floatingNavBarClearance(context),
+        ),
+        child: MediaQuery.removePadding(
+          context: context,
+          removeBottom: true,
+          child: body,
+        ),
+      ),
+      bottomNavigationBar: HapHapNavBar(
+        currentIndex: currentIndex,
+        type: type,
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
 class HapHapNavBar extends StatefulWidget {
+  static const surfaceKey = ValueKey('floating_navigation_surface');
+
   final int currentIndex;
   final ValueChanged<int> onTap;
   final NavBarType type;
@@ -46,6 +88,7 @@ class _HapHapNavBarState extends State<HapHapNavBar> {
         AppSpacing.md,
       ),
       child: Container(
+        key: HapHapNavBar.surfaceKey,
         width: double.infinity,
         decoration: const BoxDecoration(
           color: AppColors.white,
@@ -102,8 +145,7 @@ class _HapHapNavBarState extends State<HapHapNavBar> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+              Container(
                 width: AppSizes.iconLg,
                 height: AppSizes.progressIndicator,
                 decoration: BoxDecoration(

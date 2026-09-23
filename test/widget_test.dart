@@ -143,6 +143,108 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('navigation remains sized and stable during rapid taps', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 568);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final selections = <int>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: _NavigationHarness(onSelection: selections.add),
+      ),
+    );
+
+    final navigation = find.byType(HapHapNavBar);
+    expect(
+      find.descendant(of: navigation, matching: find.byType(InkWell)),
+      findsNothing,
+    );
+    for (final label in const ['Beranda', 'Jelajah', 'Aktivitas', 'Akun']) {
+      expect(
+        tester.getSize(find.byKey(ValueKey('nav_item_$label'))).height,
+        AppSizes.navBarItemHeight,
+      );
+    }
+
+    for (var index = 0; index < 12; index++) {
+      await tester.tap(find.byKey(const ValueKey('nav_item_Jelajah')));
+    }
+    await tester.pump();
+    expect(selections, [1]);
+
+    await tester.tap(find.byKey(const ValueKey('nav_item_Beranda')));
+    await tester.pump();
+    expect(selections, [1, 0]);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('floating navigation keeps page actions above its hit area', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 568);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    var bottomActionTaps = 0;
+    var addActionTaps = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: HapHapNavigationScaffold(
+          currentIndex: 1,
+          type: NavBarType.merchant,
+          onTap: (_) {},
+          body: Scaffold(
+            body: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                const SizedBox(height: AppSizes.sheetImageHeight),
+                const SizedBox(height: AppSizes.sheetImageHeight),
+                GestureDetector(
+                  key: const ValueKey('bottom_card_action'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => bottomActionTaps++,
+                  child: const SizedBox(height: AppSizes.touchTarget),
+                ),
+              ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              key: const ValueKey('add_action'),
+              onPressed: () => addActionTaps++,
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('bottom_card_action')),
+      AppSizes.mediaLarge,
+    );
+    await tester.pump();
+
+    final navTop = tester.getTopLeft(find.byKey(HapHapNavBar.surfaceKey)).dy;
+    final bottomAction = tester.getRect(
+      find.byKey(const ValueKey('bottom_card_action')),
+    );
+    final addAction = tester.getRect(find.byKey(const ValueKey('add_action')));
+    expect(bottomAction.bottom, lessThanOrEqualTo(navTop));
+    expect(addAction.bottom, lessThanOrEqualTo(navTop));
+
+    await tester.tap(find.byKey(const ValueKey('bottom_card_action')));
+    await tester.tap(find.byKey(const ValueKey('add_action')));
+    expect(bottomActionTaps, 1);
+    expect(addActionTaps, 1);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in const [Size(320, 568), Size(480, 800)]) {
     testWidgets('customer categories distribute within ${size.width}px', (
       tester,
@@ -237,4 +339,29 @@ void main() {
       expect(tester.takeException(), isNull);
     }
   });
+}
+
+class _NavigationHarness extends StatefulWidget {
+  final ValueChanged<int> onSelection;
+
+  const _NavigationHarness({required this.onSelection});
+
+  @override
+  State<_NavigationHarness> createState() => _NavigationHarnessState();
+}
+
+class _NavigationHarnessState extends State<_NavigationHarness> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return HapHapNavigationScaffold(
+      currentIndex: _currentIndex,
+      body: const SizedBox.expand(),
+      onTap: (index) {
+        widget.onSelection(index);
+        setState(() => _currentIndex = index);
+      },
+    );
+  }
 }
